@@ -1,0 +1,13 @@
+{
+  "name": "creator-hian-marketplace",
+  "owner": {
+    "name": "Creator Hian"
+  },
+  "plugins": [
+    {
+      "name": "csharp-plugin",
+      "source": "./csharp-plugin",
+      "description": "C# Plugin for Creator Hian Marketplace"
+    }
+  ]
+}
