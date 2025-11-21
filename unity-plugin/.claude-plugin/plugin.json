@@ -1,0 +1,8 @@
+{
+  "name": "unity-plugin",
+  "description": "Unity game development plugin with async patterns, performance optimization, and architecture for Creator Hian Marketplace",
+  "version": "1.0.0",
+  "author": {
+    "name": "Creator Hian"
+  }
+}
