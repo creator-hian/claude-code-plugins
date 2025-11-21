@@ -1,0 +1,8 @@
+{
+  "name": "csharp-plugin",
+  "description": "C# plugin with modern async/await patterns for Creator Hian Marketplace",
+  "version": "1.0.0",
+  "author": {
+    "name": "Creator Hian"
+  }
+}
