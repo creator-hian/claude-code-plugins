@@ -1,0 +1,8 @@
+{
+  "name": "codex-plugin",
+  "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns for Claude Code",
+  "version": "1.0.1",
+  "author": {
+    "name": "Creator Hian"
+  }
+}

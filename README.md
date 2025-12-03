@@ -8,6 +8,7 @@
 
 - [프로젝트 개요](#프로젝트-개요)
 - [사용 가능한 플러그인](#-사용-가능한-플러그인)
+- [플러그인 요약 테이블](#-플러그인-요약-테이블)
 - [폴더 구조](#폴더-구조)
 - [Plugin 생성 방법](#plugin-생성-방법)
 - [Skills 아키텍처 이해하기](#skills-아키텍처-이해하기)
@@ -40,22 +41,67 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 현재 저장소에서 제공하는 플러그인 목록:
 
 ### 1. **csharp-plugin**
-- **설명**: C# 개발을 위한 현대적인 async/await 패턴 및 베스트 프랙티스
+- **설명**: C# 개발을 위한 현대적인 async/await 패턴, XML 문서화, 베스트 프랙티스
 - **버전**: 1.0.0
 - **위치**: `./csharp-plugin`
-- **주요 기능**:
-  - C# async/await 패턴
-  - 코딩 컨벤션 및 스타일 가이드
-  - .NET 프레임워크 최적화
+- **Agents**: 1개 (csharp-pro)
+- **Skills**: 2개
+  - `csharp-async-patterns` - async/await, CancellationToken, ConfigureAwait 패턴
+  - `csharp-xml-docs` - XML 문서화 표준 (한/영 지원)
 
 ### 2. **unity-plugin**
-- **설명**: Unity 게임 개발을 위한 async 패턴, 성능 최적화, 아키텍처 가이드
-- **버전**: 1.0.0
+- **설명**: Unity 게임 개발을 위한 종합 플러그인 (async, 성능, 아키텍처, UI, 네트워킹)
+- **버전**: 2.0.0
 - **위치**: `./unity-plugin`
-- **주요 기능**:
-  - Unity 비동기 프로그래밍 패턴
-  - 성능 최적화 기법
-  - Unity 아키텍처 베스트 프랙티스
+- **Agents**: 2개 (unity-developer, unity-dots-developer)
+- **Skills**: 9개
+  - `unity-async` - 코루틴, async/await, Job System, 메인 스레드 제약
+  - `unity-unitask` - UniTask 제로 할당 async (Cysharp)
+  - `unity-r3` - R3 모던 리액티브 프로그래밍 (Cysharp)
+  - `unity-unirx` - UniRx 레거시 리액티브 패턴
+  - `unity-vcontainer` - VContainer 의존성 주입
+  - `unity-mobile` - iOS/Android 최적화, IL2CPP
+  - `unity-networking` - Netcode, Mirror, Photon 멀티플레이어
+  - `unity-performance` - 프로파일링, 드로우콜, 배칭, LOD
+  - `unity-ui` - UI Toolkit, UGUI, Canvas 최적화
+
+### 3. **codex-plugin**
+- **설명**: OpenAI Codex CLI 통합 및 Claude-Codex dual-AI 오케스트레이션 패턴
+- **버전**: 1.0.0
+- **위치**: `./codex-plugin`
+- **Agents**: 없음 (Skills 기반)
+- **Skills**: 2개
+  - `codex-cli` - Codex CLI 명령어 (`codex exec`, 모델 선택, sandbox 모드)
+  - `codex-claude-loop` - 6-Phase dual-AI 협업 워크플로우 오케스트레이션
+
+---
+
+## 📊 플러그인 요약 테이블
+
+| Plugin | Version | Agents | Skills | 주요 도메인 |
+|--------|---------|--------|--------|------------|
+| **csharp-plugin** | 1.0.0 | 1 | 2 | C# async, XML docs |
+| **unity-plugin** | 2.0.0 | 2 | 9 | Unity 게임 개발 전반 |
+| **codex-plugin** | 1.0.0 | 0 | 2 | AI 협업 오케스트레이션 |
+| **총계** | - | **3** | **13** | - |
+
+### Skills 상세 목록
+
+| Plugin | Skill Name | 카테고리 | 설명 |
+|--------|------------|----------|------|
+| csharp | `csharp-async-patterns` | Programming | async/await, CancellationToken 패턴 |
+| csharp | `csharp-xml-docs` | Documentation | XML 문서화 표준 |
+| unity | `unity-async` | Async | Unity 비동기 패턴 기초 |
+| unity | `unity-unitask` | Async | UniTask 제로 할당 async |
+| unity | `unity-r3` | Reactive | R3 모던 리액티브 (Cysharp) |
+| unity | `unity-unirx` | Reactive | UniRx 레거시 리액티브 |
+| unity | `unity-vcontainer` | Architecture | VContainer DI |
+| unity | `unity-mobile` | Platform | 모바일 최적화 |
+| unity | `unity-networking` | Multiplayer | 네트워크/멀티플레이어 |
+| unity | `unity-performance` | Optimization | 성능 최적화 |
+| unity | `unity-ui` | UI | UI Toolkit, UGUI |
+| codex | `codex-cli` | Integration | Codex CLI 기본 |
+| codex | `codex-claude-loop` | Orchestration | Dual-AI 워크플로우 |
 
 ---
 
@@ -90,13 +136,48 @@ claude-code-plugins/
 ├── csharp-plugin/               # C# 개발 플러그인
 │   ├── .claude-plugin/
 │   │   └── plugin.json
-│   ├── skills/                  # C# async 패턴 스킬
+│   ├── agents/
+│   │   └── csharp-pro.md        # C# 전문가 에이전트
+│   ├── skills/
+│   │   ├── csharp-async-patterns/  # async/await 스킬
+│   │   │   ├── SKILL.md
+│   │   │   └── references/
+│   │   └── csharp-xml-docs/     # XML 문서화 스킬
+│   │       ├── SKILL.md
+│   │       └── references/
 │   └── README.md
 │
-└── unity-plugin/                # Unity 게임 개발 플러그인
+├── unity-plugin/                # Unity 게임 개발 플러그인
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── agents/
+│   │   ├── unity-developer.md   # 메인 Unity 에이전트
+│   │   ├── unity-dots-developer.md  # DOTS 전문 에이전트
+│   │   └── legacy/              # v1.0 레거시 에이전트
+│   ├── skills/                  # 9개 전문 스킬
+│   │   ├── unity-async/
+│   │   ├── unity-unitask/
+│   │   ├── unity-r3/
+│   │   ├── unity-unirx/
+│   │   ├── unity-vcontainer/
+│   │   ├── unity-mobile/
+│   │   ├── unity-networking/
+│   │   ├── unity-performance/
+│   │   └── unity-ui/
+│   └── README.md
+│
+└── codex-plugin/                # Codex CLI 통합 플러그인
     ├── .claude-plugin/
     │   └── plugin.json
-    ├── skills/                  # Unity async, 성능, 아키텍처 스킬
+    ├── skills/
+    │   ├── codex-cli/           # CLI foundation 스킬
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   │       ├── commands.md
+    │   │       ├── options.md
+    │   │       └── examples.md
+    │   └── codex-claude-loop/   # Dual-AI 오케스트레이션 스킬
+    │       └── SKILL.md
     └── README.md
 ```
 
@@ -328,16 +409,15 @@ description: |
 ### Skills 예시
 
 **언어/프레임워크:**
-- `csharp-core` - C# 언어 기본 및 코딩 컨벤션
-- `csharp-unity` - Unity 게임 엔진 개발 패턴
-- `python-async` - Python 비동기 프로그래밍 패턴
-- `react-patterns` - React 설계 패턴 및 Hooks 사용법
+- `csharp-async-patterns` - C# async/await 패턴
+- `csharp-xml-docs` - C# XML 문서화 표준
+- `unity-async` - Unity 비동기 프로그래밍 패턴
+- `unity-r3` - R3 리액티브 패턴 (Cysharp)
 
 **개발 프랙티스:**
-- `testing-patterns` - 유닛/통합 테스트 작성 가이드
-- `refactoring-techniques` - 코드 리팩터링 기법
-- `api-design` - RESTful API 설계 원칙
-- `security-audit` - 보안 감사 체크리스트
+- `unity-performance` - Unity 성능 최적화
+- `unity-mobile` - 모바일 플랫폼 최적화
+- `codex-claude-loop` - Dual-AI 협업 오케스트레이션
 
 ---
 
@@ -422,8 +502,8 @@ git commit -m "Add new plugin: your-plugin-name"
 
 #### 명명 규칙
 - **Plugin 이름**: kebab-case (예: `typescript-helper`)
-- **Skill 이름**: `domain-subdomain` 형식 (예: `csharp-core`, `unity-physics`)
-- **Agent 이름**: `role-function` 형식 (예: `main-architect`, `testing-agent`)
+- **Skill 이름**: `domain-subdomain` 형식 (예: `csharp-async-patterns`, `unity-r3`)
+- **Agent 이름**: `role-function` 형식 (예: `csharp-pro`, `unity-developer`)
 
 #### 책임 분리
 - ✅ **Skills**: 범용 how-to 지식

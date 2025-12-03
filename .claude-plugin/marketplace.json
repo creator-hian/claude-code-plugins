@@ -8,6 +8,11 @@
       "name": "csharp-plugin",
       "source": "./csharp-plugin",
       "description": "C# Plugin for Creator Hian Marketplace"
+    },
+    {
+      "name": "codex-plugin",
+      "source": "./codex-plugin",
+      "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns"
     }
   ]
 }
