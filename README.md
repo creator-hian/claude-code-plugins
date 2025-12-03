@@ -64,18 +64,28 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 ```
 claude-code-plugins/
 ├── .claude-plugin/              # 저장소 메타데이터
-├── create_plugin.py             # 신규 플러그인 생성 스크립트
 ├── README.md                    # 이 문서
-├── SKILL_SEPARATION_STRATEGY.md # Skills 아키텍처 전략 문서
+├── CHANGELOG.md                 # 변경 이력
 │
-├── plugin-template/             # 플러그인 템플릿 (복사용)
-│   ├── .claude-plugin/
-│   │   └── plugin.json          # 플러그인 메타데이터
-│   ├── agents/                  # Subagent 정의
-│   ├── command/                 # 커스텀 슬래시 명령어
-│   ├── hook/                    # 라이프사이클 훅
-│   ├── skills/                  # Skills 정의 (핵심!)
-│   └── README.md                # 템플릿 사용 가이드
+├── docs/                        # 프로젝트 문서
+│   ├── architecture/            # 아키텍처 관련 문서
+│   │   └── SKILL_SEPARATION_STRATEGY.md  # C# ↔ Unity 분리 전략
+│   └── evaluation/              # 평가 관련 문서
+│       ├── SKILL_EVALUATION_GUIDE.md     # SKILL 평가 가이드
+│       └── status/              # 플러그인별 평가 상태
+│           └── unity-plugin.md  # Unity Plugin 평가 상태
+│
+├── tools/                       # 개발 도구
+│   ├── create_plugin.py         # 신규 플러그인 생성 스크립트
+│   ├── TEST_SCRIPT.md           # 테스트 가이드
+│   └── plugin-template/         # 플러그인 템플릿 (복사용)
+│       ├── .claude-plugin/
+│       │   └── plugin.json      # 플러그인 메타데이터
+│       ├── agents/              # Subagent 정의
+│       ├── command/             # 커스텀 슬래시 명령어
+│       ├── hook/                # 라이프사이클 훅
+│       ├── skills/              # Skills 정의 (핵심!)
+│       └── README.md            # 템플릿 사용 가이드
 │
 ├── csharp-plugin/               # C# 개발 플러그인
 │   ├── .claude-plugin/
@@ -83,13 +93,11 @@ claude-code-plugins/
 │   ├── skills/                  # C# async 패턴 스킬
 │   └── README.md
 │
-├── unity-plugin/                # Unity 게임 개발 플러그인
-│   ├── .claude-plugin/
-│   │   └── plugin.json
-│   ├── skills/                  # Unity async, 성능, 아키텍처 스킬
-│   └── README.md
-│
-└── examples/                    # 사용 예시 및 샘플 코드
+└── unity-plugin/                # Unity 게임 개발 플러그인
+    ├── .claude-plugin/
+    │   └── plugin.json
+    ├── skills/                  # Unity async, 성능, 아키텍처 스킬
+    └── README.md
 ```
 
 ---
@@ -98,12 +106,12 @@ claude-code-plugins/
 
 ### 자동 생성 스크립트 사용 (권장)
 
-`create_plugin.py` 스크립트를 사용하면 대화형 CLI로 쉽게 플러그인을 생성할 수 있습니다.
+`tools/create_plugin.py` 스크립트를 사용하면 대화형 CLI로 쉽게 플러그인을 생성할 수 있습니다.
 
 #### 1. 스크립트 실행
 
 ```bash
-python create_plugin.py
+python tools/create_plugin.py
 ```
 
 #### 2. 대화형 입력
@@ -390,7 +398,7 @@ model: sonnet
 
 ```bash
 # 1. 신규 Plugin 생성
-python create_plugin.py
+python tools/create_plugin.py
 
 # 2. Plugin 디렉토리로 이동
 cd your-plugin-name

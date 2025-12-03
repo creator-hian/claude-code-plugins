@@ -14,9 +14,10 @@ from pathlib import Path
 
 class PluginCreator:
     def __init__(self):
-        self.script_dir = Path(__file__).parent.absolute()
-        self.template_dir = self.script_dir / "plugin-template"
-        self.marketplace_file = self.script_dir / "marketplace.json"
+        self.script_dir = Path(__file__).parent.absolute()  # tools/
+        self.project_root = self.script_dir.parent  # project root
+        self.template_dir = self.script_dir / "plugin-template"  # tools/plugin-template
+        self.marketplace_file = self.project_root / ".claude-plugin" / "marketplace.json"
 
     def validate_environment(self):
         """Validate that template and marketplace.json exist."""
@@ -45,7 +46,7 @@ class PluginCreator:
             if " " in name:
                 print("❌ Plugin name should not contain spaces (use kebab-case)")
                 continue
-            if (self.script_dir / name).exists():
+            if (self.project_root / name).exists():
                 print(f"❌ Directory '{name}' already exists!")
                 continue
             break
@@ -81,7 +82,7 @@ class PluginCreator:
     def create_plugin_directory(self, plugin_info):
         """Copy template directory to new plugin directory."""
         plugin_name = plugin_info["name"]
-        target_dir = self.script_dir / plugin_name
+        target_dir = self.project_root / plugin_name
 
         print(f"\n📁 Creating plugin directory: {plugin_name}")
 
