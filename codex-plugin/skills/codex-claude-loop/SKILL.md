@@ -33,19 +33,24 @@ Claude Code runs in a **non-TTY environment**. You MUST use `codex exec` for all
 
 Before executing any Codex command:
 
-1. **Check Git Repository Status**
+1. **Create context directory**:
+```bash
+mkdir -p .codex-loop
+```
+
+2. **Check Git Repository Status**
 ```bash
 git rev-parse --git-dir 2>/dev/null && echo "Git OK" || echo "Not a Git repo"
 ```
 
-2. **If NOT in Git repository**, ask user via `AskUserQuestion`:
+3. **If NOT in Git repository**, ask user via `AskUserQuestion`:
    - "This directory is not a Git repository. Codex requires Git by default."
    - Options:
      - "Initialize Git repository here (`git init`)"
      - "Use `--skip-git-repo-check` flag (bypass check)"
      - "Cancel operation"
 
-3. **Apply user choice**:
+4. **Apply user choice**:
 ```bash
 # Option 1: Initialize Git
 git init
@@ -54,67 +59,89 @@ git init
 codex exec --skip-git-repo-check -s read-only "prompt"
 ```
 
+5. **Ask user via `AskUserQuestion`**:
+   - Model preference (gpt-5.1-codex-max, gpt-5.1-codex, gpt-5.1-codex-mini)
+   - Reasoning effort level (low, medium, high, xhigh)
+
 ## Phase 1: Planning (Claude)
 
 1. Create detailed implementation plan
 2. Break down into clear steps
 3. Document assumptions and risks
+4. Save to `.codex-loop/plan.md`
 
 ## Phase 2: Plan Validation (Codex)
 
-Ask user via `AskUserQuestion`:
-- Model preference (see codex-cli for options)
-- Reasoning effort level
-
 ```bash
-codex exec -m gpt-5.1-codex -c model_reasoning_effort=high -s read-only \
-  "Review this plan: [plan content]
-   Check: logic errors, edge cases, architecture flaws, security"
+Bash(timeout: 600000): codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
+  "Review this plan:
+$(cat .codex-loop/plan.md)
+Check: logic errors, edge cases, architecture flaws, security"
 ```
+
+Save result: `> .codex-loop/phase2_validation.md`
 
 ## Phase 3: Feedback Loop
 
-If issues found:
+If issues found in `.codex-loop/phase2_validation.md`:
 1. Summarize Codex feedback to user
-2. Refine plan
-3. Ask: "Revise and re-validate, or proceed?"
-4. Repeat Phase 2 if needed
+2. Ask via `AskUserQuestion`: "Revise and re-validate, or proceed?"
+3. If revise → Update `.codex-loop/plan.md` → Repeat Phase 2
 
 ## Phase 4: Implementation (Claude)
 
 1. Implement using Edit/Write/Read tools
 2. Execute step-by-step with error handling
-3. Document changes
+3. Save summary to `.codex-loop/implementation.md`
 
 ## Phase 5: Code Review (Codex)
 
 ```bash
-codex exec -s read-only "Review implementation:
-[code changes]
-Check: bugs, performance, best practices, security"
+Bash(timeout: 600000): codex exec -m MODEL -s read-only "Review:
+## Plan
+$(cat .codex-loop/plan.md)
+## Implementation
+$(cat .codex-loop/implementation.md)
+Check: bugs, performance, security, best practices
+Classify: Critical, Major, Minor, Info"
 ```
 
-Claude decides based on feedback:
+Save result: `> .codex-loop/phase5_review.md`
+
+Claude response by severity:
 - Critical → Fix immediately
 - Architectural → Discuss with user
 - Minor → Document and proceed
 
 ## Phase 6: Iteration
 
-1. Claude applies fixes
+1. Apply fixes from `.codex-loop/phase5_review.md`
 2. Significant changes → Re-validate with Codex
-3. Use `codex resume` for session continuity
+3. Use `codex exec resume` for session continuity
 4. Loop until quality standards met
 
-## Command Patterns
+## Context Files
+
+```
+.codex-loop/
+├── plan.md               # Implementation plan
+├── phase2_validation.md  # Plan validation result
+├── implementation.md     # Implementation summary
+├── phase5_review.md      # Code review result
+└── iterations.md         # Iteration history
+```
+
+## Command Quick Reference
 
 | Phase | Pattern |
 |-------|---------|
-| Validate plan | `codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only "plan"` |
-| Review code | `codex exec -s read-only "review"` |
+| Validate | `codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only "$(cat .codex-loop/plan.md)"` |
+| Review | `codex exec -m MODEL -s read-only "$(cat .codex-loop/implementation.md)"` |
 | Continue | `codex exec resume "next step"` |
 | Re-validate | `codex exec resume "verify fixes"` |
-| Non-Git directory | `codex exec --skip-git-repo-check -s read-only "prompt"` |
+| Non-Git | `codex exec --skip-git-repo-check -s read-only "prompt"` |
+
+**Always use `timeout: 600000` (10 min)** for all Codex commands.
 
 **Note**: For model selection, reasoning effort, and advanced options, see [codex-cli SKILL](../codex-cli/SKILL.md).
 
@@ -182,11 +209,16 @@ This prevents repeated timeout → wait → extend cycles during complex analysi
 ## Best Practices
 
 - **Always use `codex exec`** in Claude Code environment (non-TTY)
+- **Always create `.codex-loop/`** directory at start
+- **Always save outputs** to context files for traceability
 - **Always validate plans** before implementation
 - **Never skip review** after changes
 - **Default to `-s read-only`** for all reviews
 - **Use `resume`** for session continuity
 - **Check Git status** before first Codex command
 - **Ask user permission** before using `--skip-git-repo-check`
-- **Document handoffs** between AIs
 - **Set 10-minute timeout** for all Codex exec commands (`timeout: 600000`)
+
+## References
+
+- **Codex CLI fundamentals**: See [codex-cli SKILL](../codex-cli/SKILL.md) (models, options, error handling)
