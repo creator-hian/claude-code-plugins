@@ -18,6 +18,11 @@
       "name": "gemini-plugin",
       "source": "./gemini-plugin",
       "description": "Google Gemini CLI integration and dual-AI orchestration patterns"
+    },
+    {
+      "name": "ai-orchestration-plugin",
+      "source": "./ai-orchestration-plugin",
+      "description": "Multi-AI orchestration patterns combining Claude, Codex, and Gemini for comprehensive validation and review"
     }
   ]
 }
