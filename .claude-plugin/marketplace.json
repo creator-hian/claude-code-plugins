@@ -13,6 +13,11 @@
       "name": "codex-plugin",
       "source": "./codex-plugin",
       "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns"
+    },
+    {
+      "name": "gemini-plugin",
+      "source": "./gemini-plugin",
+      "description": "Google Gemini CLI integration and dual-AI orchestration patterns"
     }
   ]
 }
