@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-12-04
+
+### Added
+- **ai-orchestration-plugin**: Multi-AI 오케스트레이션 플러그인
+  - `ai-orchestration-feedback-loop` skill - Triple-AI (Claude+Codex+Gemini) 및 Dual-AI 모드 지원
+  - 역할 분담: Claude(계획/구현), Codex(검증/보안), Gemini(창의적 리뷰/UX)
+  - codex-plugin, gemini-plugin 의존성 통합
+
+## [0.3.0] - 2025-12-04
+
+### Added
+- **gemini-plugin**: Google Gemini CLI 통합 플러그인
+  - `gemini-cli` skill - Gemini CLI 기본 명령어, 모델 선택, 출력 포맷, 세션 관리
+  - `gemini-claude-loop` skill - Claude-Gemini Dual-AI 협업 워크플로우
+  - references 폴더: commands.md, options.md, examples.md
+- **codex-plugin 개선**
+  - `codex-claude-loop` skill에 context 파일 관리 기능 추가
+
+### Changed
+- README.md 업데이트: 5개 플러그인, 16개 Skills 반영
+- 폴더 구조 문서 업데이트
+
 ## [0.2.0] - 2025-11-21
 
 ### Added

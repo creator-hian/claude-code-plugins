@@ -74,6 +74,23 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
   - `codex-cli` - Codex CLI 명령어 (`codex exec`, 모델 선택, sandbox 모드)
   - `codex-claude-loop` - 6-Phase dual-AI 협업 워크플로우 오케스트레이션
 
+### 4. **gemini-plugin**
+- **설명**: Google Gemini CLI 통합 및 Claude-Gemini dual-AI 오케스트레이션 패턴
+- **버전**: 1.0.0
+- **위치**: `./gemini-plugin`
+- **Agents**: 없음 (Skills 기반)
+- **Skills**: 2개
+  - `gemini-cli` - Gemini CLI 명령어 (모델 선택, 출력 포맷, 세션 관리)
+  - `gemini-claude-loop` - Claude-Gemini dual-AI 협업 워크플로우
+
+### 5. **ai-orchestration-plugin**
+- **설명**: Multi-AI 오케스트레이션 (Claude + Codex + Gemini) 종합 검증 패턴
+- **버전**: 1.0.0
+- **위치**: `./ai-orchestration-plugin`
+- **Agents**: 없음 (Skills 기반)
+- **Skills**: 1개
+  - `ai-orchestration-feedback-loop` - Triple-AI/Dual-AI 모드, 역할 분담 (Claude=계획/구현, Codex=검증/보안, Gemini=창의적 리뷰/UX)
+
 ---
 
 ## 📊 플러그인 요약 테이블
@@ -82,8 +99,10 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 |--------|---------|--------|--------|------------|
 | **csharp-plugin** | 1.0.0 | 1 | 2 | C# async, XML docs |
 | **unity-plugin** | 2.0.0 | 2 | 9 | Unity 게임 개발 전반 |
-| **codex-plugin** | 1.0.0 | 0 | 2 | AI 협업 오케스트레이션 |
-| **총계** | - | **3** | **13** | - |
+| **codex-plugin** | 1.0.0 | 0 | 2 | Codex CLI, Claude-Codex 협업 |
+| **gemini-plugin** | 1.0.0 | 0 | 2 | Gemini CLI, Claude-Gemini 협업 |
+| **ai-orchestration-plugin** | 1.0.0 | 0 | 1 | Multi-AI (Triple/Dual) 오케스트레이션 |
+| **총계** | - | **3** | **16** | - |
 
 ### Skills 상세 목록
 
@@ -100,8 +119,11 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 | unity | `unity-networking` | Multiplayer | 네트워크/멀티플레이어 |
 | unity | `unity-performance` | Optimization | 성능 최적화 |
 | unity | `unity-ui` | UI | UI Toolkit, UGUI |
-| codex | `codex-cli` | Integration | Codex CLI 기본 |
-| codex | `codex-claude-loop` | Orchestration | Dual-AI 워크플로우 |
+| codex | `codex-cli` | Integration | Codex CLI 기본 명령어 |
+| codex | `codex-claude-loop` | Orchestration | Claude-Codex Dual-AI 워크플로우 |
+| gemini | `gemini-cli` | Integration | Gemini CLI 기본 명령어 |
+| gemini | `gemini-claude-loop` | Orchestration | Claude-Gemini Dual-AI 워크플로우 |
+| ai-orch | `ai-orchestration-feedback-loop` | Orchestration | Triple/Dual AI 종합 검증 루프 |
 
 ---
 
@@ -166,17 +188,39 @@ claude-code-plugins/
 │   │   └── unity-ui/
 │   └── README.md
 │
-└── codex-plugin/                # Codex CLI 통합 플러그인
+├── codex-plugin/                # Codex CLI 통합 플러그인
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── skills/
+│   │   ├── codex-cli/           # CLI 기본 스킬
+│   │   │   ├── SKILL.md
+│   │   │   └── references/
+│   │   │       ├── commands.md
+│   │   │       ├── options.md
+│   │   │       └── examples.md
+│   │   └── codex-claude-loop/   # Claude-Codex Dual-AI 스킬
+│   │       └── SKILL.md
+│   └── README.md
+│
+├── gemini-plugin/               # Gemini CLI 통합 플러그인
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── skills/
+│   │   ├── gemini-cli/          # CLI 기본 스킬
+│   │   │   ├── SKILL.md
+│   │   │   └── references/
+│   │   │       ├── commands.md
+│   │   │       ├── options.md
+│   │   │       └── examples.md
+│   │   └── gemini-claude-loop/  # Claude-Gemini Dual-AI 스킬
+│   │       └── SKILL.md
+│   └── README.md
+│
+└── ai-orchestration-plugin/     # Multi-AI 오케스트레이션 플러그인
     ├── .claude-plugin/
     │   └── plugin.json
     ├── skills/
-    │   ├── codex-cli/           # CLI foundation 스킬
-    │   │   ├── SKILL.md
-    │   │   └── references/
-    │   │       ├── commands.md
-    │   │       ├── options.md
-    │   │       └── examples.md
-    │   └── codex-claude-loop/   # Dual-AI 오케스트레이션 스킬
+    │   └── ai-orchestration-feedback-loop/  # Triple/Dual AI 통합 스킬
     │       └── SKILL.md
     └── README.md
 ```
