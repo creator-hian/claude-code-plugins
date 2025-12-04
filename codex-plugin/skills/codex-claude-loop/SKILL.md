@@ -157,6 +157,28 @@ Claude decides based on feedback:
 
 ⚠️ **Note**: Values like `auto-edit`, `always`, `unless-allow-listed` are NOT valid.
 
+## Timeout Configuration
+
+Codex validation and review operations require extended timeout to complete properly.
+
+| Phase | Recommended Timeout | Bash Parameter |
+|-------|---------------------|----------------|
+| Plan validation | **10 minutes** | `timeout: 600000` |
+| Code review | **10 minutes** | `timeout: 600000` |
+| Re-validation | **10 minutes** | `timeout: 600000` |
+
+**Always use `timeout: 600000` (10 minutes)** for all Codex exec commands in this workflow:
+
+```bash
+# Example: Plan validation with 10-minute timeout
+Bash(timeout: 600000): codex exec -m gpt-5.1-codex -c model_reasoning_effort=high -s read-only "Review this plan..."
+
+# Example: Code review with 10-minute timeout
+Bash(timeout: 600000): codex exec -s read-only "Review implementation..."
+```
+
+This prevents repeated timeout → wait → extend cycles during complex analysis.
+
 ## Best Practices
 
 - **Always use `codex exec`** in Claude Code environment (non-TTY)
@@ -167,3 +189,4 @@ Claude decides based on feedback:
 - **Check Git status** before first Codex command
 - **Ask user permission** before using `--skip-git-repo-check`
 - **Document handoffs** between AIs
+- **Set 10-minute timeout** for all Codex exec commands (`timeout: 600000`)

@@ -7,36 +7,62 @@ description: OpenAI Codex CLI fundamentals for code analysis, review, and valida
 
 ## ⚠️ Environment Notice
 
-| Environment | Command Format |
-|-------------|----------------|
-| Interactive terminal | `codex "prompt"` |
-| **Claude Code / CI / Scripts** | `codex exec "prompt"` |
+| Environment | Git Repo | Command Format |
+|-------------|----------|----------------|
+| Interactive terminal | Any | `codex "prompt"` |
+| **Claude Code / CI** | ✅ Yes | `codex exec -s read-only "prompt"` |
+| **Claude Code / CI** | ❌ No | `codex exec --skip-git-repo-check -s read-only "prompt"` |
 
 **Non-TTY environments** (Claude Code, CI pipelines, scripts) require `codex exec`.
 
+### Git Repository Detection
+Before executing Codex commands, check if the working directory is a Git repository:
+```bash
+# Check Git repository status
+git rev-parse --git-dir 2>/dev/null && echo "Git repo: YES" || echo "Git repo: NO"
+```
+
+- **Git repo exists**: Use standard commands
+- **No Git repo**: Add `--skip-git-repo-check` flag (requires user awareness of security implications)
+
 ## Quick Start
 
+### In Git Repository (Standard)
 ```bash
 # Basic code review (terminal)
 codex "Review this code for bugs"
 
-# Non-interactive mode (Claude Code/CI) - USE THIS FORMAT
-codex exec "Review this code for bugs"
-
-# With read-only sandbox (recommended)
-codex exec -s read-only "Check for security issues"
+# Non-interactive mode (Claude Code/CI)
+codex exec -s read-only "Review this code for bugs"
 
 # With specific model and reasoning effort
-codex exec -m gpt-5.1-codex -c model_reasoning_effort=high "Deep analysis"
+codex exec -s read-only -m gpt-5.1-codex -c model_reasoning_effort=high "Deep analysis"
 
 # With image input
-codex exec -i screenshot.png "What's shown here?"
+codex exec -s read-only -i screenshot.png "What's shown here?"
+```
 
-# Resume previous session
-codex exec resume "Continue the analysis"
+### Outside Git Repository
+```bash
+# IMPORTANT: --skip-git-repo-check required for non-Git directories
+# Ask user permission before using this flag
 
-# Non-Git directory (requires user approval)
-codex exec --skip-git-repo-check -s read-only "Analyze code"
+codex exec --skip-git-repo-check -s read-only "Review this code for bugs"
+
+# With options
+codex exec --skip-git-repo-check -s read-only -m gpt-5.1-codex "Deep analysis"
+```
+
+### Session Resume (Special Syntax)
+```bash
+# IMPORTANT: Options must come BEFORE 'resume' subcommand
+# SESSION_ID is from previous command output (e.g., 019ae3a3-f1cf-7dc1-8eee-8f424ae7a6f0)
+
+# In Git repository
+codex exec -s read-only resume [SESSION_ID] "Continue the analysis"
+
+# Outside Git repository
+codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the analysis"
 ```
 
 ## Reference Documentation
@@ -111,23 +137,43 @@ codex exec -m gpt-5.1-codex-max -c model_reasoning_effort=xhigh -s read-only \
 
 ### Session Continuity
 ```bash
-# Initial analysis
+# Initial analysis (note the session id in output)
 codex exec -s read-only "Analyze this codebase structure"
+# Output includes: session id: 019ae3a3-f1cf-7dc1-8eee-8f424ae7a6f0
 
-# Continue with follow-up (inherits settings)
-codex exec resume "Now check the error handling"
+# Continue with follow-up using SESSION_ID
+codex exec -s read-only resume 019ae3a3-f1cf-7dc1-8eee-8f424ae7a6f0 "Now check the error handling"
 ```
 
 ### Cross-Directory Analysis
 ```bash
+# Using relative paths (recommended)
 codex exec -C ./backend --add-dir ./frontend -s read-only \
   "Review API integration between backend and frontend"
 ```
 
-### Non-Git Directory (requires user approval)
+### Non-Git Directory
 ```bash
 # First ask user permission, then:
 codex exec --skip-git-repo-check -s read-only "Analyze code"
+```
+
+## Platform-Specific Notes
+
+### Windows Limitations
+| Issue | Description | Workaround |
+|-------|-------------|------------|
+| `-C` with absolute paths | `cwd is not absolute` error with Windows paths like `C:\path` | Use relative paths (`./subdir`) or run from target directory |
+| Path separators | Backslashes may cause issues | Use forward slashes (`/`) in paths |
+
+```bash
+# AVOID on Windows:
+codex exec -C C:\Projects\myapp -s read-only "analyze"
+
+# USE instead:
+cd C:\Projects\myapp && codex exec -s read-only "analyze"
+# OR use relative paths:
+codex exec -C ./myapp -s read-only "analyze"
 ```
 
 ## Error Handling
@@ -146,6 +192,9 @@ codex exec --skip-git-repo-check -s read-only "Analyze code"
 | `stdin is not a terminal` | Using `codex` in non-TTY | Use `codex exec` |
 | `Not inside a trusted directory` | Not in Git repo | Ask user, then use `--skip-git-repo-check` |
 | `invalid value for '--ask-for-approval'` | Invalid approval value | Use: `untrusted`, `on-failure`, `on-request`, `never` |
+| `unexpected argument` after `resume` | Options placed after `resume` | Place all options BEFORE `resume` subcommand |
+| `cwd is not absolute` | Windows absolute path issue | Use relative paths or `cd` to target directory first |
+| `No prompt provided via stdin` | Empty or missing prompt | Ensure prompt string is not empty |
 
 ### Error Recovery Pattern
 ```bash
@@ -155,6 +204,33 @@ if ! codex exec -s read-only "Review code"; then
     codex exec -s read-only "Review code"
 fi
 ```
+
+## Timeout Configuration
+
+### Claude Code Execution Timeout
+
+Codex operations, especially deep analysis and complex reviews, may take significant time to complete. Configure appropriate timeouts to avoid repeated waiting cycles.
+
+| Task Type | Recommended Timeout | Bash Parameter |
+|-----------|---------------------|----------------|
+| Quick checks, syntax review | 2 minutes | `timeout: 120000` |
+| Standard code review | 5 minutes | `timeout: 300000` |
+| Deep analysis, security audits | **10 minutes** | `timeout: 600000` |
+| Exhaustive analysis (xhigh reasoning) | 10 minutes | `timeout: 600000` |
+
+### Default Recommendation
+
+**Always use `timeout: 600000` (10 minutes) for Codex exec commands** to prevent repeated timeout extensions.
+
+```bash
+# Example: Bash tool call with 10-minute timeout
+Bash(timeout: 600000): codex exec -s read-only "Deep code analysis..."
+```
+
+### Why 10 Minutes?
+- Codex with `model_reasoning_effort=high/xhigh` can take 3-7 minutes for complex analysis
+- `gpt-5.1-codex-max` model performs exhaustive reasoning that requires extended time
+- Prevents the cycle of: timeout → check progress → extend timeout → repeat
 
 ## Best Practices
 
@@ -166,3 +242,4 @@ fi
 6. **Use `--full-auto`** only in controlled environments
 7. **Ask user before `--skip-git-repo-check`** - explain implications
 8. **Check valid approval values** - only use `untrusted`/`on-failure`/`on-request`/`never`
+9. **Set 10-minute timeout** for all Codex exec commands (`timeout: 600000`)
