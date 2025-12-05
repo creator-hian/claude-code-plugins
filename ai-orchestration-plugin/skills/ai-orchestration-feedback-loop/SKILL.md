@@ -82,7 +82,8 @@ First, load the required skills to get current model lists:
 Then present options:
 | Option | Description |
 |--------|-------------|
-| High Power | Codex: [highest capability model] + xhigh reasoning, Gemini: [highest capability model] |
+| Ultra Power | Codex: [highest capability model] + xhigh reasoning, Gemini: [highest capability model] |
+| High Power | Codex: [highest capability model] + high reasoning, Gemini: [highest capability model] |
 | Balanced (default) | Codex: [standard model] + high reasoning, Gemini: [stable pro model] |
 | Fast | Codex: [mini model] + medium reasoning, Gemini: [flash model] |
 | Custom | User specifies from available models in each skill |
