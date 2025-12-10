@@ -1,0 +1,3 @@
+[submodule "prompt-improver-plugin"]
+	path = prompt-improver-plugin
+	url = https://github.com/creator-hian/claude-code-prompt-improver.git
