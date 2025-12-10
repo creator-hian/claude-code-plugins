@@ -23,6 +23,11 @@
       "name": "ai-orchestration-plugin",
       "source": "./ai-orchestration-plugin",
       "description": "Multi-AI orchestration patterns combining Claude, Codex, and Gemini for comprehensive validation and review"
+    },
+    {
+      "name": "prompt-improver-plugin",
+      "source": "./prompt-improver-plugin",
+      "description": "Prompt enhancement hook that enriches vague prompts with targeted clarifying questions"
     }
   ]
 }
