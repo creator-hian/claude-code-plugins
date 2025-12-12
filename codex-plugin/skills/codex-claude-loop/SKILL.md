@@ -60,7 +60,7 @@ codex exec --skip-git-repo-check -s read-only "prompt"
 ```
 
 5. **Ask user via `AskUserQuestion`**:
-   - Model preference (gpt-5.1-codex-max, gpt-5.1-codex, gpt-5.1-codex-mini)
+   - Model preference (gpt-5.2, gpt-5.1-codex-max, gpt-5.1-codex, gpt-5.1-codex-mini)
    - Reasoning effort level (low, medium, high, xhigh)
 
 ## Phase 1: Planning (Claude)
@@ -198,7 +198,7 @@ Codex validation and review operations require extended timeout to complete prop
 
 ```bash
 # Example: Plan validation with 10-minute timeout
-Bash(timeout: 600000): codex exec -m gpt-5.1-codex -c model_reasoning_effort=high -s read-only "Review this plan..."
+Bash(timeout: 600000): codex exec -m gpt-5.2 -c model_reasoning_effort=high -s read-only "Review this plan..."
 
 # Example: Code review with 10-minute timeout
 Bash(timeout: 600000): codex exec -s read-only "Review implementation..."

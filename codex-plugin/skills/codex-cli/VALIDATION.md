@@ -115,11 +115,11 @@ List security vulnerabilities."
 
 #### F-04: 모델 선택 테스트
 ```bash
-codex exec --skip-git-repo-check -s read-only -m gpt-5.1-codex "What model are you?"
+codex exec --skip-git-repo-check -s read-only -m gpt-5.2 "What model are you?"
 ```
 
 **성공 기준**:
-- 출력에 `model: gpt-5.1-codex` 표시
+- 출력에 `model: gpt-5.2` 표시
 
 ### 3.3 판정 기준
 
@@ -376,10 +376,10 @@ Level 4: 기본 ___점 - 오류 ___점 = ___점 x 0.1 = ___
 ### 8.1 유효한 모델 목록
 | 모델 ID | 설명 |
 |---------|------|
-| `gpt-5.1-codex-max` | 최고 성능, 깊은 분석 |
-| `gpt-5.1-codex` | 표준 코드 리뷰 (권장) |
-| `gpt-5.1-codex-mini` | 빠른 처리, 간단한 작업 |
-| `gpt-5.1` | 일반 지식, 문서화 |
+| `gpt-5.2` | 최신 프론티어 모델 - 최고 성능 (권장) |
+| `gpt-5.1-codex-max` | Codex 최적화 플래그십, 깊은 추론 |
+| `gpt-5.1-codex` | Codex 최적화, 표준 코드 리뷰 |
+| `gpt-5.1-codex-mini` | 빠른 처리, 저렴 |
 
 ### 8.2 유효한 Sandbox 모드
 | 모드 | 설명 |
@@ -411,3 +411,4 @@ Level 4: 기본 ___점 - 오류 ___점 = ___점 x 0.1 = ___
 |------|------|----------|
 | 1.0 | 2025-12-03 | 초기 버전 작성 |
 | 1.1 | 2025-12-03 | 오류 빈도 점수화 기준 추가 (6.2~6.5절), 오류 유형 분류 추가, 체크리스트에 오류 기록표 추가 |
+| 1.2 | 2025-12-12 | 모델 목록 갱신: gpt-5.2 추가(기본 추천), gpt-5.1 제거 |
