@@ -1,6 +1,6 @@
 ---
 name: codex-cli
-description: OpenAI Codex CLI fundamentals for code analysis, review, and validation. Use when (1) executing codex commands for code review/analysis, (2) configuring models (gpt-5.1-codex-max/codex/codex-mini), sandbox modes (read-only/workspace-write), or reasoning effort (low/medium/high/xhigh), (3) managing Codex sessions with resume, (4) integrating Codex into automation scripts. Do NOT use for orchestration patterns (use codex-claude-loop instead).
+description: OpenAI Codex CLI fundamentals for code analysis, review, and validation. Use when (1) executing codex commands for code review/analysis, (2) configuring models (gpt-5.2/gpt-5.1-codex-max/codex/codex-mini), sandbox modes (read-only/workspace-write), or reasoning effort (low/medium/high/xhigh), (3) managing Codex sessions with resume, (4) integrating Codex into automation scripts. Do NOT use for orchestration patterns (use codex-claude-loop instead).
 ---
 
 # Codex CLI Skill
@@ -36,7 +36,7 @@ codex "Review this code for bugs"
 codex exec -s read-only "Review this code for bugs"
 
 # With specific model and reasoning effort
-codex exec -s read-only -m gpt-5.1-codex -c model_reasoning_effort=high "Deep analysis"
+codex exec -s read-only -m gpt-5.2 -c model_reasoning_effort=high "Deep analysis"
 
 # With image input
 codex exec -s read-only -i screenshot.png "What's shown here?"
@@ -50,7 +50,7 @@ codex exec -s read-only -i screenshot.png "What's shown here?"
 codex exec --skip-git-repo-check -s read-only "Review this code for bugs"
 
 # With options
-codex exec --skip-git-repo-check -s read-only -m gpt-5.1-codex "Deep analysis"
+codex exec --skip-git-repo-check -s read-only -m gpt-5.2 "Deep analysis"
 ```
 
 ### Session Resume (Special Syntax)
@@ -75,10 +75,10 @@ codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the 
 
 | Model | Description | Best For |
 |-------|-------------|----------|
-| `gpt-5.1-codex-max` | Latest flagship for deep and fast reasoning | Complex analysis, security audits |
-| `gpt-5.1-codex` | Optimized for codex (recommended) | Standard code reviews |
+| `gpt-5.2` | Latest frontier model - best performance (recommended) | Complex analysis, critical systems |
+| `gpt-5.1-codex-max` | Codex-optimized flagship for deep reasoning | Security audits, architecture review |
+| `gpt-5.1-codex` | Optimized for codex | Standard code reviews |
 | `gpt-5.1-codex-mini` | Cheaper, faster, less capable | Quick checks, batch operations |
-| `gpt-5.1` | Broad world knowledge | General questions, documentation |
 
 ## Reasoning Effort
 
@@ -131,7 +131,7 @@ $(cat src/auth.js)"
 
 ### Maximum Analysis Depth
 ```bash
-codex exec -m gpt-5.1-codex-max -c model_reasoning_effort=xhigh -s read-only \
+codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only \
   "Exhaustive security audit of this authentication system"
 ```
 
@@ -229,7 +229,7 @@ Bash(timeout: 600000): codex exec -s read-only "Deep code analysis..."
 
 ### Why 10 Minutes?
 - Codex with `model_reasoning_effort=high/xhigh` can take 3-7 minutes for complex analysis
-- `gpt-5.1-codex-max` model performs exhaustive reasoning that requires extended time
+- `gpt-5.2` model performs exhaustive reasoning that requires extended time
 - Prevents the cycle of: timeout → check progress → extend timeout → repeat
 
 ## Best Practices

@@ -126,7 +126,7 @@ FAIL: P-01 ~ P-03 중 하나라도 실패
 
 **테스트 명령**:
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.1-codex -c model_reasoning_effort=medium -s read-only \
+codex exec --skip-git-repo-check -m gpt-5.2 -c model_reasoning_effort=medium -s read-only \
   "Review this plan: [plan content]
    Check: logic errors, edge cases, architecture flaws, security"
 ```
@@ -619,3 +619,4 @@ Level 5: 기본 ___점 - 오류 ___점 = ___점 × 0.10 = ___
 |------|------|----------|
 | 1.0 | 2025-12-03 | 초기 버전 작성 |
 | 1.1 | 2025-12-03 | 오류 빈도 점수화 기준 추가 (7.2~7.5절), 오류 유형 분류 추가 (7.4절), 체크리스트에 오류 기록표/개선 권고사항 추가 (8.7~8.9절) |
+| 1.2 | 2025-12-12 | 모델 목록 갱신: gpt-5.2 추가(기본 추천), gpt-5.1 제거 |

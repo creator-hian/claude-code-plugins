@@ -19,11 +19,11 @@ For interactive terminal use, you can omit `exec`.
 ## Model + Reasoning Combinations
 
 ```bash
-# Maximum depth: flagship + xhigh
-codex exec -m gpt-5.1-codex-max -c model_reasoning_effort=xhigh -s read-only \
+# Maximum depth: gpt-5.2 (best) + xhigh
+codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only \
   "Exhaustive security audit"
 
-# Balanced: standard + high
+# Balanced: codex-optimized + high
 codex exec -m gpt-5.1-codex -c model_reasoning_effort=high -s read-only \
   "Deep API review"
 
@@ -59,7 +59,7 @@ codex exec -s read-only --search "Evaluate this microservices architecture:
 
 ```bash
 # Vulnerability scan
-codex exec -m gpt-5.1-codex-max -c model_reasoning_effort=high -s read-only \
+codex exec -m gpt-5.2 -c model_reasoning_effort=high -s read-only \
   "Security audit: $(cat src/auth/login.js)
    Check for: SQL injection, XSS, OWASP Top 10"
 
@@ -126,7 +126,7 @@ git rev-parse --git-dir 2>/dev/null || echo "Not a Git repo"
 codex exec --skip-git-repo-check -s read-only "Analyze code"
 
 # Combined with other options
-codex exec --skip-git-repo-check -m gpt-5.1-codex -s read-only "Review code"
+codex exec --skip-git-repo-check -m gpt-5.2 -s read-only "Review code"
 ```
 
 ---
