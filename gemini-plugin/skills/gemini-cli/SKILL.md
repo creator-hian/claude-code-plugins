@@ -1,6 +1,6 @@
 ---
 name: gemini-cli
-description: Google Gemini CLI fundamentals for code analysis, review, and validation. Use when (1) executing gemini commands for code review/analysis, (2) configuring models (gemini-3-pro-preview/2.5-pro/flash/flash-lite), output formats (text/json/stream-json), or sandbox modes, (3) managing Gemini sessions with /chat save/resume, (4) integrating Gemini into automation scripts and CI/CD pipelines. Do NOT use for orchestration patterns (use gemini-claude-loop instead).
+description: Google Gemini CLI fundamentals for code analysis, review, and validation. Use when (1) executing gemini commands for code review/analysis, (2) configuring models (gemini-3-flash-preview (default)/gemini-3-pro-preview (complex only)), output formats (text/json/stream-json), or sandbox modes, (3) managing Gemini sessions with /chat save/resume, (4) integrating Gemini into automation scripts and CI/CD pipelines. Do NOT use for orchestration patterns (use gemini-claude-loop instead).
 ---
 
 # Gemini CLI Skill
@@ -27,7 +27,7 @@ gemini -p "Review this code for bugs"
 gemini -p "Analyze this code" --output-format json
 
 # With specific model and directories
-gemini -m gemini-2.5-pro --include-directories ./src,./lib -p "Deep analysis"
+gemini -m gemini-3-flash-preview --include-directories ./src,./lib -p "Code analysis"
 
 # Stdin input with prompt
 cat src/auth.py | gemini -p "Review for security issues"
@@ -49,10 +49,8 @@ response=$(echo "$result" | jq -r '.response')
 
 | Model | Description | Best For |
 |-------|-------------|----------|
-| `gemini-3-pro-preview` | Latest flagship preview | Most complex analysis, cutting-edge |
-| `gemini-2.5-pro` | Most capable stable | Complex analysis, deep reasoning |
-| `gemini-2.5-flash` | Fast and efficient | Quick reviews, batch operations |
-| `gemini-2.5-flash-lite` | Lightweight, fastest | Simple checks, high-volume batch |
+| `gemini-3-flash-preview` | Fast and efficient (DEFAULT) | Standard reviews, batch operations, general use |
+| `gemini-3-pro-preview` | Flagship model | Complex architecture analysis, security audits only |
 
 ## Output Formats
 
@@ -63,14 +61,9 @@ response=$(echo "$result" | jq -r '.response')
 | `stream-json` | JSONL events | Real-time monitoring |
 
 ### JSON Response Structure
-```json
-{
-  "response": "string",
-  "stats": { "models": {}, "tools": {}, "files": {} },
-  "error": { "type": "string", "message": "string", "code": 0 }
-}
-```
-> Full schema details: See [Options Reference](references/options.md)
+> Full schema: See [Options Reference](references/options.md#json-response-schema)
+
+Key fields: `response` (string), `stats` (object), `error` (optional object)
 
 ## Key Options
 
@@ -86,66 +79,40 @@ response=$(echo "$result" | jq -r '.response')
 
 ## Common Patterns
 
-### Code Review (Claude Code/CI)
+> **Full examples**: See [Examples](references/examples.md) for detailed patterns
+
+### Essential Patterns
 ```bash
+# Code review with output
 cat src/auth.py | gemini -p "Review for security issues" > review.txt
-```
 
-### JSON Output with jq Parsing
-```bash
-result=$(cat api/routes.js | gemini -p "Generate OpenAPI spec" --output-format json)
-echo "$result" | jq -r '.response' > openapi.json
-
-# Error handling
-if echo "$result" | jq -e '.error' > /dev/null 2>&1; then
-    echo "Error: $(echo "$result" | jq -r '.error.message')"
-    exit 1
-fi
-```
-
-### Batch Processing
-```bash
-for file in src/*.py; do
-    result=$(cat "$file" | gemini -p "Find bugs" --output-format json)
-    echo "$result" | jq -r '.response' > "reports/$(basename "$file").md"
-done
-```
-
-### Generate Commit Messages
-```bash
-result=$(git diff --cached | gemini -p "Write conventional commit message" --output-format json)
+# JSON output with jq parsing
+result=$(gemini -p "Query" --output-format json)
 echo "$result" | jq -r '.response'
-```
 
-### Cross-Directory Analysis
-```bash
+# Cross-directory analysis
 gemini --include-directories ./backend,./frontend -p "Review API integration"
 ```
 
 ## Timeout Configuration
 
-| Task Type | Recommended Timeout | Bash Parameter |
-|-----------|---------------------|----------------|
+| Task Type | Recommended Timeout | Claude Code Tool |
+|-----------|---------------------|------------------|
 | Quick checks | 2 minutes | `timeout: 120000` |
 | Standard review | 5 minutes | `timeout: 300000` |
 | Deep analysis | **10 minutes** | `timeout: 600000` |
 
-**Recommendation**: Use `timeout: 600000` for complex analysis with `gemini-2.5-pro`.
+**Recommendation**: Use `timeout: 600000` for complex analysis with `gemini-3-pro-preview`.
 
 ## Error Handling
 
-### Exit Codes
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error |
-
-### Common Errors
+> **Detailed error handling patterns**: See [Examples](references/examples.md#error-handling)
 
 | Error | Cause | Solution |
 |-------|-------|----------|
 | No output | Missing `-p` flag | Use `gemini -p "prompt"` |
 | Empty response | No stdin/prompt | Provide via `-p` or stdin |
+| Exit code `1` | General error | Check JSON `.error` field |
 | Context too large | Too many files | Use specific paths |
 | Permission denied | Sandbox restrictions | Use `--yolo` carefully |
 
@@ -156,5 +123,5 @@ gemini --include-directories ./backend,./frontend -p "Review API integration"
 3. **Parse with `jq`** for reliable extraction
 4. **Check `.error`** in JSON response for error handling
 5. **Use `--include-directories`** for multi-directory context
-6. **Match model to task**: `gemini-2.5-pro` for complex, `flash-lite` for batch
+6. **Match model to task**: `gemini-3-flash-preview` for most tasks, `gemini-3-pro-preview` only for complex architecture/security
 7. **Set 10-minute timeout** for deep analysis (`timeout: 600000`)

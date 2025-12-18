@@ -14,7 +14,7 @@ Gemini CLI 기본 사용법을 제공하는 foundation 스킬입니다.
 
 **범위:**
 - `gemini -p` 명령어 사용법 (non-interactive mode)
-- 모델 선택 (`gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`)
+- 모델 선택 (`gemini-3-flash-preview` (기본), `gemini-3-pro-preview` (복잡한 경우만))
 - Output format (`json`, `stream-json`)
 - 디렉토리 관리 (`--include-directories`)
 - 세션 관리 (`/chat save`, `/chat resume`)
@@ -95,8 +95,8 @@ gemini -p "Review this code for bugs"
 # With JSON output
 gemini -p "Analyze architecture" --output-format json
 
-# With specific model
-gemini -m gemini-2.5-pro -p "Deep security analysis"
+# With specific model (Pro for complex analysis only)
+gemini -m gemini-3-pro-preview -p "Complex architecture analysis"
 ```
 
 ### Claude Code에서 사용
@@ -154,7 +154,7 @@ gemini -p "Prompt" → JSON Response → Parse & Process
 | Feature | Codex Plugin | Gemini Plugin |
 |---------|-------------|---------------|
 | CLI 도구 | `codex exec` | `gemini -p` |
-| 모델 | GPT-5 Codex | Gemini 3 Pro, 2.5 Pro/Flash/Flash-Lite |
+| 모델 | GPT-5 Codex | Gemini 3 Flash (기본), Gemini 3 Pro (복잡한 경우) |
 | 세션 관리 | `resume [session_id]` | `/chat save/resume` |
 | Output | Text | Text, JSON, Stream-JSON |
 | Sandbox | read-only, workspace-write | restrictive mode |

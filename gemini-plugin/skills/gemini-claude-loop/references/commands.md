@@ -18,7 +18,7 @@
 
 ### 검증/리뷰만 Mode
 ```bash
-gemini -m gemini-2.5-pro -p "Review this implementation plan:
+gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
 $(cat .gemini-loop/plan.md)
 
@@ -33,7 +33,7 @@ Provide validation feedback only. Do not suggest code changes."
 
 ### 검증+제안 Mode
 ```bash
-gemini -m gemini-2.5-pro -p "Review this implementation plan:
+gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
 $(cat .gemini-loop/plan.md)
 
@@ -52,7 +52,7 @@ Provide:
 
 ### 검증/리뷰만 Mode
 ```bash
-gemini -m gemini-2.5-pro --include-directories ./src -p "Review this implementation:
+gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
 ## Original Plan
 $(cat .gemini-loop/plan.md)
@@ -71,7 +71,7 @@ Classify issues as: Critical, Major, Minor, Info"
 
 ### 검증+제안 Mode
 ```bash
-gemini -m gemini-2.5-pro --include-directories ./src -p "Review this implementation:
+gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
 ## Original Plan
 $(cat .gemini-loop/plan.md)
@@ -138,7 +138,7 @@ For each issue:
   "session_id": "20251204_120000",
   "phase": 0,
   "status": "initialized",
-  "model": "gemini-2.5-pro",
+  "model": "gemini-3-flash-preview",
   "role_mode": "review-only"
 }
 ```
@@ -148,7 +148,7 @@ For each issue:
 For structured output (future jq parsing):
 
 ```bash
-result=$(gemini -m gemini-2.5-pro -p "Review..." --output-format json)
+result=$(gemini -m gemini-3-flash-preview -p "Review..." --output-format json)
 echo "$result" > .gemini-loop/phase2_validation.json
 
 # Future jq parsing:
@@ -167,13 +167,14 @@ echo "$result" > .gemini-loop/phase2_validation.json
 ## Multi-Directory Analysis
 
 ```bash
-gemini --include-directories ./backend,./frontend -p "Review cross-service integration..."
+gemini -m gemini-3-flash-preview --include-directories ./backend,./frontend -p "Review cross-service integration..."
 ```
 
 ## Model Recommendations
 
 | Phase | Recommended Model | Reason |
 |-------|-------------------|--------|
-| Plan validation | `gemini-2.5-pro` or `gemini-3-pro-preview` | Deep analysis |
-| Code review | `gemini-2.5-pro` | Comprehensive review |
-| Re-validation | `gemini-2.5-flash` | Speed for iterations |
+| Plan validation | `gemini-3-flash-preview` (default) | Standard validation |
+| Code review | `gemini-3-flash-preview` | Standard review |
+| Re-validation | `gemini-3-flash-preview` | Speed for iterations |
+| Complex architecture | `gemini-3-pro-preview` | Deep analysis only |

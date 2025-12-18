@@ -127,7 +127,7 @@ List security vulnerabilities."
 
 #### F-04: 모델 선택 테스트
 ```bash
-gemini -m gemini-2.5-flash -p "What model are you using?"
+gemini -m gemini-3-flash-preview -p "What model are you using?"
 ```
 
 **성공 기준**:
@@ -431,10 +431,8 @@ Level 4: 기본 ___점 - 오류 ___점 = ___점 × 0.1 = ___
 ### 8.1 유효한 모델 목록
 | 모델 ID | 설명 |
 |---------|------|
-| `gemini-3-pro-preview` | 최신 플래그십 프리뷰, 최첨단 기능 |
-| `gemini-2.5-pro` | 안정적 최고 성능, 복잡한 분석 (권장) |
-| `gemini-2.5-flash` | 빠르고 효율적, 표준 리뷰 |
-| `gemini-2.5-flash-lite` | 경량, 최고속, 대량 배치 처리 |
+| `gemini-3-flash-preview` | 빠르고 효율적 (기본 권장), 표준 리뷰 및 일반 분석 |
+| `gemini-3-pro-preview` | 플래그십 모델, 복잡한 아키텍처 분석 및 보안 감사에만 사용 |
 
 ### 8.2 유효한 출력 형식
 | 형식 | 설명 |

@@ -31,7 +31,7 @@ gemini              # Wrong - empty output
 
 1. Create context directory: `mkdir -p .gemini-loop`
 2. Ask user via `AskUserQuestion`:
-   - Model preference (gemini-2.5-pro, gemini-2.5-flash, gemini-3-pro-preview)
+   - Model preference (gemini-3-flash-preview (default), gemini-3-pro-preview (complex only))
    - Role mode preference (검증/리뷰만 OR 검증+제안)
 
 ## Phase 1: Planning (Claude)
@@ -46,7 +46,7 @@ gemini              # Wrong - empty output
 Ask user for role mode, then execute:
 
 ```bash
-Bash(timeout: 600000): gemini -m MODEL -p "Review this plan:
+Bash(timeout: 600000): gemini -m gemini-3-flash-preview -p "Review this plan:
 $(cat .gemini-loop/plan.md)
 Check: logic errors, edge cases, architecture flaws, security
 [Add 'Provide fix suggestions with code examples' for 검증+제안 mode]"
@@ -70,7 +70,7 @@ If issues found:
 ## Phase 5: Code Review (Gemini)
 
 ```bash
-Bash(timeout: 600000): gemini -m MODEL --include-directories ./src -p "Review:
+Bash(timeout: 600000): gemini -m gemini-3-flash-preview --include-directories ./src -p "Review:
 ## Plan
 $(cat .gemini-loop/plan.md)
 ## Implementation
@@ -107,9 +107,9 @@ Claude response by severity:
 
 | Phase | Pattern |
 |-------|---------|
-| Validate | `gemini -m MODEL -p "review plan..."` |
-| Review | `gemini -m MODEL --include-directories ./src -p "review..."` |
-| JSON output | `gemini -m MODEL -p "..." --output-format json` |
+| Validate | `gemini -m gemini-3-flash-preview -p "review plan..."` |
+| Review | `gemini -m gemini-3-flash-preview --include-directories ./src -p "review..."` |
+| JSON output | `gemini -m gemini-3-flash-preview -p "..." --output-format json` |
 
 **Always use `timeout: 600000` (10 min)** for all Gemini commands.
 

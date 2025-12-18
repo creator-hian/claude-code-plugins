@@ -80,7 +80,7 @@ echo "$result" | jq -r '.response' >> CHANGELOG.md
 # .git/hooks/pre-commit
 
 STAGED=$(git diff --cached --name-only)
-result=$(gemini -m gemini-2.5-flash -p "Quick review:
+result=$(gemini -m gemini-3-flash-preview -p "Quick review:
 Files: $STAGED
 Diff: $(git diff --cached)" --output-format json)
 
@@ -205,8 +205,8 @@ echo "$result" | jq -r '.response'
 gemini --include-directories ./backend,./frontend,./shared \
   -p "Analyze integration points"
 
-# With specific model
-gemini -m gemini-2.5-pro --include-directories ../repo1,../repo2 \
+# With specific model (Pro for complex cross-repo analysis)
+gemini -m gemini-3-pro-preview --include-directories ../repo1,../repo2 \
   -p "Compare architectures"
 ```
 
@@ -229,15 +229,12 @@ gemini -m gemini-2.5-pro --include-directories ../repo1,../repo2 \
 ## Model Selection
 
 ```bash
-# Complex analysis
-gemini -m gemini-2.5-pro -p "Deep security audit"
+# Default usage (flash for most tasks)
+gemini -m gemini-3-flash-preview -p "Code review"
+gemini -m gemini-3-flash-preview -p "Quick syntax check"
+gemini -m gemini-3-flash-preview -p "Batch processing"
 
-# Quick checks
-gemini -m gemini-2.5-flash -p "Check syntax"
-
-# Batch processing
-gemini -m gemini-2.5-flash-lite -p "Simple check"
-
-# Cutting edge
+# Pro only for complex tasks
 gemini -m gemini-3-pro-preview -p "Complex architecture analysis"
+gemini -m gemini-3-pro-preview -p "Critical security audit"
 ```
