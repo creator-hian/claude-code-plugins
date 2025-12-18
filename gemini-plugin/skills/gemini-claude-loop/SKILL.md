@@ -28,7 +28,7 @@ Plan (Claude) → Validate (Gemini) → Implement (Claude) → Review (Gemini) �
 1. Create context directory: `mkdir -p .gemini-loop`
 2. Ask user via `AskUserQuestion`:
    - Model preference (gemini-3-flash-preview (default), gemini-3-pro-preview (complex only))
-   - Role mode preference (검증/리뷰만 OR 검증+제안)
+   - Role mode preference (Review-Only OR Review+Suggest)
 
 ## Phase 1: Planning (Claude)
 

@@ -4,12 +4,12 @@
 
 | Mode | Description | When to Use |
 |------|-------------|-------------|
-| **검증/리뷰만** | Feedback only, no code suggestions | Quick validation |
-| **검증+제안** | Feedback + specific code fix examples | Detailed guidance needed |
+| **Review-Only** | Feedback only, no code suggestions | Quick validation |
+| **Review+Suggest** | Feedback + specific code fix examples | Detailed guidance needed |
 
 ## Phase 2: Plan Validation Prompts
 
-### 검증/리뷰만 Mode
+### Review-Only Mode
 ```bash
 gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
@@ -24,7 +24,7 @@ Check for:
 Provide validation feedback only. Do not suggest code changes."
 ```
 
-### 검증+제안 Mode
+### Review+Suggest Mode
 ```bash
 gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
@@ -43,7 +43,7 @@ Provide:
 
 ## Phase 5: Code Review Prompts
 
-### 검증/리뷰만 Mode
+### Review-Only Mode
 ```bash
 gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
@@ -62,7 +62,7 @@ Check for:
 Classify issues as: Critical, Major, Minor, Info"
 ```
 
-### 검증+제안 Mode
+### Review+Suggest Mode
 ```bash
 gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
