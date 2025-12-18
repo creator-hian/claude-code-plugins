@@ -14,7 +14,7 @@ Gemini CLI 기본 사용법을 제공하는 foundation 스킬입니다.
 
 **범위:**
 - `gemini -p` 명령어 사용법 (non-interactive mode)
-- 모델 선택 (`gemini-3-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`)
+- 모델 선택 (`gemini-3-flash-preview` (기본), `gemini-3-pro-preview` (복잡한 경우만))
 - Output format (`json`, `stream-json`)
 - 디렉토리 관리 (`--include-directories`)
 - 세션 관리 (`/chat save`, `/chat resume`)
@@ -24,15 +24,16 @@ Gemini CLI 기본 사용법을 제공하는 foundation 스킬입니다.
 - 단독 코드 리뷰/분석 시
 - 다른 오케스트레이션 스킬의 기반으로
 
-### 2. gemini-claude-loop (Orchestration) [Planned]
+### 2. gemini-claude-loop (Orchestration)
 
 Claude Code와 Gemini 간의 dual-AI 협업 루프를 오케스트레이션합니다.
 
 **의존성:** `requires: gemini-cli`
 
 **범위:**
-- 6-Phase 워크플로우 (Plan → Validate → Feedback → Execute → Review → Iterate)
-- Claude-Gemini 역할 분담 패턴
+- 6-Phase 워크플로우 (Plan → Validate → Feedback → Implement → Review → Iterate)
+- Claude-Gemini 역할 분담 패턴 (Claude: 계획/구현, Gemini: 검증/리뷰)
+- Role Modes: 검증/리뷰만, 검증+제안
 - 피드백 루프 관리
 - 품질 게이트 및 종료 조건
 
@@ -56,10 +57,10 @@ gemini-plugin/
 │   │       ├── options.md           # 옵션 상세
 │   │       └── examples.md          # 사용 예시
 │   │
-│   └── gemini-claude-loop/          # Level 2: Orchestration [Planned]
+│   └── gemini-claude-loop/          # Level 2: Orchestration
 │       ├── SKILL.md                 # requires: gemini-cli
 │       └── references/
-│           └── (워크플로우 문서)
+│           └── commands.md          # Phase별 프롬프트 템플릿
 │
 └── README.md
 ```
@@ -69,7 +70,7 @@ gemini-plugin/
 ```
 gemini-cli (Foundation)
     ↑
-    └── gemini-claude-loop (requires: gemini-cli) [Planned]
+    └── gemini-claude-loop (requires: gemini-cli)
 ```
 
 향후 확장 시:
@@ -95,8 +96,8 @@ gemini -p "Review this code for bugs"
 # With JSON output
 gemini -p "Analyze architecture" --output-format json
 
-# With specific model
-gemini -m gemini-2.5-pro -p "Deep security analysis"
+# With specific model (Pro for complex analysis only)
+gemini -m gemini-3-pro-preview -p "Complex architecture analysis"
 ```
 
 ### Claude Code에서 사용
@@ -154,17 +155,22 @@ gemini -p "Prompt" → JSON Response → Parse & Process
 | Feature | Codex Plugin | Gemini Plugin |
 |---------|-------------|---------------|
 | CLI 도구 | `codex exec` | `gemini -p` |
-| 모델 | GPT-5 Codex | Gemini 3 Pro, 2.5 Pro/Flash/Flash-Lite |
+| 모델 | GPT-5 Codex | Gemini 3 Flash (기본), Gemini 3 Pro (복잡한 경우) |
 | 세션 관리 | `resume [session_id]` | `/chat save/resume` |
 | Output | Text | Text, JSON, Stream-JSON |
 | Sandbox | read-only, workspace-write | restrictive mode |
 
 ## 참고 문서
 
+### gemini-cli (Foundation)
 - [gemini-cli SKILL.md](skills/gemini-cli/SKILL.md) - CLI 기본 사용법
 - [Commands Reference](skills/gemini-cli/references/commands.md) - 전체 명령어
 - [Options Reference](skills/gemini-cli/references/options.md) - 옵션 상세
 - [Examples](skills/gemini-cli/references/examples.md) - 사용 예시
+
+### gemini-claude-loop (Orchestration)
+- [gemini-claude-loop SKILL.md](skills/gemini-claude-loop/SKILL.md) - 6-Phase 워크플로우
+- [Commands Reference](skills/gemini-claude-loop/references/commands.md) - Phase별 프롬프트 템플릿
 
 ## Future Extensions
 

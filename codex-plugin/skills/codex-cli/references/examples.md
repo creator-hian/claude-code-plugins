@@ -1,16 +1,5 @@
 # Codex CLI Examples
 
-## Table of Contents
-
-- [Model + Reasoning Combinations](#model--reasoning-combinations)
-- [Code Review](#code-review)
-- [Security Analysis](#security-analysis)
-- [Session Continuity](#session-continuity)
-- [Image Analysis](#image-analysis)
-- [Multi-Directory](#multi-directory)
-- [Non-Git Directory](#non-git-directory)
-- [Automation](#automation)
-
 ⚠️ **Note**: All examples use `codex exec` for non-interactive environments (Claude Code, CI, scripts).
 For interactive terminal use, you can omit `exec`.
 

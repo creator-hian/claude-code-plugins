@@ -117,79 +117,37 @@ Save to `.ai-orchestration/config.md`:
 
 **Executor**: Based on config (default: Claude)
 
-Create `.ai-orchestration/plan.md`:
+Create `.ai-orchestration/plan.md` with: Objective, Approach, Steps, Risk Assessment, Validation Focus Areas
 
-```markdown
-# Implementation Plan
-## Objective
-## Approach
-## Steps
-## Risk Assessment
-## Validation Focus Areas
-```
-
-**If Codex as planner:**
-```bash
-codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
-  "Create implementation plan for: [TASK]
-   Output: Objective, Approach, Steps, Risk Assessment, Validation Focus"
-```
-
-**If Gemini as planner:**
-```bash
-gemini -m MODEL -p "Create implementation plan for: [TASK]
-  Output: Objective, Approach, Steps, Risk Assessment, Validation Focus"
-```
+| Planner | Command |
+|---------|---------|
+| Claude (default) | Use native planning |
+| Codex | `codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only "Create plan for: [TASK]..."` |
+| Gemini | `gemini -m MODEL -p "Create plan for: [TASK]..."` |
 
 ## Phase 2: First Validation
 
 **Executor**: Based on config `Validation 1` setting
 
-### If Codex validates:
-```bash
-codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
-  "Validate: $(cat .ai-orchestration/plan.md)
-   Check: Logic, Security (OWASP), Performance, Edge Cases, Dependencies
-   Output: Critical/Major/Minor Issues, Recommendations, Questions"
-```
-→ Save: `.ai-orchestration/phase2_codex_validation.md`
+> **Detailed prompts**: See [prompt-templates.md](references/prompt-templates.md#phase-2-codex-validation-prompts) for Security/Performance/Architecture focused prompts
 
-### If Gemini validates:
-```bash
-gemini -m MODEL -p "Review: $(cat .ai-orchestration/plan.md)
-  Check: Alternatives, Patterns, User Impact, Maintainability, Blind Spots
-  Output: Critical/Major/Minor Issues, Alternatives, Questions"
-```
-→ Save: `.ai-orchestration/phase2_gemini_validation.md`
-
-### If Both validate (parallel):
-Execute Codex and Gemini commands **in parallel**, save both outputs.
+| Validator | Command | Output File |
+|-----------|---------|-------------|
+| Codex | `codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only "Validate: $(cat plan.md)..."` | `phase2_codex_validation.md` |
+| Gemini | `gemini -m MODEL -p "Review: $(cat plan.md)..."` | `phase2_gemini_validation.md` |
+| Both | Execute in **parallel**, save both outputs | Both files |
 
 ## Phase 3: Second Validation
 
 **Executor**: Based on config `Validation 2` setting (Skip if Dual-AI or config says Skip)
 
-### If Gemini reviews after Codex:
-```bash
-gemini -m MODEL -p "Review building on Codex:
-  Plan: $(cat .ai-orchestration/plan.md)
-  Codex findings: $(cat .ai-orchestration/phase2_codex_validation.md)
-  Complement, don't repeat. Focus: Alternatives, User Impact, Blind Spots"
-```
-→ Save: `.ai-orchestration/phase3_gemini_review.md`
+> **Detailed prompts**: See [prompt-templates.md](references/prompt-templates.md#phase-3-gemini-review-prompts) for Innovation/UX focused prompts
 
-### If Codex reviews after Gemini:
-```bash
-codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
-  "Deep validation building on Gemini:
-   Plan: $(cat .ai-orchestration/plan.md)
-   Gemini findings: $(cat .ai-orchestration/phase2_gemini_validation.md)
-   Validate alternatives, add Security/Edge Cases analysis"
-```
-→ Save: `.ai-orchestration/phase3_codex_review.md`
-
-### If Both review (parallel after Phase 2):
-Each AI reviews the plan independently, then cross-references in Phase 4.
+| Scenario | Reviewer | Key Focus | Output File |
+|----------|----------|-----------|-------------|
+| After Codex | Gemini | Complement (don't repeat): Alternatives, User Impact, Blind Spots | `phase3_gemini_review.md` |
+| After Gemini | Codex | Build on Gemini: Security/Edge Cases analysis | `phase3_codex_review.md` |
+| Both (parallel) | Both | Independent review, cross-reference in Phase 4 | Both files |
 
 ## Phase 4: Synthesis
 
@@ -212,69 +170,25 @@ Present to user via `AskUserQuestion`: Proceed / Address issues / Request more v
 
 **Executor**: Based on config `Implementation` setting (default: Claude)
 
-### If Claude implements (default):
-Claude implements per synthesized plan.
+| Mode | Executor | Use Case |
+|------|----------|----------|
+| Default | Claude | Standard implementation via Edit/Write/Read |
+| Codex-assisted | Claude + Codex | Complex logic (`-s workspace-write`) |
+| Gemini-assisted | Claude + Gemini | Creative/UX solutions |
 
-### If Codex-assisted implementation:
-Use Codex for complex logic generation:
-```bash
-codex exec -m MODEL -c model_reasoning_effort=LEVEL -s workspace-write \
-  "Implement based on synthesis:
-   $(cat .ai-orchestration/phase4_synthesis.md)
-   Focus: [specific component]"
-```
-
-### If Gemini-assisted implementation:
-Use Gemini for creative/UX solutions:
-```bash
-gemini -m MODEL --approval-mode auto_edit -p \
-  "Implement based on synthesis:
-   $(cat .ai-orchestration/phase4_synthesis.md)
-   Focus: [specific component]"
-```
-
-Save `.ai-orchestration/implementation.md`:
-
-```markdown
-# Implementation Summary
-## Implemented By: [Claude/Claude+Codex/Claude+Gemini]
-## Changes Made
-## Issues Addressed
-## Testing Notes
-```
+Save `.ai-orchestration/implementation.md` with: Implemented By, Changes Made, Issues Addressed, Testing Notes
 
 ## Phase 6: Code Review
 
 **Executor**: Based on config `Code Review` setting
 
-| Config Setting | Reviewers |
-|----------------|-----------|
-| Codex | Codex only |
-| Gemini | Gemini only |
-| Both (parallel) | Codex + Gemini simultaneously |
+> **Detailed prompts**: See [prompt-templates.md](references/prompt-templates.md#phase-6-code-review-prompts)
 
-### Codex Review (if configured):
-```bash
-codex exec -m MODEL -s read-only "Review implementation:
-  Plan: $(cat .ai-orchestration/plan.md)
-  Synthesis: $(cat .ai-orchestration/phase4_synthesis.md)
-  Implementation: $(cat .ai-orchestration/implementation.md)
-  Verify: Issues addressed? New issues? Overall PASS/FAIL"
-```
-→ Save: `.ai-orchestration/phase6a_codex_review.md`
-
-### Gemini Review (if configured):
-```bash
-gemini -m MODEL -p "Review implementation:
-  Plan: $(cat .ai-orchestration/plan.md)
-  Synthesis: $(cat .ai-orchestration/phase4_synthesis.md)
-  Implementation: $(cat .ai-orchestration/implementation.md)
-  Verdict: APPROVE/REQUEST CHANGES/REJECT"
-```
-→ Save: `.ai-orchestration/phase6b_gemini_review.md`
-
-### Both Review (parallel):
-Execute both commands simultaneously, then combine verdicts.
+| Reviewer | Verdict Format | Output File |
+|----------|----------------|-------------|
+| Codex | PASS/FAIL + Issue Status | `phase6a_codex_review.md` |
+| Gemini | APPROVE/REQUEST CHANGES/REJECT | `phase6b_gemini_review.md` |
+| Both | Execute **parallel**, combine verdicts | Both files |
 
 ## Phase 7: Final Assessment
 

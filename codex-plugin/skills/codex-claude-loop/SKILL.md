@@ -18,16 +18,10 @@ Plan (Claude) → Validate (Codex) → Implement (Claude) → Review (Codex) →
 | **Claude** | Architecture, planning, code implementation (Edit/Write/Read) |
 | **Codex** | Validation, code review, quality assurance |
 
-## ⚠️ Important: Non-Interactive Execution
+## Environment Notice
 
-Claude Code runs in a **non-TTY environment**. You MUST use `codex exec` for all Codex commands.
-
-| Environment | Command |
-|-------------|---------|
-| Terminal (interactive) | `codex "prompt"` |
-| Claude Code / CI / Scripts | `codex exec "prompt"` |
-
-**Common Error**: `stdin is not a terminal` → Use `codex exec` instead of `codex`
+> **Non-TTY environment**: See [codex-cli SKILL](../codex-cli/SKILL.md#-environment-notice) for CLI fundamentals.
+> **Key rule**: Always use `codex exec` in Claude Code (not `codex`)
 
 ## Phase 0: Pre-flight Check
 
@@ -72,11 +66,11 @@ codex exec --skip-git-repo-check -s read-only "prompt"
 
 ## Phase 2: Plan Validation (Codex)
 
+Execute with `timeout: 600000`:
+
 ```bash
-Bash(timeout: 600000): codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
-  "Review this plan:
-$(cat .codex-loop/plan.md)
-Check: logic errors, edge cases, architecture flaws, security"
+codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only \
+  "Review this plan: $(cat .codex-loop/plan.md) Check: logic, edge cases, architecture, security"
 ```
 
 Save result: `> .codex-loop/phase2_validation.md`
@@ -96,14 +90,11 @@ If issues found in `.codex-loop/phase2_validation.md`:
 
 ## Phase 5: Code Review (Codex)
 
+Execute with `timeout: 600000`:
+
 ```bash
-Bash(timeout: 600000): codex exec -m MODEL -s read-only "Review:
-## Plan
-$(cat .codex-loop/plan.md)
-## Implementation
-$(cat .codex-loop/implementation.md)
-Check: bugs, performance, security, best practices
-Classify: Critical, Major, Minor, Info"
+codex exec -m MODEL -s read-only \
+  "Review: $(cat .codex-loop/plan.md) $(cat .codex-loop/implementation.md) Check: bugs, performance, security. Classify: Critical/Major/Minor/Info"
 ```
 
 Save result: `> .codex-loop/phase5_review.md`
@@ -131,80 +122,28 @@ Claude response by severity:
 └── iterations.md         # Iteration history
 ```
 
-## Command Quick Reference
-
-| Phase | Pattern |
-|-------|---------|
-| Validate | `codex exec -m MODEL -c model_reasoning_effort=LEVEL -s read-only "$(cat .codex-loop/plan.md)"` |
-| Review | `codex exec -m MODEL -s read-only "$(cat .codex-loop/implementation.md)"` |
-| Continue | `codex exec resume "next step"` |
-| Re-validate | `codex exec resume "verify fixes"` |
-| Non-Git | `codex exec --skip-git-repo-check -s read-only "prompt"` |
+## Quick Reference
 
 **Always use `timeout: 600000` (10 min)** for all Codex commands.
 
-**Note**: For model selection, reasoning effort, and advanced options, see [codex-cli SKILL](../codex-cli/SKILL.md).
+> **Models, reasoning effort, options**: See [codex-cli SKILL](../codex-cli/SKILL.md)
 
 ## Error Handling
 
-### Exit Codes
-| Code | Meaning | Action |
-|------|---------|--------|
-| `0` | Success | Continue workflow |
-| `1` | General error | Check error message, may need `--skip-git-repo-check` |
-| `2` | Invalid arguments | Check option values (see below) |
+> **Full error reference**: See [codex-cli SKILL](../codex-cli/SKILL.md#error-handling)
 
-### Common Errors
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `stdin is not a terminal` | Using `codex` instead of `codex exec` | Use `codex exec` |
-| `Not inside a trusted directory` | Not in Git repo | Ask user: init Git or use `--skip-git-repo-check` |
-| `invalid value for '--ask-for-approval'` | Wrong approval value | Use valid values (see below) |
-
-### Error Recovery Flow
+**Error Recovery Flow**:
 1. Non-zero exit → Stop and report error message
 2. Summarize error via `AskUserQuestion`
-3. Confirm with user before:
-   - Architectural changes
-   - Multi-file modifications
-   - Breaking changes
-   - Using `--skip-git-repo-check`
-
-## Approval Modes
-
-**Valid values for `-a` / `--ask-for-approval`**:
-
-| Value | Description |
-|-------|-------------|
-| `untrusted` | Treat all operations as untrusted |
-| `on-failure` | Ask only when operation fails |
-| `on-request` | Ask when explicitly requested |
-| `never` | Never ask for approval (dangerous) |
-
-⚠️ **Note**: Values like `auto-edit`, `always`, `unless-allow-listed` are NOT valid.
+3. Confirm with user before: architectural changes, multi-file mods, `--skip-git-repo-check`
 
 ## Timeout Configuration
 
-Codex validation and review operations require extended timeout to complete properly.
+| Task Type | Recommended Timeout | Claude Code Tool |
+|-----------|---------------------|------------------|
+| All Codex operations | **10 minutes** | `timeout: 600000` |
 
-| Phase | Recommended Timeout | Bash Parameter |
-|-------|---------------------|----------------|
-| Plan validation | **10 minutes** | `timeout: 600000` |
-| Code review | **10 minutes** | `timeout: 600000` |
-| Re-validation | **10 minutes** | `timeout: 600000` |
-
-**Always use `timeout: 600000` (10 minutes)** for all Codex exec commands in this workflow:
-
-```bash
-# Example: Plan validation with 10-minute timeout
-Bash(timeout: 600000): codex exec -m gpt-5.2 -c model_reasoning_effort=high -s read-only "Review this plan..."
-
-# Example: Code review with 10-minute timeout
-Bash(timeout: 600000): codex exec -s read-only "Review implementation..."
-```
-
-This prevents repeated timeout → wait → extend cycles during complex analysis.
+> **Approval modes**: See [codex-cli SKILL](../codex-cli/SKILL.md) - valid values: `untrusted`, `on-failure`, `on-request`, `never`
 
 ## Best Practices
 

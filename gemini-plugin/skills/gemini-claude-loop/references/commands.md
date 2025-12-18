@@ -1,24 +1,17 @@
 # Command Patterns & Prompts
 
-## Table of Contents
-- [Role Modes](#role-modes)
-- [Phase 2: Plan Validation Prompts](#phase-2-plan-validation-prompts)
-- [Phase 5: Code Review Prompts](#phase-5-code-review-prompts)
-- [Context File Templates](#context-file-templates)
-- [JSON Output Mode](#json-output-mode)
-
 ## Role Modes
 
 | Mode | Description | When to Use |
 |------|-------------|-------------|
-| **검증/리뷰만** | Feedback only, no code suggestions | Quick validation |
-| **검증+제안** | Feedback + specific code fix examples | Detailed guidance needed |
+| **Review-Only** | Feedback only, no code suggestions | Quick validation |
+| **Review+Suggest** | Feedback + specific code fix examples | Detailed guidance needed |
 
 ## Phase 2: Plan Validation Prompts
 
-### 검증/리뷰만 Mode
+### Review-Only Mode
 ```bash
-gemini -m gemini-2.5-pro -p "Review this implementation plan:
+gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
 $(cat .gemini-loop/plan.md)
 
@@ -31,9 +24,9 @@ Check for:
 Provide validation feedback only. Do not suggest code changes."
 ```
 
-### 검증+제안 Mode
+### Review+Suggest Mode
 ```bash
-gemini -m gemini-2.5-pro -p "Review this implementation plan:
+gemini -m gemini-3-flash-preview -p "Review this implementation plan:
 
 $(cat .gemini-loop/plan.md)
 
@@ -50,9 +43,9 @@ Provide:
 
 ## Phase 5: Code Review Prompts
 
-### 검증/리뷰만 Mode
+### Review-Only Mode
 ```bash
-gemini -m gemini-2.5-pro --include-directories ./src -p "Review this implementation:
+gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
 ## Original Plan
 $(cat .gemini-loop/plan.md)
@@ -69,9 +62,9 @@ Check for:
 Classify issues as: Critical, Major, Minor, Info"
 ```
 
-### 검증+제안 Mode
+### Review+Suggest Mode
 ```bash
-gemini -m gemini-2.5-pro --include-directories ./src -p "Review this implementation:
+gemini -m gemini-3-flash-preview --include-directories ./src -p "Review this implementation:
 
 ## Original Plan
 $(cat .gemini-loop/plan.md)
@@ -138,7 +131,7 @@ For each issue:
   "session_id": "20251204_120000",
   "phase": 0,
   "status": "initialized",
-  "model": "gemini-2.5-pro",
+  "model": "gemini-3-flash-preview",
   "role_mode": "review-only"
 }
 ```
@@ -148,32 +141,20 @@ For each issue:
 For structured output (future jq parsing):
 
 ```bash
-result=$(gemini -m gemini-2.5-pro -p "Review..." --output-format json)
+result=$(gemini -m gemini-3-flash-preview -p "Review..." --output-format json)
 echo "$result" > .gemini-loop/phase2_validation.json
-
-# Future jq parsing:
-# response=$(echo "$result" | jq -r '.response')
 ```
 
-### JSON Response Structure
-```json
-{
-  "response": "string",
-  "stats": { "models": {}, "tools": {}, "files": {} },
-  "error": { "type": "string", "message": "string", "code": 0 }
-}
-```
+> **JSON response structure**: See [gemini-cli SKILL](../../gemini-cli/SKILL.md#json-response-structure)
 
 ## Multi-Directory Analysis
 
 ```bash
-gemini --include-directories ./backend,./frontend -p "Review cross-service integration..."
+gemini -m gemini-3-flash-preview --include-directories ./backend,./frontend -p "Review cross-service integration..."
 ```
 
 ## Model Recommendations
 
-| Phase | Recommended Model | Reason |
-|-------|-------------------|--------|
-| Plan validation | `gemini-2.5-pro` or `gemini-3-pro-preview` | Deep analysis |
-| Code review | `gemini-2.5-pro` | Comprehensive review |
-| Re-validation | `gemini-2.5-flash` | Speed for iterations |
+> **Available models**: See [gemini-cli SKILL](../../gemini-cli/SKILL.md#available-models)
+
+**For this skill**: Use `gemini-3-flash-preview` (default) for all phases. Only use `gemini-3-pro-preview` for complex architecture analysis.
