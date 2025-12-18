@@ -20,12 +20,8 @@ Plan (Claude) → Validate (Gemini) → Implement (Claude) → Review (Gemini) �
 
 ## Environment Notice
 
-Claude Code runs in a **non-TTY environment**. Always use `-p` flag:
-
-```bash
-gemini -p "prompt"  # Correct
-gemini              # Wrong - empty output
-```
+> **Non-TTY environment**: See [gemini-cli SKILL](../gemini-cli/SKILL.md#-environment-notice) for CLI fundamentals.
+> **Key rule**: Always use `gemini -p "prompt"` (headless mode required)
 
 ## Phase 0: Pre-flight Check
 
@@ -43,14 +39,13 @@ gemini              # Wrong - empty output
 
 ## Phase 2: Plan Validation (Gemini)
 
-Ask user for role mode, then execute:
+Ask user for role mode, then execute with `timeout: 600000`:
 
 ```bash
-Bash(timeout: 600000): gemini -m gemini-3-flash-preview -p "Review this plan:
-$(cat .gemini-loop/plan.md)
-Check: logic errors, edge cases, architecture flaws, security
-[Add 'Provide fix suggestions with code examples' for 검증+제안 mode]"
+gemini -m gemini-3-flash-preview -p "Review this plan: $(cat .gemini-loop/plan.md) ..."
 ```
+
+> **Full prompts by role mode**: See [commands.md](references/commands.md#phase-2-plan-validation-prompts)
 
 Save result: `> .gemini-loop/phase2_validation.md`
 
@@ -69,15 +64,13 @@ If issues found:
 
 ## Phase 5: Code Review (Gemini)
 
+Execute with `timeout: 600000`:
+
 ```bash
-Bash(timeout: 600000): gemini -m gemini-3-flash-preview --include-directories ./src -p "Review:
-## Plan
-$(cat .gemini-loop/plan.md)
-## Implementation
-$(cat .gemini-loop/implementation.md)
-Check: bugs, performance, security, best practices
-Classify: Critical, Major, Minor, Info"
+gemini -m gemini-3-flash-preview --include-directories ./src -p "Review: $(cat .gemini-loop/plan.md) $(cat .gemini-loop/implementation.md) ..."
 ```
+
+> **Full prompts by role mode**: See [commands.md](references/commands.md#phase-5-code-review-prompts)
 
 Save result: `> .gemini-loop/phase5_review.md`
 
@@ -103,17 +96,11 @@ Claude response by severity:
 └── iterations.md         # Iteration history
 ```
 
-## Command Quick Reference
-
-| Phase | Pattern |
-|-------|---------|
-| Validate | `gemini -m gemini-3-flash-preview -p "review plan..."` |
-| Review | `gemini -m gemini-3-flash-preview --include-directories ./src -p "review..."` |
-| JSON output | `gemini -m gemini-3-flash-preview -p "..." --output-format json` |
+## Quick Reference
 
 **Always use `timeout: 600000` (10 min)** for all Gemini commands.
 
 ## References
 
 - **Command patterns & prompts**: See [references/commands.md](references/commands.md)
-- **Gemini CLI fundamentals**: See [gemini-cli SKILL](../gemini-cli/SKILL.md) (models, options, error handling, timeout)
+- **Gemini CLI fundamentals**: See [gemini-cli SKILL](../gemini-cli/SKILL.md) (models, options, error handling, timeout, JSON output)

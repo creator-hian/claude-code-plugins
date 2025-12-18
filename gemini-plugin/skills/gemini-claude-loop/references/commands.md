@@ -1,12 +1,5 @@
 # Command Patterns & Prompts
 
-## Table of Contents
-- [Role Modes](#role-modes)
-- [Phase 2: Plan Validation Prompts](#phase-2-plan-validation-prompts)
-- [Phase 5: Code Review Prompts](#phase-5-code-review-prompts)
-- [Context File Templates](#context-file-templates)
-- [JSON Output Mode](#json-output-mode)
-
 ## Role Modes
 
 | Mode | Description | When to Use |
@@ -150,19 +143,9 @@ For structured output (future jq parsing):
 ```bash
 result=$(gemini -m gemini-3-flash-preview -p "Review..." --output-format json)
 echo "$result" > .gemini-loop/phase2_validation.json
-
-# Future jq parsing:
-# response=$(echo "$result" | jq -r '.response')
 ```
 
-### JSON Response Structure
-```json
-{
-  "response": "string",
-  "stats": { "models": {}, "tools": {}, "files": {} },
-  "error": { "type": "string", "message": "string", "code": 0 }
-}
-```
+> **JSON response structure**: See [gemini-cli SKILL](../../gemini-cli/SKILL.md#json-response-structure)
 
 ## Multi-Directory Analysis
 
@@ -172,9 +155,6 @@ gemini -m gemini-3-flash-preview --include-directories ./backend,./frontend -p "
 
 ## Model Recommendations
 
-| Phase | Recommended Model | Reason |
-|-------|-------------------|--------|
-| Plan validation | `gemini-3-flash-preview` (default) | Standard validation |
-| Code review | `gemini-3-flash-preview` | Standard review |
-| Re-validation | `gemini-3-flash-preview` | Speed for iterations |
-| Complex architecture | `gemini-3-pro-preview` | Deep analysis only |
+> **Available models**: See [gemini-cli SKILL](../../gemini-cli/SKILL.md#available-models)
+
+**For this skill**: Use `gemini-3-flash-preview` (default) for all phases. Only use `gemini-3-pro-preview` for complex architecture analysis.
