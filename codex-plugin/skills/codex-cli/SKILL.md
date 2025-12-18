@@ -73,14 +73,18 @@ codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the 
 
 ## Available Models
 
-| Model | Description | Best For |
-|-------|-------------|----------|
-| `gpt-5.2` | Latest frontier model - best performance (recommended) | Complex analysis, critical systems |
-| `gpt-5.1-codex-max` | Codex-optimized flagship for deep reasoning | Security audits, architecture review |
-| `gpt-5.1-codex` | Optimized for codex | Standard code reviews |
-| `gpt-5.1-codex-mini` | Cheaper, faster, less capable | Quick checks, batch operations |
+> **Full model details**: See [Options Reference](references/options.md#model-selection--m---model)
+
+| Model | Best For |
+|-------|----------|
+| `gpt-5.2` | Complex analysis, critical systems (recommended) |
+| `gpt-5.1-codex-max` | Security audits, architecture review |
+| `gpt-5.1-codex` | Standard code reviews |
+| `gpt-5.1-codex-mini` | Quick checks, batch operations |
 
 ## Reasoning Effort
+
+> **Usage examples**: See [Options Reference](references/options.md#reasoning-effort)
 
 | Level | Use Case |
 |-------|----------|
@@ -89,72 +93,37 @@ codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the 
 | `high` | Security audits, complex logic |
 | `xhigh` | Critical systems, exhaustive analysis |
 
-```bash
-codex -c model_reasoning_effort=high "Deep security analysis"
-```
-
 ## Sandbox Modes
 
 | Mode | Description |
 |------|-------------|
-| `read-only` | Cannot modify files (safest, recommended for reviews) |
+| `read-only` | Cannot modify files (safest, recommended) |
 | `workspace-write` | Can modify workspace files |
 | `danger-full-access` | Full system access (use sparingly) |
 
 ## Key Options
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--model` | `-m` | Model selection |
-| `--sandbox` | `-s` | Sandbox mode |
-| `--config` | `-c` | Configuration (e.g., `model_reasoning_effort=high`) |
-| `--image` | `-i` | Image input (repeatable) |
-| `--cd` | `-C` | Working directory |
-| `--add-dir` | | Additional context directories |
-| `--search` | | Enable web search |
-| `--full-auto` | | Full automation mode |
-| `--ask-for-approval` | `-a` | Approval mode (`untrusted`/`on-failure`/`on-request`/`never`) |
-| `--skip-git-repo-check` | | Skip Git repository requirement (ask user first) |
+> **Full options list**: See [Options Reference](references/options.md#quick-reference)
 
 ## Common Patterns
 
-### Code Review (Claude Code/CI)
+> **Full examples**: See [Examples](references/examples.md) for detailed patterns
+
+### Essential Patterns
 ```bash
-codex exec -s read-only "Review this implementation for:
-- Logic errors
-- Performance issues
-- Security vulnerabilities
+# Code review (Claude Code/CI)
+codex exec -s read-only "Review: $(cat src/auth.js)"
 
-Code:
-$(cat src/auth.js)"
-```
+# Maximum depth analysis
+codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only "Security audit"
 
-### Maximum Analysis Depth
-```bash
-codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only \
-  "Exhaustive security audit of this authentication system"
-```
+# Session continuity
+codex exec -s read-only resume [SESSION_ID] "Continue analysis"
 
-### Session Continuity
-```bash
-# Initial analysis (note the session id in output)
-codex exec -s read-only "Analyze this codebase structure"
-# Output includes: session id: 019ae3a3-f1cf-7dc1-8eee-8f424ae7a6f0
+# Cross-directory
+codex exec -C ./backend --add-dir ./frontend -s read-only "Review API"
 
-# Continue with follow-up using SESSION_ID
-codex exec -s read-only resume 019ae3a3-f1cf-7dc1-8eee-8f424ae7a6f0 "Now check the error handling"
-```
-
-### Cross-Directory Analysis
-```bash
-# Using relative paths (recommended)
-codex exec -C ./backend --add-dir ./frontend -s read-only \
-  "Review API integration between backend and frontend"
-```
-
-### Non-Git Directory
-```bash
-# First ask user permission, then:
+# Non-Git directory (ask user first)
 codex exec --skip-git-repo-check -s read-only "Analyze code"
 ```
 
@@ -178,59 +147,26 @@ codex exec -C ./myapp -s read-only "analyze"
 
 ## Error Handling
 
-### Exit Codes
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | General error (check message) |
-| `2` | Invalid arguments |
-
-### Common Errors and Solutions
+> **Error recovery patterns**: See [Examples](references/examples.md#automation)
 
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `stdin is not a terminal` | Using `codex` in non-TTY | Use `codex exec` |
 | `Not inside a trusted directory` | Not in Git repo | Ask user, then use `--skip-git-repo-check` |
 | `invalid value for '--ask-for-approval'` | Invalid approval value | Use: `untrusted`, `on-failure`, `on-request`, `never` |
-| `unexpected argument` after `resume` | Options placed after `resume` | Place all options BEFORE `resume` subcommand |
-| `cwd is not absolute` | Windows absolute path issue | Use relative paths or `cd` to target directory first |
-| `No prompt provided via stdin` | Empty or missing prompt | Ensure prompt string is not empty |
-
-### Error Recovery Pattern
-```bash
-if ! codex exec -s read-only "Review code"; then
-    echo "Codex analysis failed, retrying..."
-    sleep 5
-    codex exec -s read-only "Review code"
-fi
-```
+| `unexpected argument` after `resume` | Options after `resume` | Place options BEFORE `resume` subcommand |
+| `cwd is not absolute` | Windows absolute path | Use relative paths or `cd` first |
+| `No prompt provided via stdin` | Empty prompt | Ensure prompt string is not empty |
 
 ## Timeout Configuration
 
-### Claude Code Execution Timeout
+| Task Type | Recommended Timeout | Claude Code Tool |
+|-----------|---------------------|------------------|
+| Quick checks | 2 minutes | `timeout: 120000` |
+| Standard review | 5 minutes | `timeout: 300000` |
+| Deep analysis | **10 minutes** | `timeout: 600000` |
 
-Codex operations, especially deep analysis and complex reviews, may take significant time to complete. Configure appropriate timeouts to avoid repeated waiting cycles.
-
-| Task Type | Recommended Timeout | Bash Parameter |
-|-----------|---------------------|----------------|
-| Quick checks, syntax review | 2 minutes | `timeout: 120000` |
-| Standard code review | 5 minutes | `timeout: 300000` |
-| Deep analysis, security audits | **10 minutes** | `timeout: 600000` |
-| Exhaustive analysis (xhigh reasoning) | 10 minutes | `timeout: 600000` |
-
-### Default Recommendation
-
-**Always use `timeout: 600000` (10 minutes) for Codex exec commands** to prevent repeated timeout extensions.
-
-```bash
-# Example: Bash tool call with 10-minute timeout
-Bash(timeout: 600000): codex exec -s read-only "Deep code analysis..."
-```
-
-### Why 10 Minutes?
-- Codex with `model_reasoning_effort=high/xhigh` can take 3-7 minutes for complex analysis
-- `gpt-5.2` model performs exhaustive reasoning that requires extended time
-- Prevents the cycle of: timeout → check progress → extend timeout → repeat
+**Recommendation**: Use `timeout: 600000` for all Codex exec commands (model_reasoning_effort=high/xhigh can take 3-7 minutes).
 
 ## Best Practices
 

@@ -1,18 +1,5 @@
 # Codex CLI Options Reference
 
-## Table of Contents
-
-- [Model Selection (-m)](#model-selection--m---model)
-- [Reasoning Effort](#reasoning-effort)
-- [Sandbox Modes (-s)](#sandbox-modes--s---sandbox)
-- [Approval Mode (-a)](#approval-mode--a---ask-for-approval)
-- [Image Input (-i)](#image-input--i---image)
-- [Directory Options](#directory-options)
-- [Other Options](#other-options)
-- [Quick Reference](#quick-reference)
-
----
-
 ## Model Selection (-m, --model)
 
 | Model | Description | Best For |
