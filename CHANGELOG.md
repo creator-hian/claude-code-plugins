@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-12-18
+
+### Changed
+- **gemini-plugin v1.1.0**: Skill documentation optimization
+  - `gemini-cli` SKILL.md: 224→179 lines (-20%)
+  - `gemini-claude-loop` SKILL.md: 151→135 lines (-11%)
+  - Korean role modes converted to English (검증/리뷰만 → Review-Only, 검증+제안 → Review+Suggest)
+  - Added L3 references to reduce L2 content redundancy
+
+- **codex-plugin v1.3.0**: Skill documentation optimization
+  - `codex-cli` SKILL.md: 245→182 lines (-26%)
+  - `codex-claude-loop` SKILL.md: 224→163 lines (-27%)
+  - Added L3 references for detailed prompts and error handling
+  - Consolidated command examples with references to options.md
+
+- **ai-orchestration-plugin v1.1.0**: Skill documentation optimization
+  - `ai-orchestration-feedback-loop` SKILL.md: 315→228 lines (-28%)
+  - Added L3 references to prompt-templates.md for phases 2, 3, 6
+  - Consolidated phase command examples into table format
+
+### Technical
+- All optimizations validated with Gemini CLI for functional equivalence
+- 100% feature parity maintained across all skill documentation
+- Progressive Disclosure (L1/L2/L3) pattern consistently applied
+
 ## [0.4.0] - 2025-12-04
 
 ### Added
