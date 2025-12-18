@@ -1,7 +1,7 @@
 {
   "name": "ai-orchestration-plugin",
   "description": "Multi-AI orchestration patterns for Claude Code - combining Claude, Codex, and Gemini for comprehensive validation",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Creator Hian"
   }
