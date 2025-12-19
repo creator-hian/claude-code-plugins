@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2025-12-19
 
 ### Added
+- **unity-plugin v1.2.0**: New Collection Pool skill
+  - `unity-collection-pool` skill - GC-free collection management
+  - ListPool, HashSetPool, DictionaryPool, CollectionPool usage
+  - ObjectPool<T> for custom object pooling
+  - Pool lifecycle and disposal patterns (PooledObject, using pattern)
+  - Memory optimization and capacity management
+  - Thread safety considerations
+  - L3 references: pool-fundamentals.md, advanced-patterns.md
+
 - **unity-plugin v1.1.0**: New TextMeshPro skill
   - `unity-textmeshpro` skill - Professional text rendering with SDF technology
   - Font asset creation and configuration (Static vs Dynamic)
