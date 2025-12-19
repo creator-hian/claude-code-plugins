@@ -32,7 +32,8 @@ Rigidbody rb = GetComponent<Rigidbody>(); // Might be null
 rb.velocity = Vector3.zero; // NullReferenceException!
 
 // CORRECT: TryGetComponent with null-safe check
-if (TryGetComponent(out Rigidbody rb))
+Rigidbody rb;
+if (TryGetComponent(out rb))
 {
     rb.velocity = Vector3.zero;
 }
@@ -62,7 +63,8 @@ void Awake()
 
 ```csharp
 // Self - always prefer TryGetComponent
-if (TryGetComponent(out Enemy enemy)) { }
+Enemy enemy;
+if (TryGetComponent(out enemy)) { }
 
 // Children - use GetComponentInChildren with validation
 Enemy childEnemy = GetComponentInChildren<Enemy>();
@@ -73,7 +75,8 @@ GameController parentController = GetComponentInParent<GameController>();
 if (parentController != null) { }
 
 // Multiple components - use list overload to avoid allocation
-using (ListPool<Enemy>.Get(out List<Enemy> enemies))
+List<Enemy> enemies;
+using (ListPool<Enemy>.Get(out enemies))
 {
     GetComponentsInChildren(enemies);
     foreach (Enemy e in enemies) { }

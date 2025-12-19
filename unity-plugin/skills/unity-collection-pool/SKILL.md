@@ -60,7 +60,8 @@ using UnityEngine.Pool;
 void ProcessWithUsing()
 {
     // Auto-release via PooledObject<T>
-    using (ListPool<int>.Get(out List<int> tempList))
+    List<int> tempList;
+    using (ListPool<int>.Get(out tempList))
     {
         tempList.Add(1);
         tempList.Add(2);
@@ -71,7 +72,8 @@ void ProcessWithUsing()
 // HashSet example
 void CheckDuplicates(IEnumerable<string> items)
 {
-    using (HashSetPool<string>.Get(out HashSet<string> seen))
+    HashSet<string> seen;
+    using (HashSetPool<string>.Get(out seen))
     {
         foreach (string item in items)
         {
@@ -84,7 +86,8 @@ void CheckDuplicates(IEnumerable<string> items)
 // Dictionary example
 void BuildLookup(Item[] items)
 {
-    using (DictionaryPool<int, Item>.Get(out Dictionary<int, Item> lookup))
+    Dictionary<int, Item> lookup;
+    using (DictionaryPool<int, Item>.Get(out lookup))
     {
         foreach (Item item in items)
             lookup[item.Id] = item;
@@ -113,7 +116,8 @@ void BuildLookup(Item[] items)
 ```csharp
 void DetectCollisions(Vector3 origin, Vector3 direction)
 {
-    using (ListPool<RaycastHit>.Get(out List<RaycastHit> hits))
+    List<RaycastHit> hits;
+    using (ListPool<RaycastHit>.Get(out hits))
     {
         int count = Physics.RaycastNonAlloc(origin, direction, hitsArray);
         for (int i = 0; i < count; i++)
@@ -129,7 +133,8 @@ void DetectCollisions(Vector3 origin, Vector3 direction)
 ```csharp
 void FindAllEnemies()
 {
-    using (ListPool<Enemy>.Get(out List<Enemy> enemies))
+    List<Enemy> enemies;
+    using (ListPool<Enemy>.Get(out enemies))
     {
         GetComponentsInChildren(enemies); // Overload that takes list
         foreach (Enemy enemy in enemies)
@@ -145,7 +150,8 @@ void FindAllEnemies()
 List<Item> filtered = items.Where(x => x.IsActive).ToList();
 
 // PREFER: Pooled collection
-using (ListPool<Item>.Get(out List<Item> pooledFiltered))
+List<Item> pooledFiltered;
+using (ListPool<Item>.Get(out pooledFiltered))
 {
     foreach (Item item in items)
     {
@@ -181,7 +187,8 @@ Avoid Pools:
 Span<int> small = stackalloc int[4];
 
 // For variable size or larger collections, use pool
-using (ListPool<int>.Get(out List<int> larger))
+List<int> larger;
+using (ListPool<int>.Get(out larger))
 {
     // Variable size operations
 }

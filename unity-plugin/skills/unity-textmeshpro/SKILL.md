@@ -31,13 +31,13 @@ using UnityEngine;
 
 public class TextController : MonoBehaviour
 {
-    [SerializeField] private TMP_Text displayText;
+    [SerializeField] private TMP_Text mDisplayText;
 
     void Start()
     {
-        displayText.text = "Hello, World!";
-        displayText.fontSize = 36;
-        displayText.color = Color.white;
+        mDisplayText.text = "Hello, World!";
+        mDisplayText.fontSize = 36;
+        mDisplayText.color = Color.white;
     }
 }
 ```
@@ -46,13 +46,13 @@ public class TextController : MonoBehaviour
 
 ```csharp
 // TMP_Text - Base class, use for serialization (works with both)
-[SerializeField] private TMP_Text text;
+[SerializeField] private TMP_Text mText;
 
 // TextMeshProUGUI - Canvas UI text (most common)
-[SerializeField] private TextMeshProUGUI uiText;
+[SerializeField] private TextMeshProUGUI mUiText;
 
 // TextMeshPro - 3D world space text (MeshRenderer)
-[SerializeField] private TextMeshPro worldText;
+[SerializeField] private TextMeshPro mWorldText;
 ```
 
 ### Rich Text Formatting
@@ -165,17 +165,17 @@ text.text = $"{currentHP}/{maxHP}";         // More GC
 
 ```csharp
 // Apply material preset at runtime
-[SerializeField] private Material highlightMaterial;
-[SerializeField] private Material normalMaterial;
+[SerializeField] private Material mHighlightMaterial;
+[SerializeField] private Material mNormalMaterial;
 
 void Highlight(bool active)
 {
-    text.fontMaterial = active ? highlightMaterial : normalMaterial;
+    mText.fontMaterial = active ? mHighlightMaterial : mNormalMaterial;
 }
 
 // Modify material properties
-text.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
-text.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, Color.black);
+mText.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
+mText.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, Color.black);
 ```
 
 ## Reference Documentation
