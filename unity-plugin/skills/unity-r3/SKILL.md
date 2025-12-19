@@ -1,6 +1,8 @@
 ---
 name: unity-r3
 description: R3 (Reactive Extensions) library expert specializing in modern reactive programming patterns, event-driven architectures, and Observable streams. Masters R3-specific features, async enumerable integration, and Unity-optimized reactive patterns. Use PROACTIVELY for R3 implementation, reactive programming, or MVVM/MVP architecture.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity R3 - Modern Reactive Extensions for Unity

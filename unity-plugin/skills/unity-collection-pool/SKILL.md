@@ -1,6 +1,8 @@
 ---
 name: unity-collection-pool
 description: Unity Collection Pool expert for GC-free collection management using ListPool, DictionaryPool, HashSetPool, and ObjectPool. Masters memory optimization, pool sizing, and allocation-free patterns. Use PROACTIVELY for collection allocations, GC pressure reduction, temporary list/dictionary usage, or performance-critical code paths.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Collection Pool - GC-Free Collection Management

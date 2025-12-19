@@ -1,6 +1,8 @@
 ---
 name: unity-unirx
 description: UniRx (Reactive Extensions) library expert for legacy Unity projects. Specializes in UniRx-specific patterns, Observable streams, and ReactiveProperty. Use for maintaining existing UniRx codebases. For new projects, use unity-r3 skill instead.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity UniRx - Reactive Extensions for Unity (Legacy)

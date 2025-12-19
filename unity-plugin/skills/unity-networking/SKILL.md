@@ -1,6 +1,8 @@
 ---
 name: unity-networking
 description: Implement multiplayer games with Unity Netcode, Mirror, or Photon. Masters client-server architecture, state synchronization, and lag compensation. Use for multiplayer features, networking issues, or real-time synchronization.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Networking - Multiplayer Game Development

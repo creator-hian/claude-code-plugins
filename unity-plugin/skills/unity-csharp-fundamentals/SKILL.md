@@ -1,6 +1,8 @@
 ---
 name: unity-csharp-fundamentals
 description: Unity C# fundamental patterns including TryGetComponent, SerializeField, RequireComponent, and safe coding practices. Essential patterns for robust Unity development. Use PROACTIVELY for any Unity C# code to ensure best practices.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity C# Fundamentals - Essential Coding Patterns

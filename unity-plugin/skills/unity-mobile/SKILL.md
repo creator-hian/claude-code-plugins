@@ -1,6 +1,8 @@
 ---
 name: unity-mobile
 description: Optimize Unity games for mobile platforms with IL2CPP, platform-specific code, and memory management. Masters iOS/Android deployment, app size reduction, and battery optimization. Use for mobile builds, platform issues, or device-specific optimization.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Mobile Optimization

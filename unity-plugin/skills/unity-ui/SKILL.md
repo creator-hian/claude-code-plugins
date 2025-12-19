@@ -1,6 +1,8 @@
 ---
 name: unity-ui
 description: Build and optimize Unity UI with UI Toolkit and UGUI. Masters responsive layouts, event systems, and performance optimization. Use for UI implementation, Canvas optimization, or cross-platform UI challenges.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity UI - User Interface Systems

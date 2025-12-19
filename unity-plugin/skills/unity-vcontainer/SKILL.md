@@ -1,6 +1,8 @@
 ---
 name: unity-vcontainer
 description: VContainer dependency injection expert specializing in IoC container configuration, lifecycle management, and Unity-optimized DI patterns. Masters dependency resolution, scoped containers, and testable architecture design. Use PROACTIVELY for VContainer setup, service registration, or SOLID principle implementation.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity VContainer - High-Performance DI for Unity

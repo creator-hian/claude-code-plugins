@@ -1,6 +1,8 @@
 ---
 name: unity-performance
 description: Optimize Unity game performance through profiling, draw call reduction, and resource management. Masters batching, LOD, occlusion culling, and mobile optimization. Use for performance bottlenecks, frame rate issues, or optimization strategies.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Performance Optimization

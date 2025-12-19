@@ -2,7 +2,8 @@
 name: unity-async
 description: Handle Unity's asynchronous programming patterns including coroutines, async/await, and Job System. Masters Unity's main thread restrictions and threading models. Use when guidance needed on Unity async operations, coroutine optimization, or parallel processing in Unity context.
 requires:
-  - csharp-async-patterns
+  - csharp-plugin:csharp-code-style
+  - csharp-plugin:csharp-async-patterns
 ---
 
 # Unity Async Patterns

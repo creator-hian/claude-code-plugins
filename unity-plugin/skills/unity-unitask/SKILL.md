@@ -1,6 +1,8 @@
 ---
 name: unity-unitask
 description: UniTask library expert specializing in allocation-free async/await patterns, coroutine migration, and Unity-optimized asynchronous programming. Masters UniTask performance optimizations, cancellation handling, and memory-efficient async operations. Use PROACTIVELY for UniTask implementation, async optimization, or coroutine replacement.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # UniTask - High-Performance Async for Unity
