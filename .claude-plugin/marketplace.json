@@ -5,6 +5,11 @@
   },
   "plugins": [
     {
+      "name": "unity-plugin",
+      "source": "./unity-plugin",
+      "description": "Unity game development with async patterns, collection pooling, TextMeshPro, performance optimization, and reactive programming"
+    },
+    {
       "name": "csharp-plugin",
       "source": "./csharp-plugin",
       "description": "C# Plugin for Creator Hian Marketplace"
