@@ -20,42 +20,25 @@ Performance optimization for Unity games focusing on profiling and systematic op
 
 ## Quick Start
 
+### Collection & Object Pooling
+
+GC-free pooling is critical for performance. Use Unity's built-in `UnityEngine.Pool` namespace (2021.1+):
+
 ```csharp
-// Object pooling pattern
-public class ObjectPool<T> where T : Component
+using UnityEngine.Pool;
+
+// Temporary collection pooling - eliminates GC spikes
+using (ListPool<Enemy>.Get(out var enemies))
 {
-    private readonly Queue<T> pool = new();
-    private readonly T prefab;
-
-    public ObjectPool(T prefab, int initialSize)
-    {
-        this.prefab = prefab;
-        for (int i = 0; i < initialSize; i++)
-        {
-            var obj = Object.Instantiate(prefab);
-            obj.gameObject.SetActive(false);
-            pool.Enqueue(obj);
-        }
-    }
-
-    public T Get()
-    {
-        if (pool.Count > 0)
-        {
-            var obj = pool.Dequeue();
-            obj.gameObject.SetActive(true);
-            return obj;
-        }
-        return Object.Instantiate(prefab);
-    }
-
-    public void Return(T obj)
-    {
-        obj.gameObject.SetActive(false);
-        pool.Enqueue(obj);
-    }
-}
+    GetComponentsInChildren(enemies);
+    ProcessEnemies(enemies);
+} // Auto-released
 ```
+
+> **See `unity-collection-pool` skill** for comprehensive patterns:
+> - ListPool, HashSetPool, DictionaryPool for temporary collections
+> - ObjectPool<T> for component/prefab pooling
+> - Advanced patterns: Keyed pools, auto-return, ECS integration
 
 ## Performance Targets
 
@@ -92,6 +75,11 @@ public class ObjectPool<T> where T : Component
 - ✅ Audio compression and streaming
 - ✅ Asset bundle management
 - ✅ Unload unused assets
+- ✅ **Collection pooling** (see `unity-collection-pool` skill)
+
+## Related Skills
+
+- **unity-collection-pool**: GC-free collection management with ListPool, HashSetPool, DictionaryPool, and ObjectPool. Essential for eliminating GC spikes from temporary collection allocations.
 
 ## Best Practices
 
