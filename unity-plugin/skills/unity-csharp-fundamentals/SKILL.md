@@ -9,36 +9,31 @@ requires:
 
 ## Overview
 
-Core Unity C# patterns that every Unity developer must follow. These are not optimizations but **fundamental practices** for safe, maintainable Unity code.
+Core Unity C# patterns for safe, maintainable code. Not optimizations but **fundamental practices**.
 
 **Foundation Required**: C# basics, Unity MonoBehaviour lifecycle
 
-**Core Topics**:
-- Component access patterns (TryGetComponent)
-- Serialization attributes
-- Component requirements and dependencies
-- Null-safe coding patterns
-- Unity-specific C# idioms
+**Core Topics**: TryGetComponent, SerializeField, RequireComponent, Null-safe patterns, Lifecycle management
 
-## Component Access Patterns
+## Essential Patterns
 
-### TryGetComponent (Required Pattern)
+### TryGetComponent (Required)
 
-**Always use `TryGetComponent` instead of `GetComponent`** for safe component access:
+**Always use `TryGetComponent` instead of `GetComponent`**:
 
 ```csharp
-// WRONG: GetComponent can return null silently
-Rigidbody rb = GetComponent<Rigidbody>(); // Might be null
-rb.velocity = Vector3.zero; // NullReferenceException!
+// ❌ WRONG
+Rigidbody rb = GetComponent<Rigidbody>();
+rb.velocity = Vector3.zero;  // NullReferenceException!
 
-// CORRECT: TryGetComponent with null-safe check
+// ✅ CORRECT
 Rigidbody rb;
 if (TryGetComponent(out rb))
 {
     rb.velocity = Vector3.zero;
 }
 
-// CORRECT: Cache in Awake with validation
+// ✅ Cache in Awake with validation
 private Rigidbody mRb;
 
 void Awake()
@@ -50,339 +45,128 @@ void Awake()
 }
 ```
 
-### TryGetComponent Benefits
-
-| Aspect | GetComponent | TryGetComponent |
-|--------|--------------|-----------------|
-| Null Safety | Returns null silently | Returns bool, forces handling |
-| GC Allocation | May allocate on missing | Zero allocation |
-| Code Clarity | Requires separate null check | Explicit success/failure |
-| Unity Version | All versions | 2019.2+ |
-
-### Component Access Hierarchy
+### Global Object Search (Unity 2023.1+)
 
 ```csharp
-// Self - always prefer TryGetComponent
-Enemy enemy;
-if (TryGetComponent(out enemy)) { }
+// ❌ OBSOLETE - DON'T USE
+GameManager manager = FindObjectOfType<GameManager>();
 
-// Children - use GetComponentInChildren with validation
-Enemy childEnemy = GetComponentInChildren<Enemy>();
-if (childEnemy != null) { }
-
-// Parent - use GetComponentInParent with validation
-GameController parentController = GetComponentInParent<GameController>();
-if (parentController != null) { }
-
-// Multiple components - use list overload to avoid allocation
-List<Enemy> enemies;
-using (ListPool<Enemy>.Get(out enemies))
-{
-    GetComponentsInChildren(enemies);
-    foreach (Enemy e in enemies) { }
-}
-```
-
-## Global Object Search (Unity 2023.1+)
-
-### FindAnyObjectByType (Preferred - Fastest)
-
-**Use when any instance is acceptable** (order doesn't matter):
-
-```csharp
-// OBSOLETE: FindObjectOfType is deprecated
-// GameManager manager = FindObjectOfType<GameManager>(); // DON'T USE
-
-// CORRECT: FindAnyObjectByType - fastest, unordered
+// ✅ CORRECT - Fastest (unordered)
 GameManager manager = FindAnyObjectByType<GameManager>();
-if (manager != null)
-{
-    manager.Initialize();
-}
 
-// With inactive objects
-GameManager inactive = FindAnyObjectByType<GameManager>(FindObjectsInactive.Include);
-```
-
-### FindFirstObjectByType (Ordered)
-
-**Use when deterministic order matters**:
-
-```csharp
-// CORRECT: FindFirstObjectByType - ordered, direct replacement
+// ✅ CORRECT - Ordered
 GameManager manager = FindFirstObjectByType<GameManager>();
 
-// With sorting mode
-GameManager sorted = FindFirstObjectByType<GameManager>(FindObjectsSortMode.InstanceID);
+// ✅ Multiple objects
+Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
 ```
 
-### FindObjectsByType (Multiple Objects)
+### SerializeField Pattern
 
 ```csharp
-// OBSOLETE: FindObjectsOfType is deprecated
-// Enemy[] enemies = FindObjectsOfType<Enemy>(); // DON'T USE
+// ❌ WRONG: Public field
+public float speed;
 
-// CORRECT: FindObjectsByType - faster, explicit sorting
-Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None); // Fastest
-Enemy[] sorted = FindObjectsByType<Enemy>(FindObjectsSortMode.InstanceID); // Ordered
+// ✅ CORRECT: SerializeField + private
+[SerializeField] private float mSpeed = 5f;
 
-// With inactive objects
-Enemy[] all = FindObjectsByType<Enemy>(
-    FindObjectsInactive.Include,
-    FindObjectsSortMode.None);
+// ✅ With Inspector helpers
+[SerializeField, Tooltip("Units/second"), Range(0f, 100f)]
+private float mMoveSpeed = 5f;
+
+public float Speed => mSpeed;  // Read-only access
 ```
 
-### Performance Comparison
-
-| Method | Performance | Use Case |
-|--------|-------------|----------|
-| `FindAnyObjectByType` | Fastest | Any instance acceptable |
-| `FindFirstObjectByType` | Fast | Need deterministic first |
-| `FindObjectsByType(None)` | Fast | All objects, unordered |
-| `FindObjectsByType(InstanceID)` | Slower | All objects, ordered |
-| `FindObjectOfType` (obsolete) | Slowest | **Don't use** |
-
-## Serialization Patterns
-
-### SerializeField (Required for Inspector)
+### RequireComponent
 
 ```csharp
-public class PlayerController : MonoBehaviour
-{
-    // WRONG: Public field exposes internal state
-    public float speed;
-
-    // CORRECT: SerializeField with private backing
-    [SerializeField] private float mSpeed = 5f;
-
-    // CORRECT: With tooltip for designer clarity
-    [SerializeField, Tooltip("Movement speed in units/second")]
-    private float mMoveSpeed = 5f;
-
-    // CORRECT: With range constraint
-    [SerializeField, Range(0f, 100f)]
-    private float mHealth = 100f;
-
-    // Read-only property for external access
-    public float Speed => mSpeed;
-}
-```
-
-### Common Serialization Attributes
-
-```csharp
-[SerializeField] // Expose private field to Inspector
-[HideInInspector] // Hide public field from Inspector
-[Header("Movement")] // Section header in Inspector
-[Tooltip("Description")] // Hover tooltip
-[Range(min, max)] // Slider constraint
-[Min(0)] // Minimum value constraint
-[TextArea(3, 10)] // Multi-line text field
-[Multiline(5)] // Simple multi-line
-[Space(10)] // Vertical spacing
-[FormerlySerializedAs("oldName")] // Rename without data loss
-```
-
-## Component Requirements
-
-### RequireComponent Attribute
-
-```csharp
-// Automatically adds required components
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Collider))]
+[DisallowMultipleComponent]
 public class PhysicsObject : MonoBehaviour
 {
     private Rigidbody mRb;
-    private Collider mCollider;
 
     void Awake()
     {
-        // Safe to use - components are guaranteed
-        TryGetComponent(out mRb);
-        TryGetComponent(out mCollider);
+        TryGetComponent(out mRb);  // Guaranteed to exist
     }
 }
 ```
 
-### DisallowMultipleComponent
+### Unity Null Safety
 
 ```csharp
-// Prevents duplicate components
-[DisallowMultipleComponent]
-public class GameManager : MonoBehaviour
-{
-    // Only one instance per GameObject allowed
-}
-```
+// ❌ WRONG: C# null operators don't work with Unity Objects
+Transform target = mCached ?? FindTarget();  // Broken!
+mEnemy?.TakeDamage(10);  // May fail after Destroy
 
-## Null-Safe Patterns
+// ✅ CORRECT: Explicit null check
+Transform target = mCached != null ? mCached : FindTarget();
 
-### Null Coalescing for Unity Objects
-
-```csharp
-// WRONG: C# null coalescing doesn't work correctly with Unity Objects
-Transform target = mCachedTarget ?? FindTarget(); // Broken!
-
-// CORRECT: Explicit null check
-Transform target = mCachedTarget != null ? mCachedTarget : FindTarget();
-
-// CORRECT: Or use ternary with Unity's implicit bool
-Transform target = mCachedTarget ? mCachedTarget : FindTarget();
-```
-
-### Null Conditional with Unity Objects
-
-```csharp
-// CAUTION: ?. works but doesn't check Unity's "fake null"
-mEnemy?.TakeDamage(10); // May not work as expected after Destroy
-
-// CORRECT: Explicit check
 if (mEnemy != null)
 {
     mEnemy.TakeDamage(10);
 }
 ```
 
-### Safe Destroy Pattern
+### Lifecycle Order
 
 ```csharp
-// Clear reference after destroy
-if (mSpawnedObject != null)
-{
-    Destroy(mSpawnedObject);
-    mSpawnedObject = null;
-}
-
-// Or use extension method
-public static class UnityExtensions
-{
-    public static void DestroyAndClear<T>(ref T obj) where T : Object
-    {
-        if (obj != null)
-        {
-            Object.Destroy(obj);
-            obj = null;
-        }
-    }
-}
+void Awake()     { /* 1. Self-init, cache components */ }
+void OnEnable()  { /* 2. Subscribe events */ }
+void Start()     { /* 3. Cross-object init */ }
+void OnDisable() { /* 4. Unsubscribe events */ }
+void OnDestroy() { /* 5. Final cleanup */ }
 ```
 
-## Lifecycle Best Practices
+## Unity C# 9.0 Limitations
 
-### Initialization Order
+> **Important**: Unity's Mono/IL2CPP runtime lacks `IsExternalInit`.
+> `init` accessor causes compile error CS0518.
 
 ```csharp
-public class Example : MonoBehaviour
-{
-    [SerializeField] private DependencyA mDepA;
-    private DependencyB mDepB;
+// ❌ COMPILE ERROR in Unity
+public string Name { get; private init; }
 
-    // 1. Awake: Self-initialization, get own components
-    void Awake()
-    {
-        TryGetComponent(out mDepB);
-    }
+// ✅ Use private set
+public string Name { get; private set; }
 
-    // 2. OnEnable: Subscribe to events (pairs with OnDisable)
-    void OnEnable()
-    {
-        GameEvents.OnPlayerDied += HandlePlayerDied;
-    }
-
-    // 3. Start: Cross-object initialization, find other objects
-    void Start()
-    {
-        GameManager manager = FindFirstObjectByType<GameManager>();
-    }
-
-    // 4. OnDisable: Unsubscribe from events
-    void OnDisable()
-    {
-        GameEvents.OnPlayerDied -= HandlePlayerDied;
-    }
-
-    // 5. OnDestroy: Final cleanup
-    void OnDestroy()
-    {
-        // Cleanup resources
-    }
-}
+// ✅ Or readonly field + property
+private readonly string mName;
+public string Name => mName;
 ```
 
-### Caching Pattern
+**Available**: Pattern matching, switch expressions, covariant returns
+**NOT Available**: `init`, `required` (C# 11)
 
-```csharp
-public class CachedComponents : MonoBehaviour
-{
-    // Cache in Awake, use throughout lifetime
-    private Transform mCachedTransform;
-    private Rigidbody mRb;
+## Quick Reference
 
-    void Awake()
-    {
-        mCachedTransform = transform; // Cache transform
-        TryGetComponent(out mRb);
-    }
-
-    void Update()
-    {
-        // Use cached references - no repeated lookups
-        mCachedTransform.position += Vector3.forward * Time.deltaTime;
-    }
-}
-```
-
-## Best Practices Summary
-
-1. **Always use TryGetComponent**: Never use bare GetComponent without null handling
-2. **SerializeField over public**: Keep fields private, expose via SerializeField
-3. **RequireComponent for dependencies**: Guarantee required components exist
-4. **Cache component references**: Get once in Awake, reuse everywhere
-5. **Explicit null checks**: Unity Objects need explicit != null checks
-6. **Event subscription pairs**: OnEnable/OnDisable for event management
-7. **Initialize in correct lifecycle**: Awake for self, Start for cross-object
-
-## Anti-Patterns to Avoid
-
-```csharp
-// AVOID: GetComponent in Update
-void Update()
-{
-    GetComponent<Rigidbody>().velocity = Vector3.zero; // Bad!
-}
-
-// AVOID: Public fields for serialization
-public float speed; // Exposes internal state
-
-// AVOID: Global search in loops (even modern APIs)
-void Update()
-{
-    GameManager manager = FindAnyObjectByType<GameManager>(); // Still slow in Update!
-}
-
-// AVOID: Obsolete FindObjectOfType
-void Start()
-{
-    GameManager manager = FindObjectOfType<GameManager>(); // OBSOLETE - don't use!
-}
-
-// AVOID: Null coalescing with Unity Objects
-GameObject obj = mCached ?? FindNew(); // Doesn't work correctly!
-```
+| Pattern | Rule |
+|---------|------|
+| Component access | Always `TryGetComponent`, never bare `GetComponent` |
+| Serialization | `[SerializeField] private`, not `public` |
+| Dependencies | Use `[RequireComponent]` for guaranteed components |
+| Null checks | Explicit `!= null`, not `??` or `?.` |
+| Caching | Get in `Awake`, reuse everywhere |
+| Events | Subscribe in `OnEnable`, unsubscribe in `OnDisable` |
+| Global search | `FindAnyObjectByType` (fastest), not `FindObjectOfType` |
 
 ## Reference Documentation
 
 ### [Component Access Patterns](references/component-access.md)
-Detailed component access patterns:
-- TryGetComponent variations
+- TryGetComponent variations and interface-based access
 - GetComponentInChildren/Parent patterns
-- Component caching strategies
-- Performance comparisons
+- Allocation-free multiple component access
+- Caching strategies and performance comparisons
 
 ### [Attributes and Patterns](references/attributes-patterns.md)
-Complete attribute reference:
-- Serialization attributes
-- Inspector customization
+- Complete serialization attribute reference
+- Inspector customization (Header, Tooltip, Range)
 - Execution order control
 - Conditional compilation
+
+### [Language Limitations](references/language-limitations.md)
+- `init` accessor alternatives with code examples
+- Records in Unity (limitations and workarounds)
+- `required` modifier alternatives
+- Available C# 9.0 features in Unity
