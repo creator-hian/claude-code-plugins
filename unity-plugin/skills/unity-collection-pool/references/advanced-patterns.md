@@ -582,7 +582,12 @@ public class AddressablePool<T> where T : Component
         var prefab = await _prefabHandle;
 
         _pool = new ObjectPool<T>(
-            createFunc: () => Object.Instantiate(prefab).GetComponent<T>(),
+            createFunc: () =>
+            {
+                var go = Object.Instantiate(prefab);
+                go.TryGetComponent<T>(out var component);
+                return component;
+            },
             actionOnGet: item => item.gameObject.SetActive(true),
             actionOnRelease: item => item.gameObject.SetActive(false),
             actionOnDestroy: item => Object.Destroy(item.gameObject)

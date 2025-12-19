@@ -349,7 +349,7 @@ public class HealthUI : MonoBehaviour
 
     async UniTaskVoid Start()
     {
-        playerHealth = FindObjectOfType<PlayerHealth>();
+        playerHealth = FindAnyObjectByType<PlayerHealth>();
         var ct = this.GetCancellationTokenOnDestroy();
 
         // Bind to UI

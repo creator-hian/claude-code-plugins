@@ -9,7 +9,7 @@ description: UniTask library expert specializing in allocation-free async/await 
 
 UniTask is a zero-allocation async/await library optimized for Unity, providing allocation-free asynchronous programming patterns superior to standard C# Task.
 
-**Foundation Required**: `csharp-async-patterns` skill (Task, async/await, CancellationToken fundamentals) and `unity-async` skill (Unity async context)
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `csharp-async-patterns` (Task, async/await), `unity-async` (Unity async context)
 
 **Core Topics**:
 - Allocation-free async/await patterns

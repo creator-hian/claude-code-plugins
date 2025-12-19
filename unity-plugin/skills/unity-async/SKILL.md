@@ -20,6 +20,8 @@ requires:
 >
 > **Learning Path**: Master C# async basics via `csharp-async-patterns` → Apply Unity-specific constraints and patterns via this skill
 
+> **🔧 Foundation**: `unity-csharp-fundamentals` - Required Unity C# patterns (TryGetComponent, FindAnyObjectByType, null-safe coding)
+
 ## Overview
 
 Unity-specific async patterns extending foundational C# async/await concepts.

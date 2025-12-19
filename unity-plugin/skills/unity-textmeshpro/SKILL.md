@@ -9,7 +9,7 @@ description: TextMeshPro (TMPro) expert for Unity text rendering with advanced t
 
 TextMeshPro (TMPro) is Unity's advanced text rendering solution using Signed Distance Field (SDF) technology for resolution-independent, high-quality text with minimal performance overhead.
 
-**Foundation Required**: `unity-ui` skill (UI systems), basic understanding of Unity Canvas and UGUI
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `unity-ui` (UI systems, Canvas, UGUI)
 
 **Core Topics**:
 - SDF font asset creation and configuration

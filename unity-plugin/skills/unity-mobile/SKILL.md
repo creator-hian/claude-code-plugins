@@ -9,6 +9,8 @@ description: Optimize Unity games for mobile platforms with IL2CPP, platform-spe
 
 Mobile platform optimization for Unity focusing on iOS and Android performance, battery life, and deployment.
 
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
+
 **Core Topics**:
 - IL2CPP compilation and optimization
 - Memory management and profiling

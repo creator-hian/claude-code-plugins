@@ -3,6 +3,7 @@ name: unity-developer
 description: Build Unity games with optimized C# scripts, efficient rendering, and proper asset management. Handles gameplay systems, UI implementation, and platform deployment. Use PROACTIVELY for Unity performance issues, game mechanics, or cross-platform builds.
 model: sonnet
 skills:
+  - unity-csharp-fundamentals
   - unity-async
   - unity-unitask
   - unity-r3
@@ -158,7 +159,7 @@ public class ResourceLoader : MonoBehaviour
 
 ## Best Practices
 
-1. **Component Caching**: Cache GetComponent calls in Awake/Start
+1. **Component Caching**: Use `TryGetComponent` and cache results in Awake/Start
 2. **Object Pooling**: Reuse frequently instantiated objects
 3. **Avoid Update**: Use events and coroutines when possible
 4. **Scriptable Objects**: Use for shared data and configuration

@@ -17,6 +17,8 @@ VContainer is a high-performance IoC container for Unity, providing dependency i
 - Factory patterns with DI
 - Testing with mocks
 
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
+
 **Learning Path**: DI fundamentals → VContainer basics → Advanced patterns → Testing
 
 ## Quick Start

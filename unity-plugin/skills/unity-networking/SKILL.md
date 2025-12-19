@@ -9,6 +9,8 @@ description: Implement multiplayer games with Unity Netcode, Mirror, or Photon. 
 
 Multiplayer networking for Unity using Netcode for GameObjects, Mirror, or Photon frameworks.
 
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
+
 **Core Topics**:
 - Client-server architecture
 - State synchronization

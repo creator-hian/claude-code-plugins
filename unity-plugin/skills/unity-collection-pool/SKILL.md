@@ -9,7 +9,7 @@ description: Unity Collection Pool expert for GC-free collection management usin
 
 Unity's `UnityEngine.Pool` namespace (2021.1+) provides built-in collection pooling to eliminate GC allocations from temporary collection usage.
 
-**Foundation Required**: Understanding of C# generics, IDisposable pattern, Unity memory management
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), C# generics, IDisposable pattern
 
 **Core Topics**:
 - ListPool, HashSetPool, DictionaryPool usage

@@ -15,7 +15,7 @@ UniRx is a legacy Reactive Extensions library for Unity, widely used in pre-2022
 
 **Status**: ⚠️ Legacy library - Maintained but not actively developed. New projects should use R3.
 
-**Foundation Required**: `csharp-async-patterns` skill (async fundamentals) and `unity-async` skill (Unity context)
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `csharp-async-patterns` (async fundamentals), `unity-async` (Unity context)
 
 **Core Topics**:
 - Observable sequences and observers

@@ -9,6 +9,8 @@ description: Build and optimize Unity UI with UI Toolkit and UGUI. Masters respo
 
 Unity UI systems covering both UI Toolkit (modern) and UGUI (Canvas-based legacy).
 
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
+
 **Core Topics**:
 - UI Toolkit (UIElements) for editor and runtime
 - UGUI (Canvas) for game UI
@@ -50,9 +52,12 @@ public class UIController : MonoBehaviour
 {
     void OnEnable()
     {
-        var root = GetComponent<UIDocument>().rootVisualElement;
-        var button = root.Q<Button>("action-button");
-        button.clicked += OnButtonClick;
+        if (TryGetComponent<UIDocument>(out var uiDocument))
+        {
+            var root = uiDocument.rootVisualElement;
+            var button = root.Q<Button>("action-button");
+            button.clicked += OnButtonClick;
+        }
     }
 
     void OnButtonClick()
@@ -87,9 +92,11 @@ void Start()
     background.raycastTarget = false; // Not clickable
 }
 
-// Use CanvasGroup for fade effects
-CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
-canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
+// Use CanvasGroup for fade effects (TryGetComponent for null-safe access)
+if (panel.TryGetComponent<CanvasGroup>(out var canvasGroup))
+{
+    canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
+}
 ```
 
 ## Responsive Layout
@@ -98,11 +105,13 @@ canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
 // Use anchors for responsive design
 // Anchor presets: Stretch, Top-Left, Center, etc.
 
-// Canvas Scaler settings
-var scaler = GetComponent<CanvasScaler>();
-scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-scaler.referenceResolution = new Vector2(1920, 1080);
-scaler.matchWidthOrHeight = 0.5f; // Balance between width/height
+// Canvas Scaler settings (TryGetComponent pattern)
+if (TryGetComponent<CanvasScaler>(out var scaler))
+{
+    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+    scaler.referenceResolution = new Vector2(1920, 1080);
+    scaler.matchWidthOrHeight = 0.5f; // Balance between width/height
+}
 ```
 
 ## Best Practices
