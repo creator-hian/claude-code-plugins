@@ -29,14 +29,14 @@ UniTask is a zero-allocation async/await library optimized for Unity, providing 
 
 ```csharp
 // Standard Task (allocates memory)
-public async Task<int> StandardAsync()
+public async Task<int> GetStandard()
 {
     await Task.Delay(1000);
     return 42;
 }
 
 // UniTask (zero allocation)
-public async UniTask<int> OptimizedAsync()
+public async UniTask<int> GetOptimized()
 {
     await UniTask.Delay(1000);
     return 42;
@@ -60,8 +60,8 @@ await Resources.LoadAsync<Sprite>("icon").ToUniTask();
 await SceneManager.LoadSceneAsync("Level1").ToUniTask();
 
 // Cancellation
-var cts = new CancellationTokenSource();
-await SomeOperationAsync(cts.Token);
+CancellationTokenSource cts = new CancellationTokenSource();
+await SomeOperation(cts.Token);
 ```
 
 ## When to Use
@@ -121,7 +121,7 @@ public class Example : MonoBehaviour
     async UniTaskVoid Start()
     {
         // Auto-cancels when GameObject is destroyed
-        await LoadDataAsync(this.GetCancellationTokenOnDestroy());
+        await LoadData(this.GetCancellationTokenOnDestroy());
     }
 }
 ```
@@ -130,22 +130,22 @@ public class Example : MonoBehaviour
 
 ```csharp
 // Execute multiple operations in parallel
-var (result1, result2, result3) = await UniTask.WhenAll(
-    Operation1Async(),
-    Operation2Async(),
-    Operation3Async()
+(int result1, string result2, float result3) = await UniTask.WhenAll(
+    Operation1(),
+    Operation2(),
+    Operation3()
 );
 ```
 
 ### Timeout Handling
 
 ```csharp
-var cts = new CancellationTokenSource();
+CancellationTokenSource cts = new CancellationTokenSource();
 cts.CancelAfterSlim(TimeSpan.FromSeconds(5)); // PlayerLoop-based
 
 try
 {
-    await LongOperationAsync(cts.Token);
+    await LongOperation(cts.Token);
 }
 catch (OperationCanceledException)
 {

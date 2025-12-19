@@ -28,21 +28,21 @@ Core Unity C# patterns that every Unity developer must follow. These are not opt
 
 ```csharp
 // WRONG: GetComponent can return null silently
-var rb = GetComponent<Rigidbody>(); // Might be null
+Rigidbody rb = GetComponent<Rigidbody>(); // Might be null
 rb.velocity = Vector3.zero; // NullReferenceException!
 
 // CORRECT: TryGetComponent with null-safe check
-if (TryGetComponent<Rigidbody>(out var rb))
+if (TryGetComponent(out Rigidbody rb))
 {
     rb.velocity = Vector3.zero;
 }
 
 // CORRECT: Cache in Awake with validation
-private Rigidbody _rb;
+private Rigidbody mRb;
 
 void Awake()
 {
-    if (!TryGetComponent(out _rb))
+    if (!TryGetComponent(out mRb))
     {
         Debug.LogError($"Missing Rigidbody on {gameObject.name}", this);
     }
@@ -62,21 +62,21 @@ void Awake()
 
 ```csharp
 // Self - always prefer TryGetComponent
-if (TryGetComponent<Enemy>(out var enemy)) { }
+if (TryGetComponent(out Enemy enemy)) { }
 
 // Children - use GetComponentInChildren with validation
-var childEnemy = GetComponentInChildren<Enemy>();
+Enemy childEnemy = GetComponentInChildren<Enemy>();
 if (childEnemy != null) { }
 
 // Parent - use GetComponentInParent with validation
-var parentController = GetComponentInParent<GameController>();
+GameController parentController = GetComponentInParent<GameController>();
 if (parentController != null) { }
 
 // Multiple components - use list overload to avoid allocation
-using (ListPool<Enemy>.Get(out var enemies))
+using (ListPool<Enemy>.Get(out List<Enemy> enemies))
 {
     GetComponentsInChildren(enemies);
-    foreach (var e in enemies) { }
+    foreach (Enemy e in enemies) { }
 }
 ```
 
@@ -88,17 +88,17 @@ using (ListPool<Enemy>.Get(out var enemies))
 
 ```csharp
 // OBSOLETE: FindObjectOfType is deprecated
-// var manager = FindObjectOfType<GameManager>(); // DON'T USE
+// GameManager manager = FindObjectOfType<GameManager>(); // DON'T USE
 
 // CORRECT: FindAnyObjectByType - fastest, unordered
-var manager = FindAnyObjectByType<GameManager>();
+GameManager manager = FindAnyObjectByType<GameManager>();
 if (manager != null)
 {
     manager.Initialize();
 }
 
 // With inactive objects
-var inactive = FindAnyObjectByType<GameManager>(FindObjectsInactive.Include);
+GameManager inactive = FindAnyObjectByType<GameManager>(FindObjectsInactive.Include);
 ```
 
 ### FindFirstObjectByType (Ordered)
@@ -107,24 +107,24 @@ var inactive = FindAnyObjectByType<GameManager>(FindObjectsInactive.Include);
 
 ```csharp
 // CORRECT: FindFirstObjectByType - ordered, direct replacement
-var manager = FindFirstObjectByType<GameManager>();
+GameManager manager = FindFirstObjectByType<GameManager>();
 
 // With sorting mode
-var sorted = FindFirstObjectByType<GameManager>(FindObjectsSortMode.InstanceID);
+GameManager sorted = FindFirstObjectByType<GameManager>(FindObjectsSortMode.InstanceID);
 ```
 
 ### FindObjectsByType (Multiple Objects)
 
 ```csharp
 // OBSOLETE: FindObjectsOfType is deprecated
-// var enemies = FindObjectsOfType<Enemy>(); // DON'T USE
+// Enemy[] enemies = FindObjectsOfType<Enemy>(); // DON'T USE
 
 // CORRECT: FindObjectsByType - faster, explicit sorting
-var enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None); // Fastest
-var sorted = FindObjectsByType<Enemy>(FindObjectsSortMode.InstanceID); // Ordered
+Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None); // Fastest
+Enemy[] sorted = FindObjectsByType<Enemy>(FindObjectsSortMode.InstanceID); // Ordered
 
 // With inactive objects
-var all = FindObjectsByType<Enemy>(
+Enemy[] all = FindObjectsByType<Enemy>(
     FindObjectsInactive.Include,
     FindObjectsSortMode.None);
 ```
@@ -150,18 +150,18 @@ public class PlayerController : MonoBehaviour
     public float speed;
 
     // CORRECT: SerializeField with private backing
-    [SerializeField] private float _speed = 5f;
+    [SerializeField] private float mSpeed = 5f;
 
     // CORRECT: With tooltip for designer clarity
     [SerializeField, Tooltip("Movement speed in units/second")]
-    private float _moveSpeed = 5f;
+    private float mMoveSpeed = 5f;
 
     // CORRECT: With range constraint
     [SerializeField, Range(0f, 100f)]
-    private float _health = 100f;
+    private float mHealth = 100f;
 
     // Read-only property for external access
-    public float Speed => _speed;
+    public float Speed => mSpeed;
 }
 ```
 
@@ -190,14 +190,14 @@ public class PlayerController : MonoBehaviour
 [RequireComponent(typeof(Collider))]
 public class PhysicsObject : MonoBehaviour
 {
-    private Rigidbody _rb;
-    private Collider _collider;
+    private Rigidbody mRb;
+    private Collider mCollider;
 
     void Awake()
     {
         // Safe to use - components are guaranteed
-        TryGetComponent(out _rb);
-        TryGetComponent(out _collider);
+        TryGetComponent(out mRb);
+        TryGetComponent(out mCollider);
     }
 }
 ```
@@ -219,25 +219,25 @@ public class GameManager : MonoBehaviour
 
 ```csharp
 // WRONG: C# null coalescing doesn't work correctly with Unity Objects
-var target = _cachedTarget ?? FindTarget(); // Broken!
+Transform target = mCachedTarget ?? FindTarget(); // Broken!
 
 // CORRECT: Explicit null check
-var target = _cachedTarget != null ? _cachedTarget : FindTarget();
+Transform target = mCachedTarget != null ? mCachedTarget : FindTarget();
 
 // CORRECT: Or use ternary with Unity's implicit bool
-var target = _cachedTarget ? _cachedTarget : FindTarget();
+Transform target = mCachedTarget ? mCachedTarget : FindTarget();
 ```
 
 ### Null Conditional with Unity Objects
 
 ```csharp
 // CAUTION: ?. works but doesn't check Unity's "fake null"
-_enemy?.TakeDamage(10); // May not work as expected after Destroy
+mEnemy?.TakeDamage(10); // May not work as expected after Destroy
 
 // CORRECT: Explicit check
-if (_enemy != null)
+if (mEnemy != null)
 {
-    _enemy.TakeDamage(10);
+    mEnemy.TakeDamage(10);
 }
 ```
 
@@ -245,10 +245,10 @@ if (_enemy != null)
 
 ```csharp
 // Clear reference after destroy
-if (_spawnedObject != null)
+if (mSpawnedObject != null)
 {
-    Destroy(_spawnedObject);
-    _spawnedObject = null;
+    Destroy(mSpawnedObject);
+    mSpawnedObject = null;
 }
 
 // Or use extension method
@@ -272,13 +272,13 @@ public static class UnityExtensions
 ```csharp
 public class Example : MonoBehaviour
 {
-    [SerializeField] private DependencyA _depA;
-    private DependencyB _depB;
+    [SerializeField] private DependencyA mDepA;
+    private DependencyB mDepB;
 
     // 1. Awake: Self-initialization, get own components
     void Awake()
     {
-        TryGetComponent(out _depB);
+        TryGetComponent(out mDepB);
     }
 
     // 2. OnEnable: Subscribe to events (pairs with OnDisable)
@@ -290,7 +290,7 @@ public class Example : MonoBehaviour
     // 3. Start: Cross-object initialization, find other objects
     void Start()
     {
-        var manager = FindFirstObjectByType<GameManager>();
+        GameManager manager = FindFirstObjectByType<GameManager>();
     }
 
     // 4. OnDisable: Unsubscribe from events
@@ -313,19 +313,19 @@ public class Example : MonoBehaviour
 public class CachedComponents : MonoBehaviour
 {
     // Cache in Awake, use throughout lifetime
-    private Transform _cachedTransform;
-    private Rigidbody _rb;
+    private Transform mCachedTransform;
+    private Rigidbody mRb;
 
     void Awake()
     {
-        _cachedTransform = transform; // Cache transform
-        TryGetComponent(out _rb);
+        mCachedTransform = transform; // Cache transform
+        TryGetComponent(out mRb);
     }
 
     void Update()
     {
         // Use cached references - no repeated lookups
-        _cachedTransform.position += Vector3.forward * Time.deltaTime;
+        mCachedTransform.position += Vector3.forward * Time.deltaTime;
     }
 }
 ```
@@ -355,17 +355,17 @@ public float speed; // Exposes internal state
 // AVOID: Global search in loops (even modern APIs)
 void Update()
 {
-    var manager = FindAnyObjectByType<GameManager>(); // Still slow in Update!
+    GameManager manager = FindAnyObjectByType<GameManager>(); // Still slow in Update!
 }
 
 // AVOID: Obsolete FindObjectOfType
 void Start()
 {
-    var manager = FindObjectOfType<GameManager>(); // OBSOLETE - don't use!
+    GameManager manager = FindObjectOfType<GameManager>(); // OBSOLETE - don't use!
 }
 
 // AVOID: Null coalescing with Unity Objects
-var obj = _cached ?? FindNew(); // Doesn't work correctly!
+GameObject obj = mCached ?? FindNew(); // Doesn't work correctly!
 ```
 
 ## Reference Documentation

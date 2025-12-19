@@ -28,7 +28,7 @@ using Unity.Netcode;
 
 public class Player : NetworkBehaviour
 {
-    private NetworkVariable<int> health = new(100);
+    private NetworkVariable<int> mHealth = new(100);
 
     public override void OnNetworkSpawn()
     {
@@ -38,13 +38,13 @@ public class Player : NetworkBehaviour
             HandleInput();
         }
 
-        health.OnValueChanged += OnHealthChanged;
+        mHealth.OnValueChanged += OnHealthChanged;
     }
 
     [ServerRpc]
     void TakeDamageServerRpc(int damage)
     {
-        health.Value -= damage;
+        mHealth.Value -= damage;
     }
 
     [ClientRpc]

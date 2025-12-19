@@ -84,9 +84,9 @@ void CheckDuplicates(IEnumerable<string> items)
 // Dictionary example
 void BuildLookup(Item[] items)
 {
-    using (DictionaryPool<int, Item>.Get(out var lookup))
+    using (DictionaryPool<int, Item>.Get(out Dictionary<int, Item> lookup))
     {
-        foreach (var item in items)
+        foreach (Item item in items)
             lookup[item.Id] = item;
 
         ProcessLookup(lookup);
@@ -113,7 +113,7 @@ void BuildLookup(Item[] items)
 ```csharp
 void DetectCollisions(Vector3 origin, Vector3 direction)
 {
-    using (ListPool<RaycastHit>.Get(out var hits))
+    using (ListPool<RaycastHit>.Get(out List<RaycastHit> hits))
     {
         int count = Physics.RaycastNonAlloc(origin, direction, hitsArray);
         for (int i = 0; i < count; i++)
@@ -129,10 +129,10 @@ void DetectCollisions(Vector3 origin, Vector3 direction)
 ```csharp
 void FindAllEnemies()
 {
-    using (ListPool<Enemy>.Get(out var enemies))
+    using (ListPool<Enemy>.Get(out List<Enemy> enemies))
     {
         GetComponentsInChildren(enemies); // Overload that takes list
-        foreach (var enemy in enemies)
+        foreach (Enemy enemy in enemies)
             enemy.Alert();
     }
 }
@@ -142,17 +142,17 @@ void FindAllEnemies()
 
 ```csharp
 // AVOID: LINQ allocates
-var filtered = items.Where(x => x.IsActive).ToList();
+List<Item> filtered = items.Where(x => x.IsActive).ToList();
 
 // PREFER: Pooled collection
-using (ListPool<Item>.Get(out var filtered))
+using (ListPool<Item>.Get(out List<Item> pooledFiltered))
 {
-    foreach (var item in items)
+    foreach (Item item in items)
     {
         if (item.IsActive)
-            filtered.Add(item);
+            pooledFiltered.Add(item);
     }
-    Process(filtered);
+    Process(pooledFiltered);
 }
 ```
 
@@ -181,7 +181,7 @@ Avoid Pools:
 Span<int> small = stackalloc int[4];
 
 // For variable size or larger collections, use pool
-using (ListPool<int>.Get(out var larger))
+using (ListPool<int>.Get(out List<int> larger))
 {
     // Variable size operations
 }
@@ -199,16 +199,16 @@ using (ListPool<int>.Get(out var larger))
 
 ```csharp
 // WRONG: Storing pooled reference
-private List<int> _cachedList;
+private List<int> mCachedList;
 void Bad()
 {
-    _cachedList = ListPool<int>.Get(); // Memory leak!
+    mCachedList = ListPool<int>.Get(); // Memory leak!
 }
 
 // WRONG: Missing release
 void AlsoBAD()
 {
-    var list = ListPool<int>.Get();
+    List<int> list = ListPool<int>.Get();
     Process(list);
     // Forgot to release - leak!
 }
@@ -216,7 +216,7 @@ void AlsoBAD()
 // WRONG: Releasing wrong pool
 void VeryBad()
 {
-    var list = ListPool<int>.Get();
+    List<int> list = ListPool<int>.Get();
     ListPool<float>.Release(list); // Type mismatch!
 }
 

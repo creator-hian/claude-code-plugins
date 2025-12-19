@@ -54,10 +54,10 @@ public class UIController : MonoBehaviour
 {
     void OnEnable()
     {
-        if (TryGetComponent<UIDocument>(out var uiDocument))
+        if (TryGetComponent(out UIDocument uiDocument))
         {
-            var root = uiDocument.rootVisualElement;
-            var button = root.Q<Button>("action-button");
+            VisualElement root = uiDocument.rootVisualElement;
+            Button button = root.Q<Button>("action-button");
             button.clicked += OnButtonClick;
         }
     }
@@ -95,7 +95,7 @@ void Start()
 }
 
 // Use CanvasGroup for fade effects (TryGetComponent for null-safe access)
-if (panel.TryGetComponent<CanvasGroup>(out var canvasGroup))
+if (panel.TryGetComponent(out CanvasGroup canvasGroup))
 {
     canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
 }
@@ -108,7 +108,7 @@ if (panel.TryGetComponent<CanvasGroup>(out var canvasGroup))
 // Anchor presets: Stretch, Top-Left, Center, etc.
 
 // Canvas Scaler settings (TryGetComponent pattern)
-if (TryGetComponent<CanvasScaler>(out var scaler))
+if (TryGetComponent(out CanvasScaler scaler))
 {
     scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
     scaler.referenceResolution = new Vector2(1920, 1080);

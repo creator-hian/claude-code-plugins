@@ -121,13 +121,13 @@ void Update()
 }
 
 // GOOD: Update only when value changes
-private int _lastScore = -1;
+private int mLastScore = -1;
 
 void Update()
 {
-    if (score != _lastScore)
+    if (score != mLastScore)
     {
-        _lastScore = score;
+        mLastScore = score;
         scoreText.text = $"Score: {score}";
     }
 }
@@ -143,16 +143,16 @@ void UpdateScore(int score)
 
 ```csharp
 // Use StringBuilder for complex text construction
-private readonly StringBuilder _sb = new StringBuilder(256);
+private readonly StringBuilder mSb = new StringBuilder(256);
 
 void BuildComplexText()
 {
-    _sb.Clear();
-    _sb.Append("Player: ");
-    _sb.Append(playerName);
-    _sb.Append(" | Score: ");
-    _sb.Append(score);
-    displayText.SetText(_sb);
+    mSb.Clear();
+    mSb.Append("Player: ");
+    mSb.Append(playerName);
+    mSb.Append(" | Score: ");
+    mSb.Append(score);
+    displayText.SetText(mSb);
 }
 
 // Prefer SetText with parameters over string interpolation

@@ -32,7 +32,7 @@ GC-free pooling is critical for performance. Use Unity's built-in `UnityEngine.P
 using UnityEngine.Pool;
 
 // Temporary collection pooling - eliminates GC spikes
-using (ListPool<Enemy>.Get(out var enemies))
+using (ListPool<Enemy>.Get(out List<Enemy> enemies))
 {
     GetComponentsInChildren(enemies);
     ProcessEnemies(enemies);

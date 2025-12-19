@@ -54,9 +54,9 @@ public class GameLifetimeScope : LifetimeScope
 // Inject into MonoBehaviour
 public class PlayerController : MonoBehaviour
 {
-    [Inject] private readonly IPlayerService playerService;
+    [Inject] private readonly IPlayerService mPlayerService;
 
-    void Start() => playerService.Initialize();
+    void Start() => mPlayerService.Initialize();
 }
 ```
 
