@@ -1,4 +1,4 @@
-# Async Anti-Patterns
+# Async Anti-Patterns (POCU)
 
 ## Table of Contents
 1. [Blocking on Async Code](#1-blocking-on-async-code)
@@ -17,29 +17,50 @@
 ### ❌ The Problem
 
 ```csharp
-public void SyncMethod()
+public class BadService
 {
-    // DEADLOCK RISK!
-    var result = AsyncMethod().Result;
-    var result2 = AsyncMethod().GetAwaiter().GetResult();
-    AsyncMethod().Wait();
+    public void SyncMethod()
+    {
+        // DEADLOCK RISK!
+        Result result = DoWork().Result;
+        Result result2 = DoWork().GetAwaiter().GetResult();
+        DoWork().Wait();
+    }
 }
 ```
 
 **Why it's bad**: Can cause deadlocks, especially in UI applications with synchronization context.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-public async Task AsyncMethodProper()
+public class GoodService
 {
-    var result = await AsyncMethod();
-}
+    private readonly ILogger mLogger;
 
-// If you must have sync entry point (not recommended):
-public void SyncEntryPoint()
-{
-    AsyncMethod().GetAwaiter().GetResult(); // Use with extreme caution
+    // ✅ POCU: Async 접미사 없음
+    public async Task DoWorkProperly()
+    {
+        Result result = await doWork();
+        process(result);
+    }
+
+    private async Task<Result> doWork()
+    {
+        return await mRepository.Load();
+    }
+
+    private void process(Result result)
+    {
+        Debug.Assert(result != null);
+        // Process result
+    }
+
+    // If you must have sync entry point (not recommended):
+    public void SyncEntryPoint()
+    {
+        doWork().GetAwaiter().GetResult(); // Use with extreme caution
+    }
 }
 ```
 
@@ -58,26 +79,31 @@ public async void LoadData()
 
 **Why it's bad**: Exceptions cannot be caught by caller, leading to application crashes.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Returns Task
-public async Task LoadDataAsync()
+public class DataLoader
 {
-    await Task.Delay(1000);
-    throw new Exception("Can be caught by caller");
-}
+    private readonly ILogger mLogger;
 
-// Exception: Event handlers MUST be async void
-private async void OnButtonClick(object sender, EventArgs e)
-{
-    try
+    // ✅ POCU: Returns Task, Async 접미사 없음
+    public async Task LoadData()
     {
-        await LoadDataAsync();
+        await Task.Delay(1000);
+        throw new Exception("Can be caught by caller");
     }
-    catch (Exception ex)
+
+    // ⚠️ EXCEPTION: Event handlers MUST be async void
+    private async void OnButtonClick(object sender, EventArgs e)
     {
-        LogError(ex);
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, "Button click failed");
+        }
     }
 }
 ```
@@ -87,32 +113,47 @@ private async void OnButtonClick(object sender, EventArgs e)
 ### ❌ The Problem
 
 ```csharp
-public void StartOperation()
+public class BadFireAndForget
 {
-    _ = LongRunningAsync(); // Exceptions disappear!
+    public void StartOperation()
+    {
+        _ = LongRunning(); // Exceptions disappear!
+    }
 }
 ```
 
 **Why it's bad**: Exceptions are silently swallowed, making debugging impossible.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-public void StartOperation()
+public class GoodFireAndForget
 {
-    _ = SafeFireAndForgetAsync();
-}
+    private readonly ILogger mLogger;
 
-private async Task SafeFireAndForgetAsync()
-{
-    try
+    public void StartOperation()
     {
-        await LongRunningAsync();
+        _ = safeFireAndForget();
     }
-    catch (Exception ex)
+
+    // ✅ POCU: camelCase for private methods
+    private async Task safeFireAndForget()
     {
-        LogError(ex);
-        // Optionally: notify user, retry, etc.
+        try
+        {
+            await longRunning();
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, "Background operation failed");
+            // Optionally: notify user, retry, etc.
+        }
+    }
+
+    private async Task longRunning()
+    {
+        await Task.Delay(5000);
+        // Long running work
     }
 }
 ```
@@ -123,27 +164,32 @@ private async Task SafeFireAndForgetAsync()
 
 ```csharp
 // BAD: No way to cancel
-public async Task LongProcessAsync()
+public async Task LongProcess()
 {
     for (int i = 0; i < 1000; i++)
     {
-        await ProcessItemAsync(i);
+        await ProcessItem(i);
     }
 }
 ```
 
 **Why it's bad**: User cannot stop long-running operations, wastes resources.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Cancellable
-public async Task LongProcessAsync(CancellationToken ct)
+public class CancellableProcessor
 {
-    for (int i = 0; i < 1000; i++)
+    private readonly IItemProcessor mProcessor;
+
+    // ✅ POCU: Cancellable
+    public async Task LongProcess(CancellationToken ct)
     {
-        ct.ThrowIfCancellationRequested();
-        await ProcessItemAsync(i, ct);
+        for (int i = 0; i < 1000; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            await mProcessor.Process(i, ct);
+        }
     }
 }
 ```
@@ -154,12 +200,12 @@ public async Task LongProcessAsync(CancellationToken ct)
 
 ```csharp
 // BAD: Unnecessary async overhead
-public async Task<int> GetValueAsync()
+public async Task<int> GetValue()
 {
     return await Task.FromResult(42);
 }
 
-public async Task<string> GetNameAsync()
+public async Task<string> GetName()
 {
     return await Task.FromResult("John");
 }
@@ -167,18 +213,28 @@ public async Task<string> GetNameAsync()
 
 **Why it's bad**: Async machinery adds overhead for synchronous operations.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Return Task directly or use sync method
-public Task<int> GetValueAsync()
+public class ValueProvider
 {
-    return Task.FromResult(42);
-}
+    // ✅ POCU: Return Task directly or use sync method
+    public Task<int> GetValue()
+    {
+        return Task.FromResult(42);
+    }
 
-// Or better: Just use synchronous method
-public int GetValue() => 42;
-public string GetName() => "John";
+    // Or better: Just use synchronous method
+    public int GetValueSync()
+    {
+        return 42;
+    }
+
+    public string GetNameSync()
+    {
+        return "John";
+    }
+}
 ```
 
 ## 6. Not Passing CancellationToken Through
@@ -186,26 +242,47 @@ public string GetName() => "John";
 ### ❌ The Problem
 
 ```csharp
-public async Task ProcessAsync(CancellationToken ct)
+public async Task Process(CancellationToken ct)
 {
     // BAD: Not passing ct to inner calls
-    await Step1Async();
-    await Step2Async();
-    await Step3Async();
+    await Step1();
+    await Step2();
+    await Step3();
 }
 ```
 
 **Why it's bad**: Cancellation doesn't propagate, operations continue unnecessarily.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-public async Task ProcessAsync(CancellationToken ct)
+public class ProcessorWithCancellation
 {
-    // Good: Pass ct through
-    await Step1Async(ct);
-    await Step2Async(ct);
-    await Step3Async(ct);
+    // ✅ POCU: Pass ct through all async calls
+    public async Task Process(CancellationToken ct)
+    {
+        await step1(ct);
+        await step2(ct);
+        await step3(ct);
+    }
+
+    private async Task step1(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        await Task.Delay(100, ct);
+    }
+
+    private async Task step2(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        await Task.Delay(100, ct);
+    }
+
+    private async Task step3(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        await Task.Delay(100, ct);
+    }
 }
 ```
 
@@ -215,6 +292,7 @@ public async Task ProcessAsync(CancellationToken ct)
 
 ```csharp
 // BAD: Variable capture issue
+List<Task> tasks = new List<Task>();
 for (int i = 0; i < 10; i++)
 {
     tasks.Add(Task.Run(async () =>
@@ -227,18 +305,31 @@ for (int i = 0; i < 10; i++)
 
 **Why it's bad**: Loop variable is captured by reference, all tasks see final value.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Capture loop variable properly
-for (int i = 0; i < 10; i++)
+public class LoopCaptureFixed
 {
-    int index = i; // Copy to local variable
-    tasks.Add(Task.Run(async () =>
+    private readonly ILogger mLogger;
+
+    public async Task ExecuteLoop()
     {
-        await Task.Delay(100);
-        Console.WriteLine(index); // Prints 0-9
-    }));
+        // ✅ POCU: 명시적 타입, 변수 캡처 수정
+        List<Task> tasks = new List<Task>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            int index = i; // Copy to local variable
+            Task task = Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                mLogger.Info($"Index: {index}"); // Prints 0-9
+            });
+            tasks.Add(task);
+        }
+
+        await Task.WhenAll(tasks);
+    }
 }
 ```
 
@@ -253,47 +344,61 @@ public class BadService
     public BadService()
     {
         // Cannot use async/await here!
-        InitializeAsync().Wait(); // DEADLOCK RISK
+        Initialize().Wait(); // DEADLOCK RISK
     }
 }
 ```
 
 **Why it's bad**: Constructors cannot be async, blocking causes deadlocks.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Factory pattern or async initialization method
+// ✅ POCU: Factory pattern
 public class GoodService
 {
-    private GoodService() { }
+    private readonly Config mConfig;
 
-    public static async Task<GoodService> CreateAsync()
+    private GoodService(Config config)
     {
-        var service = new GoodService();
-        await service.InitializeAsync();
+        Debug.Assert(config != null);
+        mConfig = config;
+    }
+
+    public static async Task<GoodService> Create()
+    {
+        Config config = await loadConfig();
+        GoodService service = new GoodService(config);
         return service;
     }
 
-    private async Task InitializeAsync()
+    private static async Task<Config> loadConfig()
     {
-        await LoadConfigAsync();
+        await Task.Delay(100);
+        return new Config();
     }
 }
 
 // Or: Lazy initialization
 public class LazyService
 {
-    private Task _initTask;
+    private readonly Task mInitTask;
+    private bool mbIsInitialized;
 
     public LazyService()
     {
-        _initTask = InitializeAsync();
+        mInitTask = initialize();
     }
 
-    public async Task EnsureInitializedAsync()
+    public async Task EnsureInitialized()
     {
-        await _initTask;
+        await mInitTask;
+    }
+
+    private async Task initialize()
+    {
+        await Task.Delay(100);
+        mbIsInitialized = true;
     }
 }
 ```
@@ -303,30 +408,66 @@ public class LazyService
 ### ❌ The Problem
 
 ```csharp
-public async Task ProcessAsync()
+public async Task Process()
 {
     Task.Run(() => BackgroundWork()); // Task ignored!
-    await OtherWorkAsync();
+    await OtherWork();
 }
 ```
 
 **Why it's bad**: Background task exceptions are lost, no way to track completion.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-public async Task ProcessAsync()
+public class TaskTracker
 {
-    var backgroundTask = Task.Run(() => BackgroundWork());
+    private readonly ILogger mLogger;
 
-    await OtherWorkAsync();
+    public async Task Process()
+    {
+        // ✅ POCU: 명시적 타입
+        Task backgroundTask = Task.Run(() => backgroundWork());
 
-    // Wait for background work
-    await backgroundTask;
+        await otherWork();
+
+        // Wait for background work
+        await backgroundTask;
+    }
+
+    private void backgroundWork()
+    {
+        // Background operation
+    }
+
+    private async Task otherWork()
+    {
+        await Task.Delay(100);
+    }
+
+    // Or if truly fire-and-forget:
+    public void StartBackground()
+    {
+        _ = safeFireAndForget();
+    }
+
+    private async Task safeFireAndForget()
+    {
+        try
+        {
+            await backgroundTask();
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, "Background task failed");
+        }
+    }
+
+    private async Task backgroundTask()
+    {
+        await Task.Delay(1000);
+    }
 }
-
-// Or if truly fire-and-forget:
-_ = SafeFireAndForgetAsync();
 ```
 
 ## 10. Mixing Sync and Async Code Poorly
@@ -337,28 +478,33 @@ _ = SafeFireAndForgetAsync();
 // BAD: Mixed sync/async
 public void ProcessData()
 {
-    var data = LoadDataAsync().Result; // Blocking!
+    Data data = LoadData().Result; // Blocking!
     SaveData(data); // Sync
 }
 ```
 
 **Why it's bad**: Loses benefits of async, introduces deadlock risks.
 
-### ✅ The Solution
+### ✅ The Solution (POCU)
 
 ```csharp
-// Good: Async all the way
-public async Task ProcessDataAsync()
+public class ConsistentProcessor
 {
-    var data = await LoadDataAsync();
-    await SaveDataAsync(data);
-}
+    private readonly IRepository mRepository;
 
-// Or: Sync all the way
-public void ProcessData()
-{
-    var data = LoadDataSync();
-    SaveDataSync(data);
+    // ✅ POCU: Async all the way
+    public async Task ProcessData()
+    {
+        Data data = await mRepository.Load();
+        await mRepository.Save(data);
+    }
+
+    // Or: Sync all the way
+    public void ProcessDataSync()
+    {
+        Data data = mRepository.LoadSync();
+        mRepository.SaveSync(data);
+    }
 }
 ```
 
@@ -366,13 +512,16 @@ public void ProcessData()
 
 Avoid these anti-patterns:
 
-- [ ] No blocking on async code (.Result, .Wait)
-- [ ] No async void (except event handlers)
-- [ ] Fire-and-forget has error handling
-- [ ] All long operations accept CancellationToken
-- [ ] CancellationToken passed through call chain
-- [ ] Async only when truly needed (I/O-bound)
-- [ ] Loop variables captured correctly in async
-- [ ] No async in constructors
-- [ ] Task results not ignored
-- [ ] Consistent sync or async throughout call chain
+- [ ] .Result, .Wait() 차단 금지
+- [ ] async void 금지 (이벤트 핸들러 제외)
+- [ ] Fire-and-forget에 에러 처리 필수
+- [ ] 모든 장기 작업에 CancellationToken 필수
+- [ ] 호출 체인 전체에 CancellationToken 전달
+- [ ] async는 진정한 I/O-bound 작업에만 사용
+- [ ] 루프 변수 캡처 올바르게 처리
+- [ ] 생성자에서 async 금지
+- [ ] Task 결과 무시 금지
+- [ ] 호출 체인 전체에서 sync 또는 async 일관성 유지
+- [ ] Async 접미사 금지 (POCU 표준)
+- [ ] var 대신 명시적 타입 사용
+- [ ] using 선언 대신 using 문 사용
