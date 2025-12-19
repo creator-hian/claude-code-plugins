@@ -73,7 +73,7 @@ void CheckDuplicates(IEnumerable<string> items)
 {
     using (HashSetPool<string>.Get(out HashSet<string> seen))
     {
-        foreach (var item in items)
+        foreach (string item in items)
         {
             if (!seen.Add(item))
                 Debug.Log($"Duplicate: {item}");
