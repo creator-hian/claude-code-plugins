@@ -18,7 +18,7 @@ Document exceptions that callers **should be aware of** and **might need to hand
 /// <exception cref="ArgumentNullException">Thrown when path is null</exception>
 /// <exception cref="InvalidOperationException">Thrown when VRM context is not ready</exception>
 /// <exception cref="System.IO.FileNotFoundException">Thrown when VRM asset is not found</exception>
-public async UniTask<VrmInstance> LoadVRMAsync(string path)
+public async UniTask<VrmInstance> LoadVRM(string path)
 {
     if (path == null)
         throw new ArgumentNullException(nameof(path));
@@ -40,7 +40,7 @@ public async UniTask<VrmInstance> LoadVRMAsync(string path)
 /// <exception cref="ArgumentNullException">Thrown when action is null</exception>
 /// <exception cref="ArgumentOutOfRangeException">Thrown when maxRetries is not in range 1-10</exception>
 /// <exception cref="ActionExecutionException">Thrown when all retry attempts fail</exception>
-public async UniTask<ActionResult> ExecuteWithRetryAsync(EventAction action, int maxRetries)
+public async UniTask<ActionResult> ExecuteWithRetry(EventAction action, int maxRetries)
 {
     if (action == null)
         throw new ArgumentNullException(nameof(action));
@@ -62,7 +62,7 @@ public async UniTask<ActionResult> ExecuteWithRetryAsync(EventAction action, int
 /// <exception cref="ArgumentNullException">path가 null일 때 발생</exception>
 /// <exception cref="InvalidOperationException">VRM 컨텍스트가 준비되지 않았을 때 발생</exception>
 /// <exception cref="System.IO.FileNotFoundException">VRM 에셋을 찾을 수 없을 때 발생</exception>
-public async UniTask<VrmInstance> LoadVRMAsync(string path)
+public async UniTask<VrmInstance> LoadVRM(string path)
 {
     // Implementation...
 }
@@ -230,7 +230,7 @@ Exceptions:
 /// <exception cref="InvalidOperationException">
 /// Thrown when authentication service is not available
 /// </exception>
-public async UniTask<string> AuthenticateAsync(string username, string password)
+public async UniTask<string> Authenticate(string username, string password)
 {
     if (username == null || password == null)
         throw new ArgumentNullException(
@@ -239,14 +239,14 @@ public async UniTask<string> AuthenticateAsync(string username, string password)
     if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         throw new ArgumentException("Username and password cannot be empty");
 
-    if (!_authService.IsAvailable)
+    if (!mAuthService.IsAvailable)
         throw new InvalidOperationException("Authentication service is not available");
 
-    var isValid = await _authService.ValidateCredentialsAsync(username, password);
+    bool isValid = await mAuthService.ValidateCredentials(username, password);
     if (!isValid)
         throw new AuthenticationException("Invalid credentials");
 
-    return await _authService.GenerateTokenAsync(username);
+    return await mAuthService.GenerateToken(username);
 }
 ```
 

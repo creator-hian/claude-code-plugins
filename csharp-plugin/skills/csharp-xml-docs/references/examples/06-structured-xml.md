@@ -36,7 +36,7 @@ Inline code samples
 /// 4. Execution time and metadata configuration
 /// </para>
 /// </remarks>
-public async UniTask<EventActionResult> ExecuteEventAsync(string eventId)
+public async UniTask<EventActionResult> ExecuteEvent(string eventId)
 {
     // Implementation...
 }
@@ -77,7 +77,7 @@ public class ActionExecutionEngine
 /// </remarks>
 public string GetPerformanceGrade()
 {
-    var ms = ExecutionTime.TotalMilliseconds;
+    double ms = ExecutionTime.TotalMilliseconds;
     return ms switch
     {
         < 10 => "Fast",
@@ -111,7 +111,7 @@ public string GetPerformanceGrade()
 /// All errors are collected in the result's Errors collection.
 /// </para>
 /// </remarks>
-public async UniTask<EventActionResult> ExecuteWithRetryAsync(string eventId)
+public async UniTask<EventActionResult> ExecuteWithRetry(string eventId)
 {
     // Implementation...
 }
@@ -126,10 +126,10 @@ public async UniTask<EventActionResult> ExecuteWithRetryAsync(string eventId)
 /// <para>
 /// <strong>Usage Example:</strong>
 /// <code>
-/// var engine = new ActionExecutionEngine();
+/// ActionExecutionEngine engine = new ActionExecutionEngine();
 /// engine.RegisterHandler("CustomAction", new CustomActionHandler());
 ///
-/// var result = await engine.ExecuteAsync(eventAction);
+/// ActionResult result = await engine.Execute(eventAction);
 /// if (result.Success)
 /// {
 ///     Console.WriteLine("Action executed successfully");
@@ -153,7 +153,7 @@ public void RegisterHandler(string actionType, IActionHandler handler)
 /// <remarks>
 /// First looks up the event definition from the cache or loads it if not cached. Then evaluates event-level conditions for performance optimization. After that processes the direct action list in sequence. Finally configures execution time and metadata for the result.
 /// </remarks>
-public async UniTask<EventActionResult> ExecuteEventAsync(string eventId)
+public async UniTask<EventActionResult> ExecuteEvent(string eventId)
 {
     // Implementation...
 }

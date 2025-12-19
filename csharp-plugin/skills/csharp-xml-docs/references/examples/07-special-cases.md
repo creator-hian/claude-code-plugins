@@ -23,7 +23,7 @@ When code behaves in non-obvious ways, has special constraints, or contains "mag
 /// </remarks>
 public string GetPerformanceGrade()
 {
-    var ms = ExecutionTime.TotalMilliseconds;
+    double ms = ExecutionTime.TotalMilliseconds;
     return ms switch
     {
         < 10 => "Fast",
@@ -70,12 +70,12 @@ public static ActionResult CreateSkipped(string actionType, string reason)
 /// </remarks>
 public int MaxRetries
 {
-    get => _maxRetries;
+    get => mMaxRetries;
     set
     {
         if (value < 0 || value > 10)
             throw new ArgumentOutOfRangeException(nameof(value), "Must be between 0 and 10");
-        _maxRetries = value;
+        mMaxRetries = value;
     }
 }
 ```
@@ -93,7 +93,7 @@ public int MaxRetries
 /// </remarks>
 public Dictionary<string, IActionHandler> Handlers
 {
-    get => new Dictionary<string, IActionHandler>(_handlers);
+    get => new Dictionary<string, IActionHandler>(mHandlers);
 }
 ```
 
@@ -120,7 +120,7 @@ public int MaxRetries { get; set; }
 /// </summary>
 public string GetPerformanceGrade()
 {
-    var ms = ExecutionTime.TotalMilliseconds;
+    double ms = ExecutionTime.TotalMilliseconds;
     return ms switch
     {
         < 10 => "Fast",
@@ -197,14 +197,14 @@ public Animation CurrentAnimation { get; }
 /// Automatically stops any currently playing animation when changed.
 /// Triggers OnModeChanged event.
 /// </remarks>
-public AnimationMode CurrentMode
+public EAnimationMode CurrentMode
 {
     set
     {
-        if (_currentMode != value)
+        if (mCurrentMode != value)
         {
-            StopCurrentAnimation();
-            _currentMode = value;
+            stopCurrentAnimation();
+            mCurrentMode = value;
             OnModeChanged?.Invoke(value);
         }
     }
@@ -241,7 +241,7 @@ public bool ValidateAll()
 /// </remarks>
 public void RegisterHandler(string type, IActionHandler handler)
 {
-    _handlers.AddOrUpdate(type, handler, (k, v) => handler);
+    mHandlers.AddOrUpdate(type, handler, (k, v) => handler);
 }
 ```
 
@@ -258,12 +258,12 @@ public void RegisterHandler(string type, IActionHandler handler)
 /// </remarks>
 public string MiddleName
 {
-    get => _middleName;
+    get => mMiddleName;
     set
     {
         if (value == string.Empty)
             throw new ArgumentException("Use null for no middle name");
-        _middleName = value;
+        mMiddleName = value;
     }
 }
 ```
@@ -278,12 +278,12 @@ public string MiddleName
 /// <remarks>
 /// <strong>Precondition:</strong> IsReady must be true.
 /// <strong>Throws:</strong> InvalidOperationException if called when not ready.
-/// Call InitializeAsync first if IsReady is false.
+/// Call Initialize first if IsReady is false.
 /// </remarks>
-public async UniTask PlayAsync(string animationPath)
+public async UniTask Play(string animationPath)
 {
     if (!IsReady)
-        throw new InvalidOperationException("Not ready. Call InitializeAsync first.");
+        throw new InvalidOperationException("Not ready. Call Initialize first.");
     // Implementation...
 }
 ```

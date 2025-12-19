@@ -1,10 +1,10 @@
-# Pattern Library
+# Pattern Library (POCU)
 
-Complete examples for all common XML documentation scenarios.
+Complete examples for all common XML documentation scenarios following POCU coding standards.
 
 ## 1. Simple Properties and Fields
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
 /// <summary>
 /// Indicates whether the action executed successfully
@@ -22,7 +22,7 @@ public int RetryCount { get; set; }
 public int Priority { get; set; }
 ```
 
-### 🇰🇷 Korean Example
+### Korean Example
 ```csharp
 /// <summary>
 /// 액션 실행 성공 여부
@@ -46,7 +46,7 @@ public int Priority { get; set; }
 
 ## 2. Complex Concepts (Use `<remarks>`)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
 /// <summary>
 /// Indicates whether the action was skipped
@@ -66,7 +66,7 @@ public bool Skipped { get; set; }
 public Dictionary<string, object> OutputData { get; set; }
 ```
 
-### 🇰🇷 Korean Example
+### Korean Example
 ```csharp
 /// <summary>
 /// 액션이 건너뛰어졌는지 여부
@@ -78,23 +78,11 @@ public Dictionary<string, object> OutputData { get; set; }
 public bool Skipped { get; set; }
 ```
 
-### 🌐 Mixed Language Example
-```csharp
-/// <summary>
-/// 액션이 건너뛰어졌는지 여부
-/// </summary>
-/// <remarks>
-/// <strong>Korean:</strong> 조건이 충족되지 않아 건너뛴 경우 true로 설정됩니다.<br/>
-/// <strong>English:</strong> Set to true when skipped due to unmet conditions.
-/// </remarks>
-public bool Skipped { get; set; }
-```
-
 ---
 
 ## 3. Classes and Structs
 
-### ✅ Recommended Pattern
+### Recommended Pattern (POCU)
 ```csharp
 /// <summary>
 /// Individual action execution result
@@ -106,6 +94,9 @@ public bool Skipped { get; set; }
 [Serializable]
 public class ActionResult
 {
+    private readonly Dictionary<string, object> mOutputData;
+    private bool mbIsProcessed;
+
     // Implementation...
 }
 
@@ -116,90 +107,125 @@ public class ActionResult
 /// Prevents string-based errors in event type identification and provides
 /// compile-time type safety for event routing.
 /// </remarks>
-public readonly struct EventType
+public readonly struct SEventType
 {
-    // Implementation...
+    public int Value { get; private init; }
 }
 ```
 
-**Rationale**: Classes and structs deserve both concise summary and detailed remarks.
+**Rationale**: Classes use `mPascalCase` for private fields, `mbPascalCase` for booleans. Structs use `S` prefix.
 
 ---
 
 ## 4. Methods
 
-### Simple Methods
+### Simple Methods (POCU)
 ```csharp
-/// <summary>
-/// Sets output data
-/// </summary>
-public void SetOutputData(string key, object value)
+public class ActionResult
 {
-    OutputData ??= new Dictionary<string, object>();
-    OutputData[key] = value;
-}
+    private Dictionary<string, object> mOutputData;
 
-/// <summary>
-/// Checks whether action was actually executed
-/// </summary>
-public bool WasExecuted()
-{
-    return !Skipped;
+    /// <summary>
+    /// Sets output data
+    /// </summary>
+    public void SetOutputData(string key, object value)
+    {
+        Debug.Assert(key != null);
+
+        if (mOutputData == null)
+        {
+            mOutputData = new Dictionary<string, object>();
+        }
+        mOutputData[key] = value;
+    }
+
+    /// <summary>
+    /// Checks whether action was actually executed
+    /// </summary>
+    public bool WasExecuted()
+    {
+        return !Skipped;
+    }
 }
 ```
 
-### Complex Methods with Parameters
+### Complex Methods with Parameters (POCU)
 ```csharp
-/// <summary>
-/// Retrieves output data
-/// </summary>
-/// <typeparam name="T">Data type to return</typeparam>
-/// <param name="key">Key to retrieve</param>
-/// <param name="defaultValue">Default value to return if key is not found</param>
-/// <returns>Retrieved data or default value</returns>
-public T GetOutputData<T>(string key, T defaultValue = default(T))
+public class DataService
 {
-    if (OutputData == null || !OutputData.TryGetValue(key, out var value))
-        return defaultValue;
+    private readonly Dictionary<string, object> mOutputData;
 
-    try
+    /// <summary>
+    /// Retrieves output data
+    /// </summary>
+    /// <typeparam name="T">Data type to return</typeparam>
+    /// <param name="key">Key to retrieve</param>
+    /// <param name="defaultValue">Default value to return if key is not found</param>
+    /// <returns>Retrieved data or default value</returns>
+    public T GetOutputData<T>(string key, T defaultValue = default(T))
     {
-        if (value is T directValue)
-            return directValue;
+        Debug.Assert(key != null);
 
-        return (T)Convert.ChangeType(value, typeof(T));
+        object value;
+        if (mOutputData == null || !mOutputData.TryGetValue(key, out value))
+        {
+            return defaultValue;
+        }
+
+        return convertValue<T>(value, defaultValue);
     }
-    catch
+
+    private T convertValue<T>(object value, T defaultValue)
     {
-        return defaultValue;
+        try
+        {
+            if (value is T directValue)
+            {
+                return directValue;
+            }
+
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return defaultValue;
+        }
     }
 }
 ```
 
 ### Multi-Step Processes (Use `<br/>`)
 ```csharp
-/// <summary>
-/// Executes event
-/// </summary>
-/// <param name="systemId">System ID</param>
-/// <param name="eventId">Event ID</param>
-/// <param name="contextData">Context data</param>
-/// <returns>Event execution result</returns>
-/// <remarks>
-/// <para>
-/// <strong>Execution Process:</strong><br/>
-/// 1. Event definition lookup<br/>
-/// 2. Event-level condition evaluation (performance optimization)<br/>
-/// 3. Direct action list processing<br/>
-/// 4. Execution time and metadata configuration
-/// </para>
-/// </remarks>
-public async UniTask<EventActionResult> ExecuteEventAsync(
-    string systemId,
-    string eventId,
-    object contextData = null)
+public class EventExecutor
 {
-    // Implementation...
+    private readonly IEventRepository mRepository;
+
+    /// <summary>
+    /// Executes event
+    /// </summary>
+    /// <param name="systemId">System ID</param>
+    /// <param name="eventId">Event ID</param>
+    /// <param name="contextDataOrNull">Context data</param>
+    /// <returns>Event execution result</returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Execution Process:</strong><br/>
+    /// 1. Event definition lookup<br/>
+    /// 2. Event-level condition evaluation (performance optimization)<br/>
+    /// 3. Direct action list processing<br/>
+    /// 4. Execution time and metadata configuration
+    /// </para>
+    /// </remarks>
+    public async UniTask<EventActionResult> ExecuteEvent(
+        string systemId,
+        string eventId,
+        object contextDataOrNull = null)
+    {
+        Debug.Assert(systemId != null);
+        Debug.Assert(eventId != null);
+
+        // Implementation...
+    }
 }
 ```
 
@@ -211,190 +237,237 @@ public async UniTask<EventActionResult> ExecuteEventAsync(
 /// <remarks>
 /// <para>
 /// <strong>Key Features:</strong><br/>
-/// • Thread-safe action handler management<br/>
-/// • Event definition caching and updates<br/>
-/// • Condition-based action filtering<br/>
-/// • Performance measurement and result aggregation
+/// - Thread-safe action handler management<br/>
+/// - Event definition caching and updates<br/>
+/// - Condition-based action filtering<br/>
+/// - Performance measurement and result aggregation
 /// </para>
 /// </remarks>
 public class ActionExecutionEngine
 {
+    private readonly Dictionary<string, IActionHandler> mHandlers;
+    private readonly object mLock;
+
     // Implementation...
 }
 ```
 
 ---
 
-## 5. Factory Methods
+## 5. Factory Methods (POCU)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
-/// <summary>
-/// Creates success result
-/// </summary>
-public static ActionResult CreateSuccess(
-    string actionType,
-    string message = null,
-    TimeSpan executionTime = default,
-    Dictionary<string, object> outputData = null)
+public class ActionResult
 {
-    var result = new ActionResult(
-        true,
-        message ?? $"{actionType} action completed successfully.",
-        actionType,
-        executionTime
-    );
-    if (outputData != null)
+    /// <summary>
+    /// Creates success result
+    /// </summary>
+    public static ActionResult CreateSuccess(
+        string actionType,
+        string messageOrNull = null,
+        TimeSpan executionTime = default,
+        Dictionary<string, object> outputDataOrNull = null)
     {
-        result.OutputData = outputData;
-    }
-    return result;
-}
+        Debug.Assert(actionType != null);
 
-/// <summary>
-/// Creates failure result
-/// </summary>
-public static ActionResult CreateFailure(
-    string actionType,
-    string message,
-    Exception exception = null,
-    TimeSpan executionTime = default)
-{
-    var result = new ActionResult(
-        false,
-        message ?? $"{actionType} action failed.",
-        actionType,
-        executionTime
-    );
+        string message;
+        if (messageOrNull != null)
+        {
+            message = messageOrNull;
+        }
+        else
+        {
+            message = $"{actionType} action completed successfully.";
+        }
 
-    if (exception != null)
-    {
-        result.ExceptionType = exception.GetType().Name;
-        result.StackTrace = exception.StackTrace;
-        result.Message += $" Error: {exception.Message}";
+        ActionResult result = new ActionResult(true, message, actionType, executionTime);
+        if (outputDataOrNull != null)
+        {
+            result.OutputData = outputDataOrNull;
+        }
+        return result;
     }
 
-    return result;
-}
-
-/// <summary>
-/// Creates skipped result
-/// </summary>
-/// <remarks>
-/// Skipping is not considered an error, so Success is set to true.
-/// </remarks>
-public static ActionResult CreateSkipped(string actionType, string reason)
-{
-    return new ActionResult
+    /// <summary>
+    /// Creates failure result
+    /// </summary>
+    public static ActionResult CreateFailure(
+        string actionType,
+        string message,
+        Exception exceptionOrNull = null,
+        TimeSpan executionTime = default)
     {
-        Success = true,  // Skipping is not an error
-        Skipped = true,
-        ActionType = actionType ?? string.Empty,
-        Message = $"{actionType} action skipped: {reason}",
-        SkipReason = reason ?? "Unknown reason",
-        ProcessedAt = DateTime.UtcNow,
-    };
+        Debug.Assert(actionType != null);
+        Debug.Assert(message != null);
+
+        ActionResult result = new ActionResult(false, message, actionType, executionTime);
+
+        if (exceptionOrNull != null)
+        {
+            result.ExceptionType = exceptionOrNull.GetType().Name;
+            result.StackTrace = exceptionOrNull.StackTrace;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Creates skipped result
+    /// </summary>
+    /// <remarks>
+    /// Skipping is not considered an error, so Success is set to true.
+    /// </remarks>
+    public static ActionResult CreateSkipped(string actionType, string reason)
+    {
+        Debug.Assert(actionType != null);
+        Debug.Assert(reason != null);
+
+        return new ActionResult
+        {
+            Success = true,  // Skipping is not an error
+            Skipped = true,
+            ActionType = actionType,
+            Message = $"{actionType} action skipped: {reason}",
+            SkipReason = reason,
+            ProcessedAt = DateTime.UtcNow,
+        };
+    }
 }
 ```
 
-**Rationale**: Factory method names are self-documenting. Add remarks for special behaviors.
+**Rationale**: Factory method names are self-documenting. Add remarks for special behaviors. Use OrNull suffix for nullable parameters.
 
 ---
 
-## 6. Constructors
+## 6. Constructors (POCU)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
-/// <summary>
-/// Default constructor
-/// </summary>
-public ActionResult()
+public class ActionResult
 {
-    Success = false;
-    Message = string.Empty;
-    ActionType = string.Empty;
-    ExecutionTime = TimeSpan.Zero;
-    Skipped = false;
-    SkipReason = string.Empty;
-    OutputData = new Dictionary<string, object>();
-    ExceptionType = string.Empty;
-    StackTrace = string.Empty;
-    ProcessedAt = DateTime.UtcNow;
-    RetryCount = 0;
-    Priority = 1;
-}
+    private Dictionary<string, object> mOutputData;
+    private string mExceptionType;
+    private string mStackTrace;
 
-/// <summary>
-/// Parameterized constructor
-/// </summary>
-/// <param name="success">Success status</param>
-/// <param name="message">Result message</param>
-/// <param name="actionType">Action type</param>
-/// <param name="executionTime">Execution time</param>
-public ActionResult(
-    bool success,
-    string message,
-    string actionType,
-    TimeSpan executionTime = default)
-{
-    Success = success;
-    Message = message ?? string.Empty;
-    ActionType = actionType ?? string.Empty;
-    ExecutionTime = executionTime;
-    // ... other initializations
+    /// <summary>
+    /// Default constructor
+    /// </summary>
+    public ActionResult()
+    {
+        initializeDefaults();
+    }
+
+    /// <summary>
+    /// Parameterized constructor
+    /// </summary>
+    /// <param name="success">Success status</param>
+    /// <param name="message">Result message</param>
+    /// <param name="actionType">Action type</param>
+    /// <param name="executionTime">Execution time</param>
+    public ActionResult(
+        bool success,
+        string message,
+        string actionType,
+        TimeSpan executionTime = default)
+    {
+        Debug.Assert(message != null);
+        Debug.Assert(actionType != null);
+
+        Success = success;
+        Message = message;
+        ActionType = actionType;
+        ExecutionTime = executionTime;
+        initializeDefaults();
+    }
+
+    private void initializeDefaults()
+    {
+        mOutputData = new Dictionary<string, object>();
+        mExceptionType = string.Empty;
+        mStackTrace = string.Empty;
+    }
 }
 ```
 
-**Rationale**: Constructor parameters are typically self-explanatory from names and types.
+**Rationale**: Constructor parameters are typically self-explanatory from names and types. Use camelCase for private methods.
 
 ---
 
 ## 7. Exception Documentation
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
-/// <summary>
-/// Loads VRM model from specified path
-/// </summary>
-/// <param name="path">Addressable path to VRM asset</param>
-/// <returns>Loaded VRM instance</returns>
-/// <exception cref="ArgumentNullException">Thrown when path is null</exception>
-/// <exception cref="InvalidOperationException">Thrown when VRM context is not ready</exception>
-/// <exception cref="System.IO.FileNotFoundException">Thrown when VRM asset is not found</exception>
-public async UniTask<VrmInstance> LoadVRMAsync(string path)
+public class VRMLoader
 {
-    if (path == null)
-        throw new ArgumentNullException(nameof(path));
+    private bool mbIsReady;
 
-    if (!IsReady)
-        throw new InvalidOperationException("VRM context is not ready");
+    /// <summary>
+    /// Loads VRM model from specified path
+    /// </summary>
+    /// <param name="path">Addressable path to VRM asset</param>
+    /// <returns>Loaded VRM instance</returns>
+    /// <exception cref="ArgumentNullException">Thrown when path is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown when VRM context is not ready</exception>
+    /// <exception cref="System.IO.FileNotFoundException">Thrown when VRM asset is not found</exception>
+    public async UniTask<VrmInstance> LoadVRM(string path)
+    {
+        if (path == null)
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
 
-    // Implementation...
+        if (!mbIsReady)
+        {
+            throw new InvalidOperationException("VRM context is not ready");
+        }
+
+        // Implementation...
+    }
 }
 ```
 
-**Rationale**: Document exceptions that are part of the method's contract.
+**Rationale**: Document exceptions that are part of the method's contract. No Async suffix per POCU.
 
 ---
 
 ## 8. Property with Side Effects
 
-### Use `<value>` Tag
+### Use `<value>` Tag (POCU)
 ```csharp
-/// <summary>
-/// Current animation mode
-/// </summary>
-/// <value>
-/// Gets or sets the animation mode. Setting this value automatically switches
-/// the underlying animation system. Returns null if no system is active.
-/// </value>
-public AnimationMode? CurrentMode
+public class AnimationController
 {
-    get => _currentSystem?.Mode;
-    set
+    private IAnimationSystem mCurrentSystem;
+
+    /// <summary>
+    /// Current animation mode
+    /// </summary>
+    /// <value>
+    /// Gets or sets the animation mode. Setting this value automatically switches
+    /// the underlying animation system. Returns null if no system is active.
+    /// </value>
+    public EAnimationMode? CurrentMode
     {
-        if (value.HasValue)
-            ActivateAnimationSystemAsync(value.Value).Forget();
+        get
+        {
+            if (mCurrentSystem != null)
+            {
+                return mCurrentSystem.Mode;
+            }
+            return null;
+        }
+        set
+        {
+            if (value.HasValue)
+            {
+                activateAnimationSystem(value.Value).Forget();
+            }
+        }
+    }
+
+    private async UniTask activateAnimationSystem(EAnimationMode mode)
+    {
+        // Implementation...
     }
 }
 ```
@@ -409,21 +482,21 @@ public bool IsModelLoaded { get; private set; }
 /// <summary>
 /// Number of available animations
 /// </summary>
-public int AnimationCount => _animations?.Count ?? 0;
+public int AnimationCount => mAnimations?.Count ?? 0;
 ```
 
 **Rationale**: Use `<value>` only when getter/setter have side effects or non-obvious behavior.
 
 ---
 
-## 9. Enums
+## 9. Enums (POCU)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
 /// <summary>
 /// Animation system mode
 /// </summary>
-public enum AnimationMode
+public enum EAnimationMode
 {
     /// <summary>
     /// VRM Animation using VRMA files via UniVRM
@@ -448,7 +521,7 @@ public enum AnimationMode
 /// Action execution options
 /// </summary>
 [Flags]
-public enum ActionFlags
+public enum EActionFlags
 {
     /// <summary>No special options</summary>
     None = 0,
@@ -464,13 +537,13 @@ public enum ActionFlags
 }
 ```
 
-**Rationale**: Each enum value should have clear `<summary>` describing its purpose.
+**Rationale**: Enums use `E` prefix per POCU. Each enum value should have clear `<summary>` describing its purpose.
 
 ---
 
-## 10. Extension Methods
+## 10. Extension Methods (POCU)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
 /// <summary>
 /// VRMController extension methods for animation configuration
@@ -490,6 +563,9 @@ public static class VRMAnimationExtensions
         this VRMController controller,
         VRMAnimationConfigAsset configAsset)
     {
+        Debug.Assert(controller != null);
+        Debug.Assert(configAsset != null);
+
         // Implementation...
     }
 
@@ -505,12 +581,15 @@ public static class VRMAnimationExtensions
         this VRMController controller,
         VRMAnimationConfigAsset configAsset)
     {
+        Debug.Assert(controller != null);
+        Debug.Assert(configAsset != null);
+
         // Implementation...
     }
 }
 ```
 
-**Rationale**: Document the extended type in `<param name="this">` and explain added functionality.
+**Rationale**: Document the extended type in `<param name="this">` and explain added functionality. No Async suffix.
 
 ---
 
@@ -538,31 +617,36 @@ public interface IVTuberAnimationController
     /// </returns>
     /// <remarks>
     /// <strong>Preconditions:</strong><br/>
-    /// • Context must be ready (IsReady = true)<br/>
-    /// • animationPath must not be null and must be valid format
+    /// - Context must be ready (IsReady = true)<br/>
+    /// - animationPath must not be null and must be valid format
     /// </remarks>
-    UniTask<bool> PlayAnimationAsync(string animationPath, WrapMode wrapMode);
+    UniTask<bool> PlayAnimation(string animationPath, WrapMode wrapMode);
 }
 ```
 
-### Implementation: Use `<inheritdoc/>`
+### Implementation: Use `<inheritdoc/>` (POCU)
 ```csharp
 public partial class VRMController : IVTuberAnimationController
 {
+    private IAnimationSystem mCurrentSystem;
+    private readonly Dictionary<string, Animation> mAnimations;
+
     /// <inheritdoc/>
     /// <remarks>
-    /// <strong>Implementation:</strong> Path prefix-based auto-routing ("VRMA/" → VRMAnimation, "State/{Layer}/{Identifier}" → AnimatorController)<br/>
+    /// <strong>Implementation:</strong> Path prefix-based auto-routing ("VRMA/" -> VRMAnimation, "State/{Layer}/{Identifier}" -> AnimatorController)<br/>
     /// <strong>Main Failures:</strong> Unknown prefix, System activation failure, invalid Layer/Identifier<br/>
     /// <strong>Note:</strong> wrapMode ignored when using AnimatorController
     /// </remarks>
-    public async UniTask<bool> PlayAnimationAsync(string animationPath, WrapMode wrapMode)
+    public async UniTask<bool> PlayAnimation(string animationPath, WrapMode wrapMode)
     {
+        Debug.Assert(animationPath != null);
+
         // Implementation...
     }
 }
 ```
 
-### ❌ Anti-Pattern: Implementation Details in Interface
+### Anti-Pattern: Implementation Details in Interface
 ```csharp
 // ❌ Bad: Too much implementation detail in interface
 public interface IVTuberAnimationController
@@ -570,11 +654,11 @@ public interface IVTuberAnimationController
     /// <summary>Plays animation asynchronously</summary>
     /// <remarks>
     /// <strong>Smart Routing:</strong><br/>
-    /// • "VRMA/" → VRMAnimationSystem (UniVRM-based)<br/>
-    /// • "State/" → AnimatorControllerSystem (Mecanim)<br/>
+    /// - "VRMA/" -> VRMAnimationSystem (UniVRM-based)<br/>
+    /// - "State/" -> AnimatorControllerSystem (Mecanim)<br/>
     /// [... too many implementation details ...]
     /// </remarks>
-    UniTask<bool> PlayAnimationAsync(string animationPath, WrapMode wrapMode);
+    UniTask<bool> PlayAnimation(string animationPath, WrapMode wrapMode);
 }
 ```
 
@@ -586,38 +670,47 @@ public interface IVTuberAnimationController
 
 ---
 
-## 12. Internal Implementation
+## 12. Internal Implementation (POCU)
 
-### ✅ Recommended Pattern
+### Recommended Pattern
 ```csharp
-// Internal helper methods - inline comments
-private void InitializeDefaults()
+public class ActionResult
 {
-    // Initialize default values
-    Success = false;
-    OutputData = new Dictionary<string, object>();
-}
+    private Dictionary<string, object> mOutputData;
+    private string mExceptionType;
 
-// Complex internal logic - detailed explanation
-private bool ValidateActionType(string actionType)
-{
-    // Action type validation logic:
-    // 1. Check if not null or empty string
-    // 2. Check if included in allowed type list
-    // 3. Check if no special characters
+    // Internal helper methods - camelCase per POCU
+    private void initializeDefaults()
+    {
+        // Initialize default values
+        Success = false;
+        mOutputData = new Dictionary<string, object>();
+    }
 
-    if (string.IsNullOrWhiteSpace(actionType))
-        return false;
+    // Complex internal logic - detailed explanation
+    private bool validateActionType(string actionType)
+    {
+        // Action type validation logic:
+        // 1. Check if not null or empty string
+        // 2. Check if included in allowed type list
+        // 3. Check if no special characters
 
-    // Additional validation...
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            return false;
+        }
+
+        // Additional validation...
+        return true;
+    }
 }
 ```
 
-**Rationale**: Internal code is for team members only. Use inline comments as needed, XML docs optional.
+**Rationale**: Internal code is for team members only. Use inline comments as needed, XML docs optional. Private methods use camelCase.
 
 ---
 
-## Complete Example
+## Complete Example (POCU)
 
 ```csharp
 namespace EventActionOrchestrator.Runtime.Core.Models
@@ -632,6 +725,10 @@ namespace EventActionOrchestrator.Runtime.Core.Models
     [Serializable]
     public class ActionResult
     {
+        private Dictionary<string, object> mOutputData;
+        private string mExceptionType;
+        private string mStackTrace;
+
         /// <summary>
         /// Indicates whether the action executed successfully
         /// </summary>
@@ -651,11 +748,18 @@ namespace EventActionOrchestrator.Runtime.Core.Models
         /// </summary>
         public static ActionResult CreateSuccess(
             string actionType,
-            string message = null,
+            string messageOrNull = null,
             TimeSpan executionTime = default,
-            Dictionary<string, object> outputData = null)
+            Dictionary<string, object> outputDataOrNull = null)
         {
-            // Implementation...
+            Debug.Assert(actionType != null);
+
+            ActionResult result = createResult(true, actionType, messageOrNull, executionTime);
+            if (outputDataOrNull != null)
+            {
+                result.mOutputData = outputDataOrNull;
+            }
+            return result;
         }
 
         /// <summary>
@@ -665,6 +769,15 @@ namespace EventActionOrchestrator.Runtime.Core.Models
         /// Skipping is not considered an error, so Success is set to true.
         /// </remarks>
         public static ActionResult CreateSkipped(string actionType, string reason)
+        {
+            Debug.Assert(actionType != null);
+            Debug.Assert(reason != null);
+
+            // Implementation...
+        }
+
+        private static ActionResult createResult(
+            bool success, string actionType, string messageOrNull, TimeSpan executionTime)
         {
             // Implementation...
         }

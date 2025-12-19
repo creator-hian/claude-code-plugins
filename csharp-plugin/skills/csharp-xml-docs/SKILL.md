@@ -9,6 +9,8 @@ Comprehensive XML documentation standards for Unity C# projects with flexible la
 
 ## Overview
 
+**Foundation Required**: `csharp-code-style` (mPascalCase, Async 접미사 금지, var 금지)
+
 **Core Principle**: XML documentation samples with flexible language choice
 - All XML comments (`<summary>`, `<remarks>`, etc.) can be written in Korean or English
 - Provides universal reference for documentation standards
@@ -17,38 +19,41 @@ Comprehensive XML documentation standards for Unity C# projects with flexible la
 ## Quick Start
 
 ```csharp
-// Simple property - English
-/// <summary>
-/// Indicates whether the action executed successfully
-/// </summary>
-public bool Success { get; set; }
+public class ActionResult
+{
+    // Simple property - English
+    /// <summary>
+    /// Indicates whether the action executed successfully
+    /// </summary>
+    public bool Success { get; set; }
 
-// Simple property - Korean
-/// <summary>
-/// 액션 실행 성공 여부
-/// </summary>
-public bool Success { get; set; }
+    // Simple property - Korean
+    /// <summary>
+    /// 액션 실행 성공 여부
+    /// </summary>
+    public bool Success { get; set; }
 
-// Complex concept with remarks
-/// <summary>
-/// Indicates whether the action was skipped
-/// </summary>
-/// <remarks>
-/// Set to true when skipped due to unmet conditions.
-/// If true, the action was not executed regardless of Success value.
-/// </remarks>
-public bool Skipped { get; set; }
+    // Complex concept with remarks
+    /// <summary>
+    /// Indicates whether the action was skipped
+    /// </summary>
+    /// <remarks>
+    /// Set to true when skipped due to unmet conditions.
+    /// If true, the action was not executed regardless of Success value.
+    /// </remarks>
+    public bool Skipped { get; set; }
+}
 ```
 
 ## Language Choice Guidelines
 
-### ✅ Acceptable Options
+### Acceptable Options
 
 1. **Pure Korean** (한글 전용)
 2. **Pure English** (영문 전용)
 3. **Mixed Korean + English** (혼용)
 
-### 🎯 Context-Based Recommendations
+### Context-Based Recommendations
 
 | Context | Recommended Language | Rationale |
 |---------|---------------------|-----------|
@@ -58,11 +63,11 @@ public bool Skipped { get; set; }
 | Mixed team | English or Both | Accommodate all members |
 | Legacy codebase | Match existing style | Maintain consistency |
 
-### 📋 Consistency Rules
+### Consistency Rules
 
 **Within a single file:**
-- ✅ **Consistent**: All Korean OR All English OR All Mixed
-- ❌ **Inconsistent**: Random switching between languages
+- Consistent: All Korean OR All English OR All Mixed
+- Inconsistent: Random switching between languages
 
 **Across the project:**
 - Maintain similar language strategy across similar components
@@ -78,13 +83,13 @@ public bool Skipped { get; set; }
 | Property with side effects | Yes | Optional | `<value>` | `CurrentMode` |
 | Public class/struct | Yes | Yes | No | `class ActionResult` |
 | Factory method | Yes | Only if special case | No | `CreateSuccess()` |
-| Method with exceptions | Yes | Optional | `<exception>` per exception | `LoadVRMAsync()` |
-| Internal method | Optional | No | No | `InitializeDefaults()` |
-| Enum type | Yes | Optional | No | `AnimationMode` |
+| Method with exceptions | Yes | Optional | `<exception>` per exception | `LoadVRM()` |
+| Internal method | Optional | No | No | `initializeDefaults()` |
+| Enum type | Yes | Optional | No | `EAnimationMode` |
 | Enum values | Yes (each) | No | No | `VRMAnimation`, `AnimatorController` |
 | Extension method | Yes | Optional | Document `this` param | `ActivateWithConfigAsset()` |
-| Interface method | Yes (full) | Yes | All applicable | `IActionHandler.ExecuteAsync()` |
-| Implementation method | `<inheritdoc/>` | Implementation details only | Override if needed | `PlayerPrefsActionHandler.ExecuteAsync()` |
+| Interface method | Yes (full) | Yes | All applicable | `IActionHandler.Execute()` |
+| Implementation method | `<inheritdoc/>` | Implementation details only | Override if needed | `PlayerPrefsActionHandler.Execute()` |
 
 ## Reference Documentation
 
@@ -139,10 +144,10 @@ public interface IVTuberAnimationController
     /// </returns>
     /// <remarks>
     /// <strong>Preconditions:</strong><br/>
-    /// • Context must be ready (IsReady = true)<br/>
-    /// • animationPath must not be null
+    /// - Context must be ready (IsReady = true)<br/>
+    /// - animationPath must not be null
     /// </remarks>
-    UniTask<bool> PlayAnimationAsync(string animationPath, WrapMode wrapMode);
+    UniTask<bool> PlayAnimation(string animationPath, WrapMode wrapMode);
 }
 ```
 
@@ -150,14 +155,18 @@ public interface IVTuberAnimationController
 ```csharp
 public partial class VRMController : IVTuberAnimationController
 {
+    private IAnimationSystem mCurrentSystem;
+    private readonly Dictionary<string, Animation> mAnimations;
+
     /// <inheritdoc/>
     /// <remarks>
-    /// <strong>Implementation:</strong> Path prefix-based auto-routing ("VRMA/" → VRMAnimation, "State/{Layer}/{Identifier}" → AnimatorController)<br/>
+    /// <strong>Implementation:</strong> Path prefix-based auto-routing ("VRMA/" -> VRMAnimation, "State/{Layer}/{Identifier}" -> AnimatorController)<br/>
     /// <strong>Main Failures:</strong> Unknown prefix, System activation failure, invalid Layer/Identifier<br/>
     /// <strong>Note:</strong> wrapMode ignored when using AnimatorController
     /// </remarks>
-    public async UniTask<bool> PlayAnimationAsync(string animationPath, WrapMode wrapMode)
+    public async UniTask<bool> PlayAnimation(string animationPath, WrapMode wrapMode)
     {
+        Debug.Assert(animationPath != null);
         // Implementation...
     }
 }
@@ -172,6 +181,7 @@ public partial class VRMController : IVTuberAnimationController
 5. **Interface vs Implementation**: Full docs in interface, `<inheritdoc/>` + implementation specifics in class
 6. **Document exceptions**: Use `<exception>` for exceptions that are part of the method's contract
 7. **Property side effects**: Use `<value>` tag when getter/setter have non-obvious behavior
+8. **POCU Naming**: Use mPascalCase for private fields, camelCase for private methods
 
 ## IDE Experience
 
@@ -188,7 +198,7 @@ Complex Property with Remarks:
 Skipped (bool)
 Indicates whether the action was skipped
 
-[Show more...] ← Click to expand remarks
+[Show more...] <- Click to expand remarks
 ```
 
 ## Common Examples
@@ -199,38 +209,85 @@ Indicates whether the action was skipped
 public int RetryCount { get; set; }
 ```
 
-**Method with Parameters:**
+**Method with Parameters (POCU Style):**
 ```csharp
-/// <summary>
-/// Retrieves output data
-/// </summary>
-/// <typeparam name="T">Data type to return</typeparam>
-/// <param name="key">Key to retrieve</param>
-/// <param name="defaultValue">Default value if key not found</param>
-/// <returns>Retrieved data or default value</returns>
-public T GetOutputData<T>(string key, T defaultValue = default(T))
+public class DataService
 {
-    // Implementation...
+    private readonly Dictionary<string, object> mOutputData;
+
+    /// <summary>
+    /// Retrieves output data
+    /// </summary>
+    /// <typeparam name="T">Data type to return</typeparam>
+    /// <param name="key">Key to retrieve</param>
+    /// <param name="defaultValue">Default value if key not found</param>
+    /// <returns>Retrieved data or default value</returns>
+    public T GetOutputData<T>(string key, T defaultValue = default(T))
+    {
+        Debug.Assert(key != null);
+
+        object value;
+        if (mOutputData == null || !mOutputData.TryGetValue(key, out value))
+        {
+            return defaultValue;
+        }
+
+        return convertValue<T>(value, defaultValue);
+    }
+
+    private T convertValue<T>(object value, T defaultValue)
+    {
+        try
+        {
+            if (value is T directValue)
+            {
+                return directValue;
+            }
+
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return defaultValue;
+        }
+    }
 }
 ```
 
 **Multi-Step Process:**
 ```csharp
-/// <summary>
-/// Executes event
-/// </summary>
-/// <remarks>
-/// <para>
-/// <strong>Execution Process:</strong><br/>
-/// 1. Event definition lookup<br/>
-/// 2. Event-level condition evaluation<br/>
-/// 3. Direct action list processing<br/>
-/// 4. Execution time and metadata configuration
-/// </para>
-/// </remarks>
-public async UniTask<EventActionResult> ExecuteEventAsync(
-    string systemId, string eventId, object contextData = null)
+public class EventExecutor
 {
-    // Implementation...
+    private readonly IEventRepository mRepository;
+    private readonly IActionProcessor mProcessor;
+
+    /// <summary>
+    /// Executes event
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Execution Process:</strong><br/>
+    /// 1. Event definition lookup<br/>
+    /// 2. Event-level condition evaluation<br/>
+    /// 3. Direct action list processing<br/>
+    /// 4. Execution time and metadata configuration
+    /// </para>
+    /// </remarks>
+    public async UniTask<EventActionResult> ExecuteEvent(
+        string systemId, string eventId, object contextDataOrNull = null)
+    {
+        Debug.Assert(systemId != null);
+        Debug.Assert(eventId != null);
+
+        EventDefinition definition = await mRepository.GetDefinition(systemId, eventId);
+        return await processEvent(definition, contextDataOrNull);
+    }
+
+    private async UniTask<EventActionResult> processEvent(
+        EventDefinition definition, object contextDataOrNull)
+    {
+        Debug.Assert(definition != null);
+        // Implementation...
+    }
 }
 ```

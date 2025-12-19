@@ -13,7 +13,7 @@ Enum values appear in IntelliSense when developers use them. Each value needs cl
 /// <summary>
 /// Animation system mode
 /// </summary>
-public enum AnimationMode
+public enum EAnimationMode
 {
     /// <summary>
     /// VRM Animation using VRMA files via UniVRM
@@ -38,7 +38,7 @@ public enum AnimationMode
 /// Action execution options
 /// </summary>
 [Flags]
-public enum ActionFlags
+public enum EActionFlags
 {
     /// <summary>
     /// No special options
@@ -67,7 +67,7 @@ public enum ActionFlags
 /// <summary>
 /// Log severity level
 /// </summary>
-public enum LogLevel
+public enum ELogLevel
 {
     /// <summary>
     /// Trace-level debugging information (lowest severity)
@@ -106,7 +106,7 @@ public enum LogLevel
 /// <summary>
 /// 애니메이션 시스템 모드
 /// </summary>
-public enum AnimationMode
+public enum EAnimationMode
 {
     /// <summary>
     /// UniVRM을 통한 VRMA 파일 기반 VRM 애니메이션
@@ -133,7 +133,7 @@ public enum AnimationMode
 /// <summary>
 /// Animation system mode
 /// </summary>
-public enum AnimationMode
+public enum EAnimationMode
 {
     VRMAnimation,
     AnimatorController,
@@ -146,7 +146,7 @@ public enum AnimationMode
 ### Unclear Documentation
 ```csharp
 // ❌ Bad: Vague descriptions
-public enum AnimationMode
+public enum EAnimationMode
 {
     /// <summary>First option</summary>
     VRMAnimation,
@@ -164,7 +164,7 @@ public enum AnimationMode
 ### Inconsistent Documentation
 ```csharp
 // ❌ Bad: Only some values documented
-public enum AnimationMode
+public enum EAnimationMode
 {
     /// <summary>VRM Animation using VRMA files via UniVRM</summary>
     VRMAnimation,
@@ -187,7 +187,7 @@ Enums exposed in public APIs need comprehensive documentation:
 /// <summary>
 /// Retry strategy for failed operations
 /// </summary>
-public enum RetryStrategy
+public enum ERetryStrategy
 {
     /// <summary>
     /// No retries - fail immediately on first error
@@ -218,7 +218,7 @@ Enums used for configuration need clear guidance:
 /// <summary>
 /// Texture compression quality
 /// </summary>
-public enum CompressionQuality
+public enum ECompressionQuality
 {
     /// <summary>
     /// Low quality, high compression (smallest file size, fastest loading)
@@ -249,7 +249,7 @@ State enums need context about transitions:
 /// <summary>
 /// VRM loading state
 /// </summary>
-public enum LoadingState
+public enum ELoadingState
 {
     /// <summary>
     /// Not started - initial state
@@ -284,7 +284,7 @@ public enum LoadingState
 /// Strategy determines which items are removed when cache is full.
 /// Choose based on your access patterns and performance requirements.
 /// </remarks>
-public enum EvictionStrategy
+public enum EEvictionStrategy
 {
     /// <summary>
     /// Least Recently Used - removes items not accessed recently
@@ -320,7 +320,7 @@ public enum EvictionStrategy
 /// <summary>
 /// Animation wrap mode
 /// </summary>
-public enum WrapMode
+public enum EWrapMode
 {
     /// <summary>
     /// Play once and stop at the end

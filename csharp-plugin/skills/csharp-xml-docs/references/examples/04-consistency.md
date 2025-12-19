@@ -25,7 +25,7 @@ public int Priority { get; set; }
 /// <summary>
 /// Loads VRM model asynchronously
 /// </summary>
-public async UniTask<VrmInstance> LoadVRMAsync(string path)
+public async UniTask<VrmInstance> LoadVRM(string path)
 {
     // Implementation...
 }
@@ -33,7 +33,7 @@ public async UniTask<VrmInstance> LoadVRMAsync(string path)
 /// <summary>
 /// Unloads VRM model asynchronously
 /// </summary>
-public async UniTask UnloadVRMAsync()
+public async UniTask UnloadVRM()
 {
     // Implementation...
 }
@@ -41,7 +41,7 @@ public async UniTask UnloadVRMAsync()
 /// <summary>
 /// Plays animation asynchronously
 /// </summary>
-public async UniTask<bool> PlayAnimationAsync(string path)
+public async UniTask<bool> PlayAnimation(string path)
 {
     // Implementation...
 }
@@ -53,7 +53,7 @@ public async UniTask<bool> PlayAnimationAsync(string path)
 public interface IActionHandler
 {
     /// <summary>Executes action asynchronously</summary>
-    UniTask<ActionResult> ExecuteAsync(EventAction action);
+    UniTask<ActionResult> Execute(EventAction action);
 }
 
 // Implementation 1
@@ -63,7 +63,7 @@ public class PlayerPrefsHandler : IActionHandler
     /// <remarks>
     /// <strong>Parameters:</strong> operation, key, value
     /// </remarks>
-    public async UniTask<ActionResult> ExecuteAsync(EventAction action) { }
+    public async UniTask<ActionResult> Execute(EventAction action) { }
 }
 
 // Implementation 2
@@ -73,7 +73,7 @@ public class SceneHandler : IActionHandler
     /// <remarks>
     /// <strong>Parameters:</strong> operation, sceneName, mode
     /// </remarks>
-    public async UniTask<ActionResult> ExecuteAsync(EventAction action) { }
+    public async UniTask<ActionResult> Execute(EventAction action) { }
 }
 ```
 
@@ -96,16 +96,16 @@ public int Priority { get; set; }
 ### Inconsistent Formatting
 ```csharp
 /// <summary>Loads VRM model</summary>
-public async UniTask<VrmInstance> LoadVRMAsync(string path) { }
+public async UniTask<VrmInstance> LoadVRM(string path) { }
 
 /// <summary>
 /// Unloads VRM model asynchronously from memory
 /// and cleans up all associated resources
 /// </summary>
-public async UniTask UnloadVRMAsync() { }
+public async UniTask UnloadVRM() { }
 
 /// <summary>Plays animation</summary>
-public async UniTask<bool> PlayAnimationAsync(string path) { }
+public async UniTask<bool> PlayAnimation(string path) { }
 ```
 
 **Why it's bad**: Similar methods have vastly different documentation levels without good reason.
