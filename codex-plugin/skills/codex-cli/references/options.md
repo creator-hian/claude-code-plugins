@@ -4,14 +4,14 @@
 
 | Model | Description | Best For |
 |-------|-------------|----------|
-| `gpt-5.2` | Latest frontier model - best performance (recommended) | Complex analysis, critical systems |
+| `gpt-5.2-codex` | Latest Codex-optimized frontier model (recommended) | Complex analysis, critical systems |
+| `gpt-5.2` | Latest frontier model - best general performance | General AI tasks, multi-domain |
 | `gpt-5.1-codex-max` | Codex-optimized flagship for deep reasoning | Security audits, architecture review |
-| `gpt-5.1-codex` | Optimized for codex | Standard code reviews |
 | `gpt-5.1-codex-mini` | Cheaper, faster, less capable | Quick checks, batch operations |
 
 ```bash
-codex -m gpt-5.2 "Deep security audit"
-codex -m gpt-5.1-codex "Review this implementation"
+codex -m gpt-5.2-codex "Deep security audit"
+codex -m gpt-5.2 "General analysis"
 codex -m gpt-5.1-codex-mini "Quick syntax check"
 ```
 
@@ -33,7 +33,7 @@ codex -c model_reasoning_effort=low "Quick check"
 codex -c model_reasoning_effort=xhigh "Exhaustive security audit"
 
 # Combine with model
-codex -m gpt-5.2 -c model_reasoning_effort=xhigh "Maximum depth analysis"
+codex -m gpt-5.2-codex -c model_reasoning_effort=xhigh "Maximum depth analysis"
 ```
 
 ---

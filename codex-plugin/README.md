@@ -14,7 +14,7 @@ Codex CLI 기본 사용법을 제공하는 foundation 스킬입니다.
 
 **범위:**
 - `codex exec` 명령어 사용법
-- 모델 선택 (`gpt-5.2` (최고 성능), `gpt-5.1-codex-max`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`)
+- 모델 선택 (`gpt-5.2-codex` (권장), `gpt-5.2`, `gpt-5.1-codex-max`, `gpt-5.1-codex-mini`)
 - Reasoning effort 설정 (`low`, `medium`, `high`, `xhigh`)
 - Sandbox 모드 (`read-only`, `workspace-write`, `danger-full-access`)
 - 세션 관리 (`resume`)
@@ -85,8 +85,8 @@ codex-cli
 
 ### Codex CLI 단독 사용
 ```bash
-# 코드 리뷰 (gpt-5.2 권장)
-codex exec -m gpt-5.2 -s read-only "Review this code"
+# 코드 리뷰 (gpt-5.2-codex 권장)
+codex exec -m gpt-5.2-codex -s read-only "Review this code"
 
 # 세션 이어가기
 codex exec resume "Check error handling"

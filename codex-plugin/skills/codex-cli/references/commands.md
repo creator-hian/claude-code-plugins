@@ -39,7 +39,7 @@ codex exec [options] [prompt]
 
 | Option | Alias | Description |
 |--------|-------|-------------|
-| `--model` | `-m` | Model: `gpt-5.2`, `gpt-5.1-codex-max`, `gpt-5.1-codex`, `gpt-5.1-codex-mini` |
+| `--model` | `-m` | Model: `gpt-5.2-codex`, `gpt-5.2`, `gpt-5.1-codex-max`, `gpt-5.1-codex-mini` |
 | `--config` | `-c` | Config: `model_reasoning_effort=low\|medium\|high\|xhigh` |
 | `--sandbox` | `-s` | Sandbox: `read-only`, `workspace-write`, `danger-full-access` |
 | `--image` | `-i` | Image input (repeatable) |
@@ -56,8 +56,8 @@ codex exec [options] [prompt]
 codex exec "Review this code for bugs"
 
 # Model selection
-codex exec -m gpt-5.2 "Complex security audit"
-codex exec -m gpt-5.1-codex "Standard code review"
+codex exec -m gpt-5.2-codex "Complex security audit"
+codex exec -m gpt-5.2 "General analysis"
 codex exec -m gpt-5.1-codex-mini "Quick syntax check"
 
 # Reasoning effort
@@ -65,7 +65,7 @@ codex exec -c model_reasoning_effort=high "Deep analysis"
 codex exec -c model_reasoning_effort=xhigh "Exhaustive review"
 
 # Combined: model + reasoning + sandbox
-codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only "Maximum depth audit"
+codex exec -m gpt-5.2-codex -c model_reasoning_effort=xhigh -s read-only "Maximum depth audit"
 
 # With image
 codex exec -i screenshot.png "What's shown here?"

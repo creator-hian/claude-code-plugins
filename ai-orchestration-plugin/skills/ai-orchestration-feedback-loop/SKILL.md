@@ -11,15 +11,15 @@ requires:
 ## Workflow
 
 ```
-Triple-AI:  Plan → Validate(AI-1) → Review(AI-2) → Synthesize → Implement → Dual Review → Done
-Dual-AI:    Plan → Validate(AI) → Synthesize → Implement → Review → Done
+Standard:      Plan → Validate(AI-1) → Review(AI-2) → Synthesize → Implement → Review → Done
+Co-Implement:  Plan → Validate → Review → Synthesize → Core(Claude) → Aux(Gemini) → Integrate → Review → Done
 ```
 
 | Role | Responsibility |
 |------|----------------|
-| **Claude** | Planning, synthesis, implementation (default) |
+| **Claude** | Planning, synthesis, core implementation |
 | **Codex** | Deep validation, security, logic verification, edge cases |
-| **Gemini** | Creative review, alternatives, UX perspective, pattern analysis |
+| **Gemini** | Creative review, alternatives, UX + **auxiliary code generation** (Co-Impl) |
 
 ## CLI Patterns
 
@@ -97,6 +97,30 @@ Then present options:
 | Performance | Algorithms, memory, I/O, scaling |
 | Architecture | Patterns, coupling, extensibility |
 
+### Question 5: Gemini Co-Implementation
+**Header**: "Co-Impl"
+| Option | Description |
+|--------|-------------|
+| Disabled (default) | Gemini validation-only (standard workflow) |
+| Documentation Only | Gemini generates docs, comments, README |
+| Boilerplate Only | Gemini generates utilities, configs |
+| Full Co-Implementation | Both documentation and boilerplate |
+
+### Question 6: Gemini Generation Scope (if Co-Implementation enabled)
+**Header**: "Gen Scope"
+| Category | Options (multiSelect) |
+|----------|----------------------|
+| Documentation | API docs, Inline comments, README sections, JSDoc/TSDoc/XML |
+| Boilerplate | Utility functions, Config files, Type interfaces, Test scaffolds |
+
+### Question 7: Integration Review Mode (if Co-Implementation enabled)
+**Header**: "Review Mode"
+| Option | Description |
+|--------|-------------|
+| Review-first (default) | Show Gemini output to user before integration |
+| Auto-integrate | Automatically integrate if syntax valid |
+| Strict Review | Require explicit user approval per file |
+
 Save to `.ai-orchestration/config.md`:
 ```markdown
 # AI Orchestration Config
@@ -105,12 +129,19 @@ Save to `.ai-orchestration/config.md`:
 - Planning: [AI]
 - Validation 1: [AI]
 - Validation 2: [AI or Skip]
-- Implementation: [AI]
+- Implementation (Core): Claude
+- Implementation (Auxiliary): [Disabled | Gemini]
 - Code Review: [AI(s)]
 ## Models
 - Codex: [model] (reasoning: [level])
 - Gemini: [model]
 ## Focus: [focus area]
+## Co-Implementation
+- Enabled: [yes/no]
+- Mode: [Disabled | Documentation Only | Boilerplate Only | Full]
+- Documentation Scope: [api-docs, inline-comments, readme, jsdoc]
+- Boilerplate Scope: [utilities, configs, interfaces, test-scaffolds]
+- Review Mode: [review-first | auto-integrate | strict-review]
 ```
 
 ## Phase 1: Planning
@@ -166,17 +197,86 @@ For synthesis methodology: See [synthesis-guide.md](references/synthesis-guide.m
 
 Present to user via `AskUserQuestion`: Proceed / Address issues / Request more validation
 
-## Phase 5: Implementation
+## Phase 5a: Core Implementation
 
-**Executor**: Based on config `Implementation` setting (default: Claude)
+**Executor**: Claude (always)
+
+Implement core business logic using Edit/Write/Read tools.
+
+Save `.ai-orchestration/implementation.md` with: Implemented By, Changes Made, Issues Addressed, Testing Notes
 
 | Mode | Executor | Use Case |
 |------|----------|----------|
-| Default | Claude | Standard implementation via Edit/Write/Read |
+| Default | Claude | Standard implementation |
 | Codex-assisted | Claude + Codex | Complex logic (`-s workspace-write`) |
-| Gemini-assisted | Claude + Gemini | Creative/UX solutions |
 
-Save `.ai-orchestration/implementation.md` with: Implemented By, Changes Made, Issues Addressed, Testing Notes
+**If Co-Implementation enabled** → Create handoff spec for Phase 5b:
+
+Save `.ai-orchestration/phase5b_handoff.md`:
+```markdown
+# Gemini Co-Implementation Handoff
+## Implementation Summary
+[Link to implementation.md]
+## Files Created/Modified
+[List of files]
+## Generation Tasks
+### Task 1: [Documentation/Boilerplate]
+**Type**: [api-docs | inline-comments | readme | utilities | configs | interfaces]
+**Target Files**: [list]
+**Code Context**:
+\`\`\`[language]
+[relevant snippets for context]
+\`\`\`
+**Requirements**:
+- [specific requirements]
+```
+
+## Phase 5b: Auxiliary Generation (Gemini)
+
+**Executor**: Gemini (if Co-Implementation enabled)
+**Skip if**: Co-Implementation disabled in config
+
+> **Detailed prompts**: See [co-implementation-guide.md](references/co-implementation-guide.md) for handoff format and prompts
+
+Generate auxiliary code based on handoff specification:
+
+```bash
+gemini -m MODEL -p "Generate auxiliary code per handoff spec:
+$(cat .ai-orchestration/phase5b_handoff.md)
+
+[Use prompt from co-implementation-guide.md based on scope]"
+```
+
+**Output Format** (FILE: marker system):
+```markdown
+FILE: path/to/file.ext
+---
+[generated content]
+---
+FILE: next/file.ext
+---
+[content]
+---
+```
+
+Save to `.ai-orchestration/phase5b_gemini_output.md`
+
+## Phase 5c: Integration
+
+**Executor**: Claude
+**Skip if**: Co-Implementation disabled
+
+1. **Parse** Gemini output (FILE: markers)
+2. **Validate** syntax and conflicts
+3. **Apply Review Mode**:
+   - Review-first → Show to user, ask approval
+   - Auto-integrate → Integrate if valid
+   - Strict → Ask per file
+4. **Integrate** approved code via Edit/Write
+5. **Handle Revision** (max 2 attempts):
+   - If rejected → Request Gemini revision or Claude fallback
+
+Save `.ai-orchestration/phase5c_integration.md` with: Files Integrated, Review Decisions, Revisions Made
 
 ## Phase 6: Code Review
 
@@ -208,6 +308,9 @@ Save iterations to `.ai-orchestration/iterations.md`.
 ├── phase3_*.md (Triple-AI only)
 ├── phase4_synthesis.md
 ├── implementation.md
+├── phase5b_handoff.md          # Co-Implementation handoff spec
+├── phase5b_gemini_output.md    # Gemini generated code
+├── phase5c_integration.md      # Integration log
 ├── phase6a_codex_review.md
 ├── phase6b_gemini_review.md
 └── iterations.md
@@ -226,3 +329,4 @@ Save iterations to `.ai-orchestration/iterations.md`.
 - **Prompt Templates**: [prompt-templates.md](references/prompt-templates.md) - Detailed prompts for each focus area
 - **Workflow Patterns**: [workflow-patterns.md](references/workflow-patterns.md) - Security-First, Architecture Decision, Rapid Iteration patterns
 - **Synthesis Guide**: [synthesis-guide.md](references/synthesis-guide.md) - Divergence analysis, priority matrix, resolution patterns
+- **Co-Implementation Guide**: [co-implementation-guide.md](references/co-implementation-guide.md) - Handoff format, output format, integration process

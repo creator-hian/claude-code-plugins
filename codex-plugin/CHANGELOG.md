@@ -2,6 +2,32 @@
 
 All notable changes to the codex-plugin project.
 
+## [1.4.0] - 2025-12-19
+
+### Changed
+- **New Default Model**: `gpt-5.2-codex` is now the recommended default model
+  - Latest Codex-optimized frontier model with best code analysis performance
+  - Replaces `gpt-5.2` as the primary recommendation
+- **Deprecated Model Removed**: `gpt-5.1-codex` has been removed from model lineup
+  - Standard code reviews now handled by `gpt-5.2` or `gpt-5.2-codex`
+
+### Updated Files
+- `skills/codex-cli/SKILL.md` - Model table and example commands
+- `skills/codex-cli/references/options.md` - Model selection section
+- `skills/codex-cli/references/commands.md` - Model options and examples
+- `skills/codex-cli/references/examples.md` - Model + Reasoning combinations
+- `skills/codex-cli/VALIDATION.md` - Valid model list (8.1)
+- `skills/codex-claude-loop/SKILL.md` - Model preference options
+- `README.md` - Quick start examples and model list
+
+### New Model Lineup (4 models)
+| Model | Description | Best For |
+|-------|-------------|----------|
+| `gpt-5.2-codex` | Latest Codex-optimized frontier model (recommended) | Complex analysis, critical systems |
+| `gpt-5.2` | Latest frontier model - best general performance | General AI tasks, multi-domain |
+| `gpt-5.1-codex-max` | Codex-optimized flagship for deep reasoning | Security audits, architecture review |
+| `gpt-5.1-codex-mini` | Cheaper, faster, less capable | Quick checks, batch operations |
+
 ## [1.2.1] - 2025-12-12
 
 ### Changed

@@ -1,6 +1,6 @@
 ---
 name: codex-cli
-description: OpenAI Codex CLI fundamentals for code analysis, review, and validation. Use when (1) executing codex commands for code review/analysis, (2) configuring models (gpt-5.2/gpt-5.1-codex-max/codex/codex-mini), sandbox modes (read-only/workspace-write), or reasoning effort (low/medium/high/xhigh), (3) managing Codex sessions with resume, (4) integrating Codex into automation scripts. Do NOT use for orchestration patterns (use codex-claude-loop instead).
+description: OpenAI Codex CLI fundamentals for code analysis, review, and validation. Use when (1) executing codex commands for code review/analysis, (2) configuring models (gpt-5.2-codex/gpt-5.2/gpt-5.1-codex-max/codex-mini), sandbox modes (read-only/workspace-write), or reasoning effort (low/medium/high/xhigh), (3) managing Codex sessions with resume, (4) integrating Codex into automation scripts. Do NOT use for orchestration patterns (use codex-claude-loop instead).
 ---
 
 # Codex CLI Skill
@@ -36,7 +36,7 @@ codex "Review this code for bugs"
 codex exec -s read-only "Review this code for bugs"
 
 # With specific model and reasoning effort
-codex exec -s read-only -m gpt-5.2 -c model_reasoning_effort=high "Deep analysis"
+codex exec -s read-only -m gpt-5.2-codex -c model_reasoning_effort=high "Deep analysis"
 
 # With image input
 codex exec -s read-only -i screenshot.png "What's shown here?"
@@ -50,7 +50,7 @@ codex exec -s read-only -i screenshot.png "What's shown here?"
 codex exec --skip-git-repo-check -s read-only "Review this code for bugs"
 
 # With options
-codex exec --skip-git-repo-check -s read-only -m gpt-5.2 "Deep analysis"
+codex exec --skip-git-repo-check -s read-only -m gpt-5.2-codex "Deep analysis"
 ```
 
 ### Session Resume (Special Syntax)
@@ -77,9 +77,9 @@ codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the 
 
 | Model | Best For |
 |-------|----------|
-| `gpt-5.2` | Complex analysis, critical systems (recommended) |
+| `gpt-5.2-codex` | Complex analysis, critical systems (recommended) |
+| `gpt-5.2` | General AI tasks, multi-domain |
 | `gpt-5.1-codex-max` | Security audits, architecture review |
-| `gpt-5.1-codex` | Standard code reviews |
 | `gpt-5.1-codex-mini` | Quick checks, batch operations |
 
 ## Reasoning Effort
@@ -115,7 +115,7 @@ codex exec --skip-git-repo-check -s read-only resume [SESSION_ID] "Continue the 
 codex exec -s read-only "Review: $(cat src/auth.js)"
 
 # Maximum depth analysis
-codex exec -m gpt-5.2 -c model_reasoning_effort=xhigh -s read-only "Security audit"
+codex exec -m gpt-5.2-codex -c model_reasoning_effort=xhigh -s read-only "Security audit"
 
 # Session continuity
 codex exec -s read-only resume [SESSION_ID] "Continue analysis"

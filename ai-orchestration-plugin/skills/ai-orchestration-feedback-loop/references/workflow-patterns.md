@@ -246,6 +246,9 @@ Plan → Validate → Implement Stage 1 → Review → Implement Stage 2 → Rev
 | Compliance requirement | Consensus-Required | Zero tolerance |
 | Complex refactoring | Staged Rollout | Incremental validation |
 | Novel approach | Expert Rotation | Bias mitigation |
+| Documentation-heavy feature | Co-Implementation | AI specialization |
+| Boilerplate-intensive work | Co-Implementation | Gemini efficiency |
+| Quality optimization focus | Co-Implementation | Dual AI strengths |
 
 ## Anti-Patterns
 
@@ -268,3 +271,82 @@ Plan → Validate → Implement Stage 1 → Review → Implement Stage 2 → Rev
 **Problem**: Acting on individual AI feedback without synthesis
 **Risk**: Contradictory changes, incomplete fixes
 **Solution**: Always include synthesis phase
+
+---
+
+## Pattern 8: Co-Implementation Loop
+
+```
+Plan → Validate → Synthesize → Core(Claude) → Aux(Gemini) → Integrate → Review → Done
+```
+
+**Use when**: Documentation-heavy features, boilerplate-intensive work, quality optimization through AI specialization
+
+**Key differences**:
+- Phase 5 split into 5a (Claude core) → 5b (Gemini auxiliary) → 5c (Claude integration)
+- Gemini generates documentation and/or boilerplate code
+- Claude focuses on core business logic
+- Review-first integration ensures quality
+
+**Configuration** (Phase 0):
+```
+Co-Implementation: Full (or Docs Only / Boilerplate Only)
+Documentation Scope: api-docs, inline-comments
+Boilerplate Scope: utilities, configs
+Review Mode: review-first
+```
+
+**Phase sequence**:
+1. Phases 1-4: Standard planning and validation
+2. Phase 5a: Claude implements core logic (creates handoff spec)
+3. Phase 5b: Gemini generates auxiliary code (docs/boilerplate)
+4. Phase 5c: Claude validates and integrates Gemini output
+5. Phase 6-7: Standard review and iteration
+
+**Handoff spec example** (`.ai-orchestration/phase5b_handoff.md`):
+```markdown
+# Gemini Co-Implementation Handoff
+## Context
+- Language: TypeScript
+- Framework: Next.js
+## Files Created
+- src/services/UserService.ts
+## Generation Tasks
+### Task 1: API Documentation
+**Type**: api-docs
+**Target**: src/services/UserService.ts
+**Code Context**:
+\`\`\`typescript
+export class UserService {
+  async getUser(id: string): Promise<User> { ... }
+  async updateUser(id: string, data: UpdateUserDTO): Promise<User> { ... }
+}
+\`\`\`
+**Requirements**: JSDoc with @param, @returns, @throws, @example
+```
+
+**Gemini generation command**:
+```bash
+gemini -m [PRO_MODEL] -p "Generate auxiliary code per handoff spec:
+$(cat .ai-orchestration/phase5b_handoff.md)
+
+Output format: Use FILE: markers to separate files"
+```
+
+**Integration review options**:
+| Mode | Process |
+|------|---------|
+| Review-first | Show Gemini output → User approves → Integrate |
+| Auto-integrate | Syntax valid → Integrate → Report |
+| Strict | Ask approval per file |
+
+**Quality benefits**:
+- Claude focuses on core logic complexity
+- Gemini handles repetitive documentation/boilerplate
+- Dual validation of all generated code
+- User maintains control via review mode
+
+**Anti-patterns for Co-Implementation**:
+- ❌ Using for simple single-file changes (overhead not justified)
+- ❌ Skipping integration review (quality risk)
+- ❌ Unclear handoff specs (Gemini generates wrong content)
