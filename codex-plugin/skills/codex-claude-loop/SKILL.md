@@ -54,7 +54,7 @@ codex exec --skip-git-repo-check -s read-only "prompt"
 ```
 
 5. **Ask user via `AskUserQuestion`**:
-   - Model preference (gpt-5.2, gpt-5.1-codex-max, gpt-5.1-codex, gpt-5.1-codex-mini)
+   - Model preference (gpt-5.2-codex, gpt-5.2, gpt-5.1-codex-max, gpt-5.1-codex-mini)
    - Reasoning effort level (low, medium, high, xhigh)
 
 ## Phase 1: Planning (Claude)
