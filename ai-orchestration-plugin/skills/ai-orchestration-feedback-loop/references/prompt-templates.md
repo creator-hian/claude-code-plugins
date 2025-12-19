@@ -408,3 +408,137 @@ Output format:
 ## New Concerns (if any)
 ## Updated Recommendation
 ```
+
+---
+
+## Phase 5b: Gemini Co-Implementation Prompts
+
+### Documentation Generation
+```
+Generate comprehensive documentation for the following code:
+
+## Handoff Specification
+$(cat .ai-orchestration/phase5b_handoff.md)
+
+## Documentation Requirements
+1. Generate [JSDoc/TSDoc/XML/PyDoc] documentation for all public APIs
+2. Include for each function/method:
+   - Clear description of purpose
+   - @param with type and description for each parameter
+   - @returns with type and description
+   - @throws for potential errors/exceptions
+   - @example with realistic usage
+3. Add inline comments for complex logic blocks
+4. Follow project documentation conventions
+
+## Output Format
+Use FILE: marker system to separate files:
+\`\`\`
+FILE: path/to/file.ext
+---
+[documented code or doc comments to insert]
+---
+FILE: next/file.ext
+---
+[content]
+---
+\`\`\`
+
+Group output by file, with clear markers for insertion points.
+```
+
+### Boilerplate Generation
+```
+Generate boilerplate/utility code based on specifications:
+
+## Handoff Specification
+$(cat .ai-orchestration/phase5b_handoff.md)
+
+## Generation Requirements
+1. Generate fully functional code (no placeholders, no TODOs)
+2. Match existing code style and patterns in the codebase
+3. Include all necessary imports and dependencies
+4. Add comprehensive documentation (JSDoc/TSDoc/etc.)
+5. Ensure type safety for TypeScript/typed languages
+6. Follow project naming conventions
+
+## Quality Constraints
+- All code must be production-ready
+- No stub implementations or "not implemented" throws
+- Handle edge cases appropriately
+- Include error handling where needed
+
+## Output Format
+Use FILE: marker system:
+\`\`\`
+FILE: path/to/file.ext
+---
+[complete file contents with imports]
+---
+\`\`\`
+```
+
+### Combined Documentation + Boilerplate
+```
+Generate auxiliary code (documentation and boilerplate):
+
+## Core Implementation Context
+$(cat .ai-orchestration/implementation.md)
+
+## Handoff Specification
+$(cat .ai-orchestration/phase5b_handoff.md)
+
+## Generation Scope
+- Documentation: [yes/no] - Scope: [api-docs, inline-comments, readme, jsdoc]
+- Boilerplate: [yes/no] - Scope: [utilities, configs, interfaces, test-scaffolds]
+
+## Requirements
+1. Documentation: Complete API documentation with examples
+2. Boilerplate: Fully functional utility code
+3. All code production-ready
+4. Consistent with existing codebase patterns
+
+## Output Format
+Organize output by category:
+
+### DOCUMENTATION
+FILE: path/to/documented/file.ext
+---
+[documentation content]
+---
+
+### BOILERPLATE
+FILE: path/to/utility/file.ext
+---
+[utility code]
+---
+```
+
+### Revision Request
+```
+Revise the following generated code based on validation feedback:
+
+## Original Output
+$(cat .ai-orchestration/phase5b_gemini_output.md)
+
+## Validation Issues
+[List specific issues found during validation]
+
+## Required Corrections
+[Specific fixes needed]
+
+## Constraints
+- Address all listed issues
+- Maintain existing correct code
+- Do not introduce new issues
+- Keep same FILE: marker format
+
+## Output Format
+Provide corrected output using same FILE: marker system:
+\`\`\`
+FILE: path/to/file.ext
+---
+[corrected content]
+---
+\`\`\`
+```
