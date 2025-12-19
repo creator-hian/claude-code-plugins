@@ -1,6 +1,8 @@
 ---
 name: csharp-async-patterns
 description: Modern C# asynchronous programming patterns using async/await, proper CancellationToken usage, and error handling in async code. Use when guidance needed on async/await best practices, Task composition and coordination, ConfigureAwait usage, ValueTask optimization, or async operation cancellation patterns. Pure .NET framework patterns applicable to any C# application.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # C# Async/Await Patterns
