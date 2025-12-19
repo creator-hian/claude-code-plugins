@@ -1,21 +1,19 @@
 ---
 name: csharp-code-style
-description: C# code style and naming conventions based on Microsoft guidelines. Covers naming rules (PascalCase, camelCase, _privateField), code organization, modern C# patterns, nullable reference types, and error handling. Use PROACTIVELY for C# code reviews, refactoring, or establishing project standards.
+description: C# code style and naming conventions based on POCU standards. Covers naming rules (mPascalCase for private, bBoolean prefix, EEnum prefix), code organization, C# 9.0 patterns. Use PROACTIVELY for C# code reviews, refactoring, or establishing project standards.
 ---
 
 # C# Code Style Guide
 
 ## Overview
 
-Comprehensive C# code style guidelines based on Microsoft's official coding conventions and modern .NET best practices.
+C# 코딩 표준 (POCU 기반, C# 9.0 기준)
 
 **Core Topics**:
-- Naming conventions (PascalCase, camelCase, prefixes)
-- Code organization and file structure
-- Modern C# patterns (records, pattern matching)
-- Nullable reference types
-- Error handling patterns
-- Collection and LINQ usage
+- 명명 규칙 (m접두어, b접두어, E/S접두어)
+- 코드 작성 규칙
+- 클래스 구조 순서
+- C# 9.0 패턴
 
 ## Naming Conventions
 
@@ -23,286 +21,331 @@ Comprehensive C# code style guidelines based on Microsoft's official coding conv
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Class, Struct, Record | PascalCase | `CustomerService`, `OrderResult` |
+| Class | PascalCase | `PlayerManager`, `OrderService` |
+| Struct | SPascalCase | `SUserID`, `SPlayerData` |
 | Interface | IPascalCase | `IDisposable`, `IOrderService` |
-| Method | PascalCase | `GetCustomerById`, `ProcessOrder` |
-| Property | PascalCase | `FirstName`, `IsEnabled` |
-| Public Field | PascalCase | `MaxRetryCount` |
-| Private Field | _camelCase | `_customerRepository`, `_logger` |
-| Parameter | camelCase | `customerId`, `orderDate` |
+| Enum | EPascalCase | `EDirection`, `EOrderStatus` |
+| Method (public) | PascalCase (동사+명사) | `GetAge()`, `ProcessOrder()` |
+| Method (private) | camelCase | `getAge()`, `processOrder()` |
+| Property | PascalCase | `Name`, `OrderID` |
+| Private Field | mPascalCase | `mAge`, `mOrderRepository` |
 | Local Variable | camelCase | `totalAmount`, `isValid` |
-| Constant | PascalCase | `DefaultTimeout`, `MaxBufferSize` |
-| Enum | PascalCase | `OrderStatus`, `PaymentType` |
-| Enum Value | PascalCase | `Pending`, `Completed` |
-| Type Parameter | TPascalCase | `TEntity`, `TResult` |
-| Async Method | PascalCaseAsync | `GetOrderAsync`, `SaveAsync` |
+| Parameter | camelCase | `customerId`, `orderDate` |
+| Constant | ALL_CAPS | `MAX_RETRY_COUNT`, `DEFAULT_TIMEOUT` |
+| Static readonly | ALL_CAPS | `MY_CONST_OBJECT` |
+| Boolean Variable | bCamelCase / mbPascalCase | `bFired`, `mbIsEnabled` |
+| Boolean Property | Is/Has/Can/Should | `IsFired`, `HasChildren` |
 
-### Private Field Pattern
+### Private Member Pattern
 
 ```csharp
 public class OrderService
 {
-    // Private fields: underscore + camelCase
-    private readonly IOrderRepository _orderRepository;
-    private readonly ILogger<OrderService> _logger;
-    private int _retryCount;
+    // Private fields: m + PascalCase
+    private readonly IOrderRepository mOrderRepository;
+    private readonly ILogger mLogger;
+    private int mRetryCount;
+    private bool mbIsProcessing;  // boolean: mb prefix
 
-    // Constructor parameter: camelCase (no underscore)
-    public OrderService(IOrderRepository orderRepository, ILogger<OrderService> logger)
+    // Constructor parameter: camelCase (no prefix)
+    public OrderService(IOrderRepository orderRepository, ILogger logger)
     {
-        _orderRepository = orderRepository;
-        _logger = logger;
+        mOrderRepository = orderRepository;
+        mLogger = logger;
+    }
+
+    // Public method: PascalCase
+    public Order GetOrder(int orderId)
+    {
+        return getOrderInternal(orderId);
+    }
+
+    // Private method: camelCase
+    private Order getOrderInternal(int orderId)
+    {
+        return mOrderRepository.Find(orderId);
     }
 }
 ```
 
-### Boolean Naming
+### Enum and Struct Prefixes
 
 ```csharp
-// Properties: Use Is, Has, Can, Should prefixes
-public bool IsEnabled { get; set; }
-public bool HasPermission { get; set; }
-public bool CanExecute { get; }
-public bool ShouldRetry { get; }
+// Enum: E prefix
+public enum EDirection
+{
+    None,
+    North,
+    South,
+    East,
+    West
+}
 
-// Methods: Use verb form
-public bool Validate() { }
-public bool TryParse(string input, out int result) { }
-public bool Contains(string value) { }
+// Bit flags enum: Flags suffix
+[Flags]
+public enum EVisibilityFlags
+{
+    None = 0,
+    Visible = 1,
+    Hidden = 2,
+    Collapsed = 4
+}
+
+// Struct: S prefix (readonly struct는 제외 가능)
+public struct SUserID
+{
+    public int Value { get; }
+}
+
+// readonly record struct: S prefix 불필요
+public readonly record struct UserID(int Value);
 ```
 
-## Modern C# Patterns
-
-### Records for DTOs
+### Nullable Naming
 
 ```csharp
-// Immutable data transfer objects
+// Nullable parameter: OrNull suffix
+public Animation GetAnimation(string nameOrNull)
+{
+    if (nameOrNull == null)
+    {
+        return DefaultAnimation;
+    }
+    return mAnimations[nameOrNull];
+}
+
+// Nullable return: OrNull suffix
+public string GetNameOrNull()
+{
+    return mbHasName ? mName : null;
+}
+
+// Recursive function: Recursive suffix
+public int FibonacciRecursive(int n)
+{
+    if (n <= 1)
+    {
+        return n;
+    }
+    return FibonacciRecursive(n - 1) + FibonacciRecursive(n - 2);
+}
+```
+
+## Code Writing Rules
+
+### Prohibited Patterns
+
+```csharp
+// ❌ WRONG: var keyword
+var order = GetOrder(1);
+var items = new List<Item>();
+
+// ✅ CORRECT: Explicit type
+Order order = GetOrder(1);
+List<Item> items = new List<Item>();
+
+// ❌ WRONG: Null coalescing operator (??)
+string name = inputName ?? "Default";
+
+// ✅ CORRECT: Explicit null check
+string name;
+if (inputName != null)
+{
+    name = inputName;
+}
+else
+{
+    name = "Default";
+}
+
+// ❌ WRONG: using declaration (C# 8.0)
+using FileStream stream = new FileStream(path, FileMode.Open);
+
+// ✅ CORRECT: using statement
+using (FileStream stream = new FileStream(path, FileMode.Open))
+{
+    // ...
+}
+
+// ❌ WRONG: target-typed new()
+List<Order> orders = new();
+
+// ✅ CORRECT: Explicit type
+List<Order> orders = new List<Order>();
+
+// ❌ WRONG: Async suffix
+public async Task<Order> GetOrderAsync(int id);
+
+// ✅ CORRECT: No Async suffix
+public async Task<Order> GetOrder(int id);
+
+// ❌ WRONG: inline out declaration
+if (int.TryParse(input, out int result))
+
+// ✅ CORRECT: separate out declaration
+int result;
+if (int.TryParse(input, out result))
+```
+
+### Required Patterns
+
+```csharp
+// Always use braces, even for single line
+if (condition)
+{
+    DoSomething();
+}
+
+// Float literals with f suffix
+float value = 0.5f;
+float another = 1.0f;
+
+// Switch must have default case
+switch (status)
+{
+    case EStatus.Active:
+        Process();
+        break;
+    case EStatus.Inactive:
+        Skip();
+        break;
+    default:
+        Debug.Fail("Unknown status");
+        break;
+}
+
+// Debug.Assert for all assumptions
+Debug.Assert(order != null, "Order should not be null");
+Debug.Assert(count > 0, "Count must be positive");
+
+// Properties instead of getter/setter methods
+// ❌ WRONG
+public int GetAge() { return mAge; }
+public void SetAge(int age) { mAge = age; }
+
+// ✅ CORRECT
+public int Age { get; private init; }
+```
+
+### C# 9.0 Patterns
+
+```csharp
+// private init (C# 9.0) - recommended
+public class Customer
+{
+    public string Name { get; private init; }
+    public string Email { get; private init; }
+
+    public Customer(string name, string email)
+    {
+        Name = name;
+        Email = email;
+    }
+}
+
+// Record for immutable data
 public record OrderDto(int Id, string CustomerName, decimal TotalAmount);
 
-// With optional properties
-public record CustomerDto(string Name, string Email)
+// Pattern matching switch expression
+public string GetStatusMessage(EOrderStatus status)
 {
-    public string? Phone { get; init; }
+    return status switch
+    {
+        EOrderStatus.Pending => "Order is pending",
+        EOrderStatus.Processing => "Order is being processed",
+        EOrderStatus.Completed => "Order completed",
+        EOrderStatus.Cancelled => "Order was cancelled",
+        _ => throw new ArgumentOutOfRangeException(nameof(status))
+    };
 }
 ```
 
-### Pattern Matching
+## Class Structure Order
 
 ```csharp
-// Switch expressions
-public string GetStatusMessage(OrderStatus status) => status switch
-{
-    OrderStatus.Pending => "Order is pending",
-    OrderStatus.Processing => "Order is being processed",
-    OrderStatus.Completed => "Order completed",
-    OrderStatus.Cancelled => "Order was cancelled",
-    _ => throw new ArgumentOutOfRangeException(nameof(status))
-};
-
-// Property patterns
-public decimal CalculateDiscount(Customer customer) => customer switch
-{
-    { IsPremium: true, OrderCount: > 100 } => 0.20m,
-    { IsPremium: true } => 0.10m,
-    { OrderCount: > 50 } => 0.05m,
-    _ => 0m
-};
-
-// Type patterns with null check
-public string Describe(object? obj) => obj switch
-{
-    null => "null",
-    string s => $"String: {s}",
-    int n => $"Number: {n}",
-    IEnumerable<int> list => $"List with {list.Count()} items",
-    _ => obj.ToString() ?? "unknown"
-};
-```
-
-### Nullable Reference Types
-
-```csharp
-#nullable enable
-
-public class CustomerService
-{
-    // Non-nullable: must always have value
-    private readonly IRepository _repository;
-
-    // Nullable: explicitly allow null
-    private ICache? _cache;
-
-    public Customer? FindById(int id)
-    {
-        return _repository.Find(id);
-    }
-
-    public string GetDisplayName(Customer? customer)
-    {
-        // Null-conditional and null-coalescing
-        return customer?.Name ?? "Unknown";
-    }
-
-    public void ProcessCustomer(Customer customer)
-    {
-        // Null-forgiving operator (use sparingly, only when you know better than compiler)
-        var name = customer.Name!;
-    }
-}
-```
-
-## Code Organization
-
-### File Structure
-
-```csharp
-// 1. Using directives (sorted: System first, then alphabetical)
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using MyCompany.Core.Entities;
-
-// 2. Namespace
-namespace MyCompany.Orders.Services;
-
-// 3. Type declaration
 public class OrderService : IOrderService
 {
-    // 4. Constants
-    private const int MaxRetryCount = 3;
+    // 1. Constants
+    private const int MAX_RETRY_COUNT = 3;
+    public static readonly TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromSeconds(30);
 
-    // 5. Static fields
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    // 2. Private member variables
+    private readonly IOrderRepository mOrderRepository;
+    private readonly ILogger mLogger;
+    private int mProcessedCount;
+    private bool mbIsInitialized;
 
-    // 6. Instance fields
-    private readonly IOrderRepository _orderRepository;
-    private readonly ILogger<OrderService> _logger;
+    // 3. Properties (with private member above if needed)
+    public int ProcessedCount => mProcessedCount;
+    public bool IsInitialized => mbIsInitialized;
 
-    // 7. Constructors
-    public OrderService(IOrderRepository orderRepository, ILogger<OrderService> logger)
+    // 4. Constructors
+    public OrderService(IOrderRepository orderRepository, ILogger logger)
     {
-        _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        mOrderRepository = orderRepository;
+        mLogger = logger;
     }
 
-    // 8. Properties
-    public int ProcessedCount { get; private set; }
+    // 5. Public methods
+    public Order GetOrder(int id)
+    {
+        Debug.Assert(id > 0, "ID must be positive");
+        return mOrderRepository.Find(id);
+    }
 
-    // 9. Public methods
-    public async Task<Order> GetOrderAsync(int id, CancellationToken ct = default)
+    public void ProcessOrder(Order order)
+    {
+        validateOrder(order);
+        processInternal(order);
+    }
+
+    // 6. Private methods
+    private void validateOrder(Order order)
+    {
+        Debug.Assert(order != null);
+    }
+
+    private void processInternal(Order order)
     {
         // Implementation
     }
-
-    // 10. Private methods
-    private void ValidateOrder(Order order)
-    {
-        // Implementation
-    }
 }
 ```
 
-### Expression-Bodied Members
+## File Organization
 
-```csharp
-public class Point
-{
-    public int X { get; }
-    public int Y { get; }
-
-    // Constructor
-    public Point(int x, int y) => (X, Y) = (x, y);
-
-    // Property (read-only)
-    public double Distance => Math.Sqrt(X * X + Y * Y);
-
-    // Method
-    public override string ToString() => $"({X}, {Y})";
-
-    // Operator
-    public static Point operator +(Point a, Point b) => new(a.X + b.X, a.Y + b.Y);
-}
-```
-
-## Error Handling
-
-### Guard Clauses
-
-```csharp
-public async Task<Order> CreateOrderAsync(OrderRequest request, CancellationToken ct = default)
-{
-    // Guard clauses at the beginning
-    ArgumentNullException.ThrowIfNull(request);
-    ArgumentException.ThrowIfNullOrEmpty(request.CustomerName);
-
-    if (request.Items.Count == 0)
-        throw new ArgumentException("Order must have at least one item", nameof(request));
-
-    // Main logic after guards
-    var order = new Order(request);
-    await _repository.SaveAsync(order, ct);
-    return order;
-}
-```
-
-### Result Pattern
-
-```csharp
-// Instead of throwing exceptions for expected failures
-public record Result<T>
-{
-    public bool IsSuccess { get; init; }
-    public T? Value { get; init; }
-    public string? Error { get; init; }
-
-    public static Result<T> Success(T value) => new() { IsSuccess = true, Value = value };
-    public static Result<T> Failure(string error) => new() { IsSuccess = false, Error = error };
-}
-
-// Usage
-public Result<Order> ValidateOrder(Order order)
-{
-    if (order.Items.Count == 0)
-        return Result<Order>.Failure("Order must have items");
-
-    if (order.TotalAmount <= 0)
-        return Result<Order>.Failure("Invalid total amount");
-
-    return Result<Order>.Success(order);
-}
-```
+- 각 클래스는 독립된 파일에 작성
+- 파일명 = 클래스명 (정확히 일치)
+- Partial 클래스: `ClassName.SubName.cs`
 
 ## Reference Documentation
 
 ### [Naming Conventions](references/naming-conventions.md)
 Complete naming rules:
-- Detailed conventions for all code elements
-- Abbreviations and acronyms handling
-- Common naming patterns and examples
-- Anti-patterns to avoid
+- m/mb 접두어 상세
+- E/S 접두어 규칙
+- OrNull 접미어 패턴
+- ALL_CAPS 상수 규칙
 
 ### [Modern Patterns](references/modern-patterns.md)
-Modern C# language features:
+C# 9.0 language features:
 - Records and init-only properties
-- Pattern matching deep dive
-- Target-typed new expressions
-- Global and implicit usings
-- File-scoped namespaces
+- Pattern matching
+- File-scoped namespaces (C# 10)
+- 금지 패턴 상세
 
 ### [Error Handling](references/error-handling.md)
-Robust error handling patterns:
-- Exception hierarchy design
-- Guard clause patterns
-- Result/Option patterns
-- Validation strategies
-- Logging best practices
+Error handling patterns:
+- Debug.Assert 사용
+- 경계에서만 예외 처리
+- null 반환/매개변수 회피
+- 유효성 검증 패턴
 
 ## Key Principles
 
-1. **Consistency First**: Follow project conventions, fallback to Microsoft standards
-2. **Explicit Over Implicit**: Use clear, descriptive names; avoid abbreviations
-3. **Modern Features**: Leverage latest C# features for cleaner code
-4. **Null Safety**: Enable nullable reference types and handle nulls explicitly
-5. **Guard Early**: Validate inputs at method entry with guard clauses
-6. **Prefer Immutability**: Use records, readonly, init-only where possible
+1. **가독성 최우선**: 명확하고 이해하기 쉬운 코드 작성
+2. **명시적 타입**: `var` 사용 금지, 타입 명시
+3. **Null 안전**: OrNull 접미어로 nullable 명시
+4. **Assertion**: 모든 가정에 Debug.Assert 사용
+5. **경계 검증**: 외부 데이터는 경계에서만 검증
+6. **init 사용**: C# 9.0의 private init 적극 활용

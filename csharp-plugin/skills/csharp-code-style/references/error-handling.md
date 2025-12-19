@@ -1,270 +1,377 @@
-# C# Error Handling Reference
+# C# Error Handling Reference (POCU)
 
-## Guard Clauses
+## Debug.Assert 사용
 
-### ArgumentNullException.ThrowIfNull (C# 10+)
-
-```csharp
-public async Task<Order> CreateOrderAsync(OrderRequest request, CancellationToken ct = default)
-{
-    // Modern guard syntax
-    ArgumentNullException.ThrowIfNull(request);
-    ArgumentNullException.ThrowIfNull(request.Customer);
-
-    // Continue with valid request
-    return await ProcessOrderAsync(request, ct);
-}
-```
-
-### ArgumentException Guards (C# 11+)
-
-```csharp
-public void ProcessOrder(string orderId, int quantity)
-{
-    // String guards
-    ArgumentException.ThrowIfNullOrEmpty(orderId);
-    ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-
-    // Numeric guards
-    ArgumentOutOfRangeException.ThrowIfNegative(quantity);
-    ArgumentOutOfRangeException.ThrowIfZero(quantity);
-    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
-    ArgumentOutOfRangeException.ThrowIfGreaterThan(quantity, 1000);
-    ArgumentOutOfRangeException.ThrowIfLessThan(quantity, 1);
-
-    // Continue with validated inputs
-}
-```
-
-### Custom Guard Methods
-
-```csharp
-public static class Guard
-{
-    public static void Against<TException>(bool condition, string message)
-        where TException : Exception, new()
-    {
-        if (condition)
-        {
-            throw (TException)Activator.CreateInstance(typeof(TException), message)!;
-        }
-    }
-
-    public static T NotNull<T>(T? value, string paramName) where T : class
-    {
-        return value ?? throw new ArgumentNullException(paramName);
-    }
-
-    public static string NotNullOrEmpty(string? value, string paramName)
-    {
-        if (string.IsNullOrEmpty(value))
-            throw new ArgumentException("Value cannot be null or empty", paramName);
-        return value;
-    }
-}
-
-// Usage
-public void Process(Order? order)
-{
-    var validOrder = Guard.NotNull(order, nameof(order));
-    Guard.Against<InvalidOperationException>(validOrder.Items.Count == 0, "Order has no items");
-}
-```
-
-## Exception Hierarchy Design
-
-### Custom Exception Base
-
-```csharp
-// Base exception for your domain
-public abstract class DomainException : Exception
-{
-    public string Code { get; }
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
-
-    protected DomainException(string code, string message) : base(message)
-    {
-        Code = code;
-    }
-
-    protected DomainException(string code, string message, Exception inner) : base(message, inner)
-    {
-        Code = code;
-    }
-}
-```
-
-### Specific Domain Exceptions
-
-```csharp
-public class EntityNotFoundException : DomainException
-{
-    public string EntityType { get; }
-    public object EntityId { get; }
-
-    public EntityNotFoundException(string entityType, object entityId)
-        : base("NOT_FOUND", $"{entityType} with ID {entityId} was not found")
-    {
-        EntityType = entityType;
-        EntityId = entityId;
-    }
-}
-
-public class ValidationException : DomainException
-{
-    public IReadOnlyList<ValidationError> Errors { get; }
-
-    public ValidationException(IEnumerable<ValidationError> errors)
-        : base("VALIDATION_FAILED", "One or more validation errors occurred")
-    {
-        Errors = errors.ToList();
-    }
-}
-
-public class ConcurrencyException : DomainException
-{
-    public ConcurrencyException(string message)
-        : base("CONCURRENCY_CONFLICT", message) { }
-}
-```
-
-### Exception Factory
-
-```csharp
-public static class DomainErrors
-{
-    public static EntityNotFoundException NotFound<T>(object id)
-        => new(typeof(T).Name, id);
-
-    public static ValidationException InvalidInput(string field, string message)
-        => new(new[] { new ValidationError(field, message) });
-
-    public static InvalidOperationException InvalidState(string message)
-        => new(message);
-}
-
-// Usage
-throw DomainErrors.NotFound<Order>(orderId);
-throw DomainErrors.InvalidInput("Email", "Invalid email format");
-```
-
-## Result Pattern
-
-### Basic Result Type
-
-```csharp
-public readonly struct Result<T>
-{
-    private readonly T? _value;
-    private readonly string? _error;
-
-    public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess;
-
-    public T Value => IsSuccess
-        ? _value!
-        : throw new InvalidOperationException($"Cannot access Value on failure: {_error}");
-
-    public string Error => !IsSuccess
-        ? _error!
-        : throw new InvalidOperationException("Cannot access Error on success");
-
-    private Result(T value)
-    {
-        IsSuccess = true;
-        _value = value;
-        _error = null;
-    }
-
-    private Result(string error)
-    {
-        IsSuccess = false;
-        _value = default;
-        _error = error;
-    }
-
-    public static Result<T> Success(T value) => new(value);
-    public static Result<T> Failure(string error) => new(error);
-
-    public static implicit operator Result<T>(T value) => Success(value);
-
-    public TResult Match<TResult>(Func<T, TResult> onSuccess, Func<string, TResult> onFailure)
-        => IsSuccess ? onSuccess(_value!) : onFailure(_error!);
-}
-```
-
-### Result Extensions
-
-```csharp
-public static class ResultExtensions
-{
-    public static Result<TNew> Map<T, TNew>(this Result<T> result, Func<T, TNew> map)
-        => result.IsSuccess
-            ? Result<TNew>.Success(map(result.Value))
-            : Result<TNew>.Failure(result.Error);
-
-    public static Result<TNew> Bind<T, TNew>(this Result<T> result, Func<T, Result<TNew>> bind)
-        => result.IsSuccess
-            ? bind(result.Value)
-            : Result<TNew>.Failure(result.Error);
-
-    public static async Task<Result<TNew>> MapAsync<T, TNew>(
-        this Task<Result<T>> resultTask,
-        Func<T, TNew> map)
-    {
-        var result = await resultTask;
-        return result.Map(map);
-    }
-}
-```
-
-### Usage Example
+### 모든 가정에 Assert 추가
 
 ```csharp
 public class OrderService
 {
-    public Result<Order> CreateOrder(OrderRequest request)
+    public void ProcessOrder(Order order)
     {
-        // Validation returns Result
-        var validationResult = ValidateRequest(request);
-        if (validationResult.IsFailure)
-            return Result<Order>.Failure(validationResult.Error);
+        // 모든 가정에 Debug.Assert 추가
+        Debug.Assert(order != null, "Order cannot be null");
+        Debug.Assert(order.Items.Count > 0, "Order must have items");
+        Debug.Assert(order.CustomerID > 0, "Invalid customer ID");
 
-        // Business logic
-        var order = new Order(request);
-
-        // Repository might fail
-        var saveResult = _repository.Save(order);
-        if (saveResult.IsFailure)
-            return Result<Order>.Failure(saveResult.Error);
-
-        return order;
+        processInternal(order);
     }
 
-    // Using Bind for cleaner chaining
-    public Result<OrderConfirmation> ProcessOrder(OrderRequest request)
+    public decimal CalculateDiscount(Customer customer, decimal amount)
     {
-        return ValidateRequest(request)
-            .Bind(CreateOrder)
-            .Bind(ApplyDiscounts)
-            .Bind(CalculateShipping)
-            .Map(order => new OrderConfirmation(order));
+        Debug.Assert(customer != null);
+        Debug.Assert(amount >= 0, "Amount must be non-negative");
+        Debug.Assert(customer.DiscountRate >= 0 && customer.DiscountRate <= 1,
+            "Discount rate must be between 0 and 1");
+
+        return amount * customer.DiscountRate;
     }
 }
 ```
 
-## Try Pattern
+### Switch Default Case
+
+```csharp
+public string GetStatusMessage(EOrderStatus status)
+{
+    switch (status)
+    {
+        case EOrderStatus.Pending:
+            return "Order is pending";
+        case EOrderStatus.Processing:
+            return "Processing order";
+        case EOrderStatus.Completed:
+            return "Order completed";
+        case EOrderStatus.Cancelled:
+            return "Order cancelled";
+        default:
+            // 도달 불가능한 default: Debug.Fail 사용
+            Debug.Fail($"Unknown order status: {status}");
+            return "Unknown";
+    }
+}
+
+// Switch expression
+public string GetMessage(ELogLevel level)
+{
+    return level switch
+    {
+        ELogLevel.Debug => "DEBUG",
+        ELogLevel.Info => "INFO",
+        ELogLevel.Warning => "WARNING",
+        ELogLevel.Error => "ERROR",
+        _ => throw new ArgumentOutOfRangeException(nameof(level))
+    };
+}
+```
+
+## 경계에서만 예외 처리
+
+### 경계 함수 (Public API)
+
+```csharp
+// 경계 함수: 외부 데이터 검증 및 예외 처리
+public class OrderController
+{
+    private readonly OrderService mOrderService;
+
+    // 경계: 외부 입력 검증
+    public ActionResult CreateOrder(OrderRequest request)
+    {
+        // 경계에서 모든 검증 수행
+        if (request == null)
+        {
+            return BadRequest("Request is required");
+        }
+
+        if (string.IsNullOrEmpty(request.CustomerName))
+        {
+            return BadRequest("Customer name is required");
+        }
+
+        if (request.Items == null || request.Items.Count == 0)
+        {
+            return BadRequest("Order must have at least one item");
+        }
+
+        foreach (OrderItemRequest item in request.Items)
+        {
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Item quantity must be positive");
+            }
+        }
+
+        // 검증 통과 후 내부 함수 호출 (예외 없음)
+        Order order = mOrderService.CreateOrder(request);
+        return Ok(order);
+    }
+}
+```
+
+### 내부 함수 (예외 금지)
+
+```csharp
+// 내부 함수: 예외를 던지지 않음
+public class OrderService
+{
+    // 내부 함수: 경계에서 이미 검증됨
+    public Order CreateOrder(OrderRequest request)
+    {
+        // Assert로 가정 확인 (Debug 빌드에서만)
+        Debug.Assert(request != null);
+        Debug.Assert(!string.IsNullOrEmpty(request.CustomerName));
+        Debug.Assert(request.Items != null && request.Items.Count > 0);
+
+        Order order = new Order(request.CustomerName);
+        foreach (OrderItemRequest item in request.Items)
+        {
+            Debug.Assert(item.Quantity > 0);
+            order.AddItem(item.ProductID, item.Quantity);
+        }
+
+        mRepository.Save(order);
+        return order;
+    }
+
+    // 내부 helper: 예외 없음
+    private decimal calculateTotal(List<OrderItem> items)
+    {
+        Debug.Assert(items != null);
+
+        decimal total = 0;
+        foreach (OrderItem item in items)
+        {
+            total += item.Price * item.Quantity;
+        }
+        return total;
+    }
+}
+```
+
+## Null 처리 규칙
+
+### Public 함수: null 매개변수 미허용
+
+```csharp
+public class CustomerService
+{
+    // Public: null 허용하지 않음 (경계에서 검증)
+    public void UpdateCustomer(Customer customer)
+    {
+        Debug.Assert(customer != null, "Customer cannot be null");
+        // 경계에서 이미 검증되었으므로 null 체크 불필요
+
+        mRepository.Update(customer);
+    }
+
+    // null 허용 시: OrNull suffix 필수
+    public void UpdateCustomerOrNull(Customer customerOrNull)
+    {
+        if (customerOrNull == null)
+        {
+            return;
+        }
+
+        mRepository.Update(customerOrNull);
+    }
+}
+```
+
+### Public 함수: null 반환 회피
+
+```csharp
+public class OrderRepository
+{
+    // ❌ AVOID: null 반환
+    public Order GetOrder(int id)
+    {
+        return mOrders.FirstOrDefault(o => o.ID == id);  // null 가능
+    }
+
+    // ✅ OPTION 1: OrNull suffix로 명시
+    public Order GetOrderOrNull(int id)
+    {
+        Order order;
+        if (mOrders.TryGetValue(id, out order))
+        {
+            return order;
+        }
+        return null;
+    }
+
+    // ✅ OPTION 2: 존재 확인 후 예외 (경계 함수에서)
+    public Order GetOrder(int id)
+    {
+        Order order = GetOrderOrNull(id);
+        Debug.Assert(order != null, $"Order {id} not found");
+        return order;
+    }
+
+    // ✅ OPTION 3: bool 반환 패턴
+    public bool TryGetOrder(int id, out Order order)
+    {
+        return mOrders.TryGetValue(id, out order);
+    }
+}
+```
+
+## 유효성 검증 패턴
+
+### 경계에서 검증 (Controller/Handler)
+
+```csharp
+public class ProductController
+{
+    public ActionResult UpdatePrice(int productId, UpdatePriceRequest request)
+    {
+        // 경계에서 모든 검증
+        if (productId <= 0)
+        {
+            return BadRequest("Invalid product ID");
+        }
+
+        if (request == null)
+        {
+            return BadRequest("Request body is required");
+        }
+
+        if (request.NewPrice < 0)
+        {
+            return BadRequest("Price cannot be negative");
+        }
+
+        if (request.NewPrice > 1000000)
+        {
+            return BadRequest("Price exceeds maximum allowed");
+        }
+
+        // 검증 통과 - 내부 서비스 호출
+        bool bSuccess = mProductService.UpdatePrice(productId, request.NewPrice);
+
+        if (!bSuccess)
+        {
+            return NotFound($"Product {productId} not found");
+        }
+
+        return Ok();
+    }
+}
+```
+
+### 내부 서비스 (Assert Only)
+
+```csharp
+public class ProductService
+{
+    // 내부: 검증 대신 Assert
+    public bool UpdatePrice(int productId, decimal newPrice)
+    {
+        Debug.Assert(productId > 0);
+        Debug.Assert(newPrice >= 0);
+        Debug.Assert(newPrice <= 1000000);
+
+        Product product = mRepository.GetProductOrNull(productId);
+        if (product == null)
+        {
+            return false;
+        }
+
+        product.Price = newPrice;
+        mRepository.Save(product);
+        return true;
+    }
+}
+```
+
+## async void 금지
+
+```csharp
+public class EventProcessor
+{
+    // ❌ WRONG: async void 사용 금지
+    public async void ProcessEvent(Event evt)
+    {
+        await handleEvent(evt);
+    }
+
+    // ✅ CORRECT: async Task 사용
+    public async Task ProcessEvent(Event evt)
+    {
+        Debug.Assert(evt != null);
+        await handleEvent(evt);
+    }
+
+    // ⚠️ EXCEPTION: 이벤트 핸들러만 async void 허용
+    private async void OnButtonClick(object sender, EventArgs e)
+    {
+        try
+        {
+            await ProcessClick();
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, "Button click failed");
+        }
+    }
+}
+```
+
+## 에러 로깅 패턴
+
+```csharp
+public class OrderProcessor
+{
+    private readonly ILogger mLogger;
+
+    public async Task<bool> ProcessOrder(Order order)
+    {
+        Debug.Assert(order != null);
+
+        try
+        {
+            await validatePayment(order);
+            await reserveInventory(order);
+            await sendConfirmation(order);
+
+            mLogger.Info($"Order {order.ID} processed successfully");
+            return true;
+        }
+        catch (PaymentException ex)
+        {
+            mLogger.Error(ex, $"Payment failed for order {order.ID}");
+            return false;
+        }
+        catch (InventoryException ex)
+        {
+            mLogger.Error(ex, $"Inventory reservation failed for order {order.ID}");
+            await rollbackPayment(order);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, $"Unexpected error processing order {order.ID}");
+            await rollbackAll(order);
+            return false;
+        }
+    }
+}
+```
+
+## Try 패턴
 
 ```csharp
 public class Parser
 {
-    // Standard TryParse pattern
-    public bool TryParse(string input, out Order? order)
+    // Try 패턴: out 매개변수 별도 선언
+    public bool TryParse(string input, out Order order)
     {
         order = null;
 
         if (string.IsNullOrEmpty(input))
+        {
             return false;
+        }
 
         try
         {
@@ -277,258 +384,60 @@ public class Parser
         }
     }
 
-    // Modern tuple-based alternative
-    public (bool Success, Order? Order) TryParseOrder(string input)
+    // 사용
+    public void ProcessInput(string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return (false, null);
-
-        try
+        Order order;
+        if (TryParse(input, out order))
         {
-            var order = JsonSerializer.Deserialize<Order>(input);
-            return (order != null, order);
+            Process(order);
         }
-        catch (JsonException)
+        else
         {
-            return (false, null);
+            mLogger.Warning("Failed to parse order");
         }
     }
 }
 ```
 
-## Async Exception Handling
+## 프로젝트 설정
 
-### Task Exception Handling
+### Release 빌드 경고 → 오류
 
-```csharp
-public async Task ProcessOrdersAsync(IEnumerable<Order> orders, CancellationToken ct)
-{
-    var tasks = orders.Select(order => ProcessOrderAsync(order, ct));
-
-    try
-    {
-        await Task.WhenAll(tasks);
-    }
-    catch (Exception)
-    {
-        // Task.WhenAll throws first exception only
-        // Check all tasks for complete error picture
-        var exceptions = tasks
-            .Where(t => t.IsFaulted)
-            .Select(t => t.Exception!)
-            .ToList();
-
-        if (exceptions.Count > 1)
-        {
-            throw new AggregateException("Multiple orders failed", exceptions);
-        }
-
-        throw; // Re-throw single exception
-    }
-}
+```xml
+<!-- .csproj -->
+<PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+</PropertyGroup>
 ```
 
-### Cancellation Handling
+### Nullable Context 설정
 
-```csharp
-public async Task<Data> LoadDataAsync(CancellationToken ct = default)
-{
-    try
-    {
-        ct.ThrowIfCancellationRequested();
-
-        var data = await FetchDataAsync(ct);
-        return ProcessData(data);
-    }
-    catch (OperationCanceledException) when (ct.IsCancellationRequested)
-    {
-        // Expected cancellation - log and rethrow
-        _logger.LogInformation("Operation was cancelled");
-        throw;
-    }
-    catch (OperationCanceledException)
-    {
-        // Unexpected timeout - wrap in different exception
-        throw new TimeoutException("Operation timed out");
-    }
-}
+```xml
+<!-- .csproj -->
+<PropertyGroup>
+    <Nullable>enable</Nullable>
+</PropertyGroup>
 ```
 
-### Exception Filters
+### Implicit Global Using 금지
 
-```csharp
-public async Task<HttpResponseMessage> SendWithRetryAsync(HttpRequestMessage request)
-{
-    int attempts = 0;
-
-    while (true)
-    {
-        attempts++;
-        try
-        {
-            return await _httpClient.SendAsync(request);
-        }
-        catch (HttpRequestException ex) when (IsTransient(ex) && attempts < MaxRetries)
-        {
-            _logger.LogWarning(ex, "Transient error, attempt {Attempt}/{Max}", attempts, MaxRetries);
-            await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempts)));
-        }
-        // Non-transient errors will propagate
-    }
-}
-
-private static bool IsTransient(HttpRequestException ex)
-{
-    return ex.StatusCode is HttpStatusCode.ServiceUnavailable
-        or HttpStatusCode.GatewayTimeout
-        or HttpStatusCode.TooManyRequests;
-}
+```xml
+<!-- .csproj -->
+<PropertyGroup>
+    <ImplicitUsings>disable</ImplicitUsings>
+</PropertyGroup>
 ```
 
-## Logging Best Practices
+## Summary
 
-### Structured Logging
-
-```csharp
-public class OrderService
-{
-    private readonly ILogger<OrderService> _logger;
-
-    public async Task<Order> ProcessOrderAsync(int orderId, CancellationToken ct)
-    {
-        // Structured logging with typed parameters
-        _logger.LogInformation("Processing order {OrderId}", orderId);
-
-        try
-        {
-            var order = await _repository.GetAsync(orderId, ct);
-
-            _logger.LogInformation(
-                "Order {OrderId} found with {ItemCount} items, total {TotalAmount:C}",
-                orderId, order.Items.Count, order.TotalAmount);
-
-            return order;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Failed to process order {OrderId}. Error: {ErrorMessage}",
-                orderId, ex.Message);
-            throw;
-        }
-    }
-}
-```
-
-### High-Performance Logging
-
-```csharp
-// Define log messages at compile time for performance
-public static partial class LogMessages
-{
-    [LoggerMessage(
-        EventId = 1001,
-        Level = LogLevel.Information,
-        Message = "Processing order {OrderId} for customer {CustomerId}")]
-    public static partial void ProcessingOrder(
-        this ILogger logger, int orderId, string customerId);
-
-    [LoggerMessage(
-        EventId = 1002,
-        Level = LogLevel.Error,
-        Message = "Order {OrderId} processing failed")]
-    public static partial void OrderProcessingFailed(
-        this ILogger logger, int orderId, Exception ex);
-}
-
-// Usage
-_logger.ProcessingOrder(order.Id, order.CustomerId);
-_logger.OrderProcessingFailed(order.Id, exception);
-```
-
-## Validation Strategies
-
-### FluentValidation Style
-
-```csharp
-public class OrderValidator
-{
-    private readonly List<ValidationError> _errors = new();
-
-    public ValidationResult Validate(Order order)
-    {
-        _errors.Clear();
-
-        ValidateRequired(order.CustomerId, nameof(order.CustomerId));
-        ValidatePositive(order.TotalAmount, nameof(order.TotalAmount));
-        ValidateNotEmpty(order.Items, nameof(order.Items));
-
-        foreach (var item in order.Items)
-        {
-            ValidatePositive(item.Quantity, $"Item[{item.ProductId}].Quantity");
-            ValidatePositive(item.Price, $"Item[{item.ProductId}].Price");
-        }
-
-        return new ValidationResult(_errors);
-    }
-
-    private void ValidateRequired<T>(T? value, string field) where T : class
-    {
-        if (value is null)
-            _errors.Add(new ValidationError(field, "is required"));
-    }
-
-    private void ValidatePositive(decimal value, string field)
-    {
-        if (value <= 0)
-            _errors.Add(new ValidationError(field, "must be positive"));
-    }
-
-    private void ValidateNotEmpty<T>(ICollection<T> collection, string field)
-    {
-        if (collection.Count == 0)
-            _errors.Add(new ValidationError(field, "cannot be empty"));
-    }
-}
-```
-
-### Data Annotations
-
-```csharp
-public class OrderRequest
-{
-    [Required(ErrorMessage = "Customer ID is required")]
-    public string CustomerId { get; init; } = "";
-
-    [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be positive")]
-    public decimal TotalAmount { get; init; }
-
-    [MinLength(1, ErrorMessage = "At least one item is required")]
-    public List<OrderItem> Items { get; init; } = new();
-
-    [EmailAddress(ErrorMessage = "Invalid email format")]
-    public string? NotificationEmail { get; init; }
-}
-
-// Validate with DataAnnotations
-public static class Validator
-{
-    public static ValidationResult Validate<T>(T obj)
-    {
-        var context = new ValidationContext(obj);
-        var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-
-        if (System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
-            obj, context, results, validateAllProperties: true))
-        {
-            return ValidationResult.Success();
-        }
-
-        var errors = results.Select(r => new ValidationError(
-            r.MemberNames.FirstOrDefault() ?? "",
-            r.ErrorMessage ?? "Validation failed"));
-
-        return ValidationResult.Failure(errors);
-    }
-}
-```
+| Rule | Description |
+|------|-------------|
+| Debug.Assert | 모든 가정에 사용 |
+| Debug.Fail | 도달 불가능한 코드에 사용 |
+| 경계 검증 | Public API에서만 예외 처리 |
+| 내부 함수 | 예외 던지지 않음, Assert만 사용 |
+| null 매개변수 | Public에서 미허용 (OrNull suffix로 예외) |
+| null 반환 | 회피 (OrNull suffix 또는 Try 패턴) |
+| async void | 금지 (이벤트 핸들러 제외) |
+| TreatWarningsAsErrors | Release 빌드에서 활성화 |

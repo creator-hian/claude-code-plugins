@@ -1,377 +1,419 @@
-# Modern C# Patterns Reference
+# Modern C# Patterns Reference (C# 9.0 기준)
 
-## Records
+## C# 9.0 Features
 
-### Basic Records
-
-```csharp
-// Positional record (most concise)
-public record OrderDto(int Id, string CustomerName, decimal TotalAmount);
-
-// Usage
-var order = new OrderDto(1, "John Doe", 99.99m);
-var (id, name, amount) = order; // Deconstruction
-
-// With-expression for immutable updates
-var updated = order with { TotalAmount = 109.99m };
-```
-
-### Records with Additional Members
+### Init-Only Properties
 
 ```csharp
-public record CustomerDto(string FirstName, string LastName, string Email)
+// private init - 생성자에서만 설정 가능 (권장)
+public class Customer
 {
-    // Computed property
-    public string FullName => $"{FirstName} {LastName}";
+    public int ID { get; private init; }
+    public string Name { get; private init; }
+    public string Email { get; private init; }
 
-    // Optional properties with init
-    public string? Phone { get; init; }
-    public DateTime? BirthDate { get; init; }
+    public Customer(int id, string name, string email)
+    {
+        ID = id;
+        Name = name;
+        Email = email;
+    }
+}
 
-    // Custom method
-    public bool HasValidEmail() => Email.Contains('@');
+// public init - 객체 초기자에서 설정 가능
+public class OrderDto
+{
+    public int ID { get; init; }
+    public string CustomerName { get; init; }
+    public decimal TotalAmount { get; init; }
 }
 
 // Usage
-var customer = new CustomerDto("John", "Doe", "john@example.com")
+OrderDto order = new OrderDto
 {
-    Phone = "123-456-7890"
+    ID = 1,
+    CustomerName = "John",
+    TotalAmount = 99.99m
 };
+// order.ID = 2;  // ❌ Compile error - cannot modify after init
 ```
 
-### Record Structs (C# 10+)
+### Records
 
 ```csharp
-// Value type record for performance
-public readonly record struct Point(int X, int Y);
-public readonly record struct Money(decimal Amount, string Currency);
+// Positional record
+public record OrderDto(int ID, string CustomerName, decimal TotalAmount);
 
-// Mutable record struct (rare)
-public record struct MutablePoint(int X, int Y);
+// Record with additional members
+public record CustomerDto(string FirstName, string LastName, string Email)
+{
+    public string FullName => FirstName + " " + LastName;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+}
+
+// with-expression for copies
+OrderDto original = new OrderDto(1, "John", 100m);
+OrderDto modified = original with { TotalAmount = 150m };
+
+// Value equality
+OrderDto order1 = new OrderDto(1, "John", 100m);
+OrderDto order2 = new OrderDto(1, "John", 100m);
+bool bEqual = order1 == order2;  // true
 ```
 
-## Pattern Matching
-
-### Switch Expressions
-
-```csharp
-// Basic type pattern
-public string Describe(object obj) => obj switch
-{
-    int n => $"Integer: {n}",
-    string s => $"String: {s}",
-    null => "null",
-    _ => $"Unknown: {obj.GetType().Name}"
-};
-
-// Property pattern
-public decimal CalculateShipping(Order order) => order switch
-{
-    { IsPriority: true, Weight: > 10 } => 25.00m,
-    { IsPriority: true } => 15.00m,
-    { Weight: > 20 } => 20.00m,
-    { Weight: > 10 } => 12.00m,
-    _ => 5.00m
-};
-
-// Tuple pattern
-public string GetQuadrant(int x, int y) => (x, y) switch
-{
-    ( > 0, > 0) => "Q1",
-    ( < 0, > 0) => "Q2",
-    ( < 0, < 0) => "Q3",
-    ( > 0, < 0) => "Q4",
-    _ => "Origin or Axis"
-};
-```
-
-### Relational and Logical Patterns
+### Pattern Matching Enhancements
 
 ```csharp
 // Relational patterns
-public string GetGrade(int score) => score switch
+public string GetGrade(int score)
 {
-    >= 90 => "A",
-    >= 80 => "B",
-    >= 70 => "C",
-    >= 60 => "D",
-    _ => "F"
-};
+    return score switch
+    {
+        >= 90 => "A",
+        >= 80 => "B",
+        >= 70 => "C",
+        >= 60 => "D",
+        _ => "F"
+    };
+}
 
 // Logical patterns (and, or, not)
-public bool IsValidAge(int age) => age is >= 0 and <= 120;
-
-public string Categorize(int value) => value switch
+public bool IsValidAge(int age)
 {
-    < 0 => "Negative",
-    0 => "Zero",
-    > 0 and < 10 => "Single digit",
-    >= 10 and < 100 => "Double digit",
-    _ => "Large"
-};
+    return age is >= 0 and <= 120;
+}
 
-// Not pattern
-public bool IsNotNullOrEmpty(string? s) => s is not null and not "";
-```
-
-### List Patterns (C# 11+)
-
-```csharp
-// Match array/list structure
-public string DescribeArray(int[] arr) => arr switch
+public string Categorize(int value)
 {
-    [] => "Empty",
-    [var single] => $"Single: {single}",
-    [var first, var second] => $"Pair: {first}, {second}",
-    [var first, .., var last] => $"First: {first}, Last: {last}",
-    _ => "Other"
-};
-
-// Slice pattern with discard
-public bool StartsWithZero(int[] arr) => arr is [0, ..];
-public bool EndsWithNine(int[] arr) => arr is [.., 9];
-```
-
-## Target-Typed New
-
-```csharp
-// Simplified instantiation
-private readonly List<Order> _orders = new();
-private readonly Dictionary<string, int> _cache = new();
-
-// In method calls
-public void AddOrder(Order order) => _orders.Add(order);
-Order CreateOrder() => new(1, "Customer", DateTime.Now);
-
-// In collections
-List<Point> points = new()
-{
-    new(0, 0),
-    new(1, 1),
-    new(2, 2)
-};
-
-// With throw expressions
-public Order GetOrder(int id) =>
-    _orders.FirstOrDefault(o => o.Id == id)
-    ?? throw new NotFoundException($"Order {id} not found");
-```
-
-## Nullable Reference Types
-
-### Declaration Patterns
-
-```csharp
-#nullable enable
-
-public class CustomerService
-{
-    // Non-nullable: compiler ensures it's never null
-    private readonly IRepository _repository;
-
-    // Nullable: explicitly can be null
-    private ICache? _cache;
-
-    public CustomerService(IRepository repository, ICache? cache = null)
+    return value switch
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _cache = cache;
-    }
+        < 0 => "Negative",
+        0 => "Zero",
+        > 0 and < 10 => "Single digit",
+        >= 10 and < 100 => "Double digit",
+        _ => "Large"
+    };
+}
 
-    // Return nullable when result might not exist
-    public Customer? FindById(int id) => _repository.Find(id);
-
-    // Return non-nullable when result is guaranteed
-    public Customer GetById(int id) =>
-        _repository.Find(id) ?? throw new NotFoundException(id);
+// Type pattern with property pattern
+public decimal CalculateDiscount(object customer)
+{
+    return customer switch
+    {
+        Customer { IsPremium: true, OrderCount: > 100 } => 0.20m,
+        Customer { IsPremium: true } => 0.10m,
+        Customer { OrderCount: > 50 } => 0.05m,
+        _ => 0m
+    };
 }
 ```
 
-### Null Handling Operators
+### Target-Typed new (금지)
 
 ```csharp
-// Null-conditional operator (?.)
-string? name = customer?.Name;
-int? length = customer?.Name?.Length;
-customer?.Orders?.Clear();
+// ❌ WRONG: Target-typed new 사용 금지
+List<Order> orders = new();
+Dictionary<string, int> cache = new();
+Customer customer = new("John");
 
-// Null-coalescing operator (??)
-string name = customer?.Name ?? "Unknown";
-int retryCount = config?.RetryCount ?? 3;
-
-// Null-coalescing assignment (??=)
-_cache ??= new MemoryCache();
-name ??= GetDefaultName();
-
-// Null-forgiving operator (!) - use sparingly
-// Only when you know something the compiler doesn't
-string name = GetName()!; // You're certain it's not null
+// ✅ CORRECT: 명시적 타입 사용
+List<Order> orders = new List<Order>();
+Dictionary<string, int> cache = new Dictionary<string, int>();
+Customer customer = new Customer("John");
 ```
 
-### Nullable Annotations
+## Prohibited Patterns
+
+### var Keyword (금지)
 
 ```csharp
-public class OrderProcessor
+// ❌ WRONG: var 사용 금지
+var order = GetOrder(1);
+var customers = new List<Customer>();
+var result = Calculate();
+
+// ✅ CORRECT: 명시적 타입 선언
+Order order = GetOrder(1);
+List<Customer> customers = new List<Customer>();
+int result = Calculate();
+
+// ⚠️ EXCEPTION: Anonymous types only
+var anonymousObj = new { Name = "John", Age = 30 };
+
+// ⚠️ EXCEPTION: IEnumerable with complex LINQ
+var query = from c in customers
+            where c.Age > 18
+            select new { c.Name, c.Email };
+```
+
+### Null Coalescing Operator (금지)
+
+```csharp
+// ❌ WRONG: ?? 연산자 사용 금지
+string name = inputName ?? "Default";
+int count = nullableCount ?? 0;
+Order order = GetOrderOrNull(id) ?? new Order();
+
+// ✅ CORRECT: 명시적 null 검사
+string name;
+if (inputName != null)
 {
-    // Parameter cannot be null
-    public void Process(Order order)
-    {
-        ArgumentNullException.ThrowIfNull(order);
-        // ...
-    }
+    name = inputName;
+}
+else
+{
+    name = "Default";
+}
 
-    // Parameter can be null, handled internally
-    public void ProcessOptional(Order? order)
-    {
-        if (order is null) return;
-        // ...
-    }
+int count;
+if (nullableCount.HasValue)
+{
+    count = nullableCount.Value;
+}
+else
+{
+    count = 0;
+}
 
-    // Return might be null
-    public Order? TryGet(int id) => _repository.Find(id);
-
-    // Return is never null
-    [return: NotNull]
-    public Order GetOrCreate(int id) =>
-        _repository.Find(id) ?? CreateNew(id);
-
-    // MaybeNull attribute for generics
-    [return: MaybeNull]
-    public T GetValueOrDefault<T>(string key) =>
-        _cache.TryGetValue(key, out T value) ? value : default;
+Order order = GetOrderOrNull(id);
+if (order == null)
+{
+    order = new Order();
 }
 ```
 
-## File-Scoped Namespaces
+### Using Declaration (금지)
 
 ```csharp
-// Before (C# 9 and earlier)
-namespace MyCompany.Orders.Services
+// ❌ WRONG: using 선언 (C# 8.0) 사용 금지
+using FileStream stream = new FileStream(path, FileMode.Open);
+DoSomething(stream);
+
+// ✅ CORRECT: using 문 사용
+using (FileStream stream = new FileStream(path, FileMode.Open))
 {
-    public class OrderService
-    {
-        // Indented code
-    }
+    DoSomething(stream);
 }
 
-// After (C# 10+) - Recommended
+// 여러 리소스
+using (FileStream input = new FileStream(inputPath, FileMode.Open))
+using (FileStream output = new FileStream(outputPath, FileMode.Create))
+{
+    CopyStream(input, output);
+}
+```
+
+### Inline Out Declaration (금지)
+
+```csharp
+// ❌ WRONG: 인라인 out 선언 금지
+if (int.TryParse(input, out int result))
+{
+    Process(result);
+}
+
+if (mCache.TryGetValue(key, out Customer customer))
+{
+    return customer;
+}
+
+// ✅ CORRECT: 별도 라인에 선언
+int result;
+if (int.TryParse(input, out result))
+{
+    Process(result);
+}
+
+Customer customer;
+if (mCache.TryGetValue(key, out customer))
+{
+    return customer;
+}
+```
+
+### Async Suffix (금지)
+
+```csharp
+// ❌ WRONG: Async 접미사 사용 금지
+public async Task<Order> GetOrderAsync(int id);
+public async Task SaveOrderAsync(Order order);
+public async Task<List<Customer>> FindCustomersAsync(string query);
+
+// ✅ CORRECT: Async 접미사 없음
+public async Task<Order> GetOrder(int id)
+{
+    return await mRepository.Find(id);
+}
+
+public async Task SaveOrder(Order order)
+{
+    await mRepository.Save(order);
+}
+
+public async Task<List<Customer>> FindCustomers(string query)
+{
+    return await mRepository.Search(query);
+}
+```
+
+## C# 10.0 Features (Optional)
+
+### File-Scoped Namespaces
+
+```csharp
+// C# 10.0: 파일 범위 namespace 사용 권장
 namespace MyCompany.Orders.Services;
 
 public class OrderService
 {
     // No extra indentation
+    private readonly IOrderRepository mRepository;
+
+    public OrderService(IOrderRepository repository)
+    {
+        mRepository = repository;
+    }
 }
 ```
 
-## Global and Implicit Usings
-
-### GlobalUsings.cs
+### Readonly Record Struct
 
 ```csharp
-// Create a GlobalUsings.cs file in your project
-global using System;
-global using System.Collections.Generic;
-global using System.Linq;
-global using System.Threading;
-global using System.Threading.Tasks;
-global using Microsoft.Extensions.Logging;
+// C# 10.0: readonly record struct로 강타입 사용
+public readonly record struct UserID(int Value);
+public readonly record struct OrderID(int Value);
+public readonly record struct Money(decimal Amount, string Currency);
 
-// Project-specific common types
-global using MyCompany.Core.Entities;
-global using MyCompany.Core.Interfaces;
-```
-
-### Implicit Usings in .csproj
-
-```xml
-<PropertyGroup>
-  <ImplicitUsings>enable</ImplicitUsings>
-</PropertyGroup>
-
-<ItemGroup>
-  <Using Include="MyCompany.Core.Entities" />
-  <Using Remove="System.Net.Http" />
-</ItemGroup>
-```
-
-## Required Members (C# 11+)
-
-```csharp
-public class Customer
+// Usage - type safety
+public Order GetOrder(OrderID id)  // OrderID, not just int
 {
-    // Must be set during initialization
-    public required string Name { get; init; }
-    public required string Email { get; init; }
-
-    // Optional
-    public string? Phone { get; init; }
+    return mRepository.Find(id.Value);
 }
 
-// Usage - compiler ensures required properties are set
-var customer = new Customer
+// Cannot accidentally pass wrong ID type
+UserID userId = new UserID(1);
+OrderID orderId = new OrderID(1);
+// GetOrder(userId);  // ❌ Compile error
+GetOrder(orderId);    // ✅ OK
+```
+
+## Switch Expression
+
+```csharp
+// Switch expression (C# 8.0+) - 사용 가능
+public string GetStatusMessage(EOrderStatus status)
 {
-    Name = "John",
-    Email = "john@example.com"
+    return status switch
+    {
+        EOrderStatus.None => "No status",
+        EOrderStatus.Pending => "Order is pending",
+        EOrderStatus.Processing => "Order is being processed",
+        EOrderStatus.Completed => "Order completed",
+        EOrderStatus.Cancelled => "Order was cancelled",
+        _ => throw new ArgumentOutOfRangeException(nameof(status))
+    };
+}
+
+// With property patterns
+public decimal GetShippingCost(Order order)
+{
+    return order switch
+    {
+        { IsPriority: true, Weight: > 10 } => 25.00m,
+        { IsPriority: true } => 15.00m,
+        { Weight: > 20 } => 20.00m,
+        { Weight: > 10 } => 12.00m,
+        _ => 5.00m
+    };
+}
+
+// Multiple conditions
+public string Categorize(Customer customer)
+{
+    return (customer.OrderCount, customer.TotalSpent) switch
+    {
+        ( > 100, > 10000m) => "VIP",
+        ( > 50, > 5000m) => "Gold",
+        ( > 10, > 1000m) => "Silver",
+        _ => "Bronze"
+    };
+}
+```
+
+## Object Initializer (주의)
+
+```csharp
+// ⚠️ 객체 초기자: 일반적으로 회피
+// ❌ AVOID in most cases
+Order order = new Order
+{
+    CustomerID = 1,
+    Total = 100m,
+    Status = EOrderStatus.Pending
+};
+
+// ✅ PREFER constructor
+Order order = new Order(1, 100m, EOrderStatus.Pending);
+
+// ✅ EXCEPTION: required/init 사용 시 허용 (C# 11+)
+public class OrderDto
+{
+    public required int CustomerID { get; init; }
+    public required decimal Total { get; init; }
+}
+
+OrderDto dto = new OrderDto
+{
+    CustomerID = 1,
+    Total = 100m
 };
 ```
 
-## Primary Constructors (C# 12+)
+## Inline Lambda (한 줄만 허용)
 
 ```csharp
-// Class with primary constructor
-public class OrderService(IOrderRepository repository, ILogger<OrderService> logger)
+// ✅ CORRECT: Single line lambda
+List<Order> pending = orders.Where(o => o.Status == EOrderStatus.Pending).ToList();
+int maxAge = customers.Max(c => c.Age);
+Customer found = customers.FirstOrDefault(c => c.ID == id);
+
+// ❌ WRONG: Multi-line inline lambda
+List<Order> filtered = orders.Where(o =>
 {
-    public async Task<Order?> GetOrderAsync(int id)
+    if (o.Status == EOrderStatus.Pending)
     {
-        logger.LogInformation("Getting order {Id}", id);
-        return await repository.FindAsync(id);
+        return o.Total > 100;
     }
-}
+    return false;
+}).ToList();
 
-// Struct with primary constructor
-public readonly struct Point(int x, int y)
+// ✅ CORRECT: Extract to method for complex logic
+List<Order> filtered = orders.Where(shouldIncludeOrder).ToList();
+
+private bool shouldIncludeOrder(Order order)
 {
-    public int X { get; } = x;
-    public int Y { get; } = y;
-    public double Distance => Math.Sqrt(X * X + Y * Y);
+    if (order.Status == EOrderStatus.Pending)
+    {
+        return order.Total > 100;
+    }
+    return false;
 }
 ```
 
-## Collection Expressions (C# 12+)
+## Recommended Patterns Summary
 
-```csharp
-// Array
-int[] numbers = [1, 2, 3, 4, 5];
-
-// List
-List<string> names = ["Alice", "Bob", "Charlie"];
-
-// Spread operator
-int[] first = [1, 2, 3];
-int[] second = [4, 5, 6];
-int[] combined = [..first, ..second]; // [1, 2, 3, 4, 5, 6]
-
-// Empty collection
-int[] empty = [];
-List<Order> orders = [];
-```
-
-## Raw String Literals (C# 11+)
-
-```csharp
-// Multi-line without escaping
-string json = """
-    {
-        "name": "John",
-        "email": "john@example.com"
-    }
-    """;
-
-// With interpolation (use more $ for literal braces)
-string template = $$"""
-    {
-        "customer": "{{customerName}}",
-        "total": {{total}}
-    }
-    """;
-```
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `private init` | ✅ 권장 | C# 9.0 |
+| Records | ✅ 허용 | C# 9.0, DTO에 적합 |
+| Pattern matching | ✅ 허용 | switch expression 포함 |
+| File-scoped namespace | ✅ 권장 | C# 10.0 |
+| readonly record struct | ✅ 권장 | C# 10.0, 강타입에 적합 |
+| `var` | ❌ 금지 | 익명 타입/IEnumerable 제외 |
+| `??` | ❌ 금지 | 명시적 null 검사 사용 |
+| `new()` | ❌ 금지 | 명시적 타입 사용 |
+| using 선언 | ❌ 금지 | using 문 사용 |
+| inline out | ❌ 금지 | 별도 라인 선언 |
+| Async suffix | ❌ 금지 | 접미사 없이 사용 |
+| 객체 초기자 | ⚠️ 주의 | required/init 시만 허용 |
+| 멀티라인 람다 | ❌ 금지 | 메서드로 추출 |
