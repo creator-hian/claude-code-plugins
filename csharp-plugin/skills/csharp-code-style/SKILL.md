@@ -223,38 +223,36 @@ Debug.Assert(count > 0, "Count must be positive");
 public int GetAge() { return mAge; }
 public void SetAge(int age) { mAge = age; }
 
-// ✅ CORRECT
+// ✅ CORRECT (.NET 5+ only - NOT available in Unity)
 public int Age { get; private init; }
+
+// ✅ CORRECT (Unity compatible)
+public int Age { get; private set; }
 ```
 
 ### C# 9.0 Patterns
 
+> **Unity Limitation**: `init` accessor is NOT available in Unity (requires .NET 5+ runtime).
+> See [Modern Patterns Reference](references/modern-patterns.md#unity-runtime-limitations) for details and alternatives.
+
 ```csharp
-// private init (C# 9.0) - recommended
+// private init (C# 9.0) - .NET 5+ only, NOT available in Unity
 public class Customer
 {
-    public string Name { get; private init; }
+    public string Name { get; private init; }  // Use 'private set' in Unity
     public string Email { get; private init; }
-
-    public Customer(string name, string email)
-    {
-        Name = name;
-        Email = email;
-    }
 }
 
 // Record for immutable data
 public record OrderDto(int Id, string CustomerName, decimal TotalAmount);
 
-// Pattern matching switch expression
+// Pattern matching switch expression (available in Unity)
 public string GetStatusMessage(EOrderStatus status)
 {
     return status switch
     {
         EOrderStatus.Pending => "Order is pending",
-        EOrderStatus.Processing => "Order is being processed",
         EOrderStatus.Completed => "Order completed",
-        EOrderStatus.Cancelled => "Order was cancelled",
         _ => throw new ArgumentOutOfRangeException(nameof(status))
     };
 }
@@ -348,4 +346,4 @@ Error handling patterns:
 3. **Null 안전**: OrNull 접미어로 nullable 명시
 4. **Assertion**: 모든 가정에 Debug.Assert 사용
 5. **경계 검증**: 외부 데이터는 경계에서만 검증
-6. **init 사용**: C# 9.0의 private init 적극 활용
+6. **Use init**: Prefer C# 9.0 private init (.NET 5+ only, NOT available in Unity)

@@ -2,7 +2,7 @@
 name: codex-claude-loop
 description: Dual-AI engineering loop orchestrating Claude Code (planning/implementation) and Codex (validation/review). Use when (1) complex feature development requiring validation, (2) high-quality code with security/performance concerns, (3) large-scale refactoring, (4) user requests codex-claude loop or dual-AI review. Do NOT use for simple one-off fixes or prototypes.
 requires:
-  - codex-cli
+  - codex-plugin:codex-cli
 ---
 
 # Codex-Claude Engineering Loop

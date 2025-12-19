@@ -1,6 +1,8 @@
 ---
 name: csharp-xml-docs
 description: Unity C# XML documentation standards with flexible Korean/English language support. Use when writing XML comments, documenting C# APIs, or need guidance on proper documentation patterns for properties, methods, classes, and interfaces.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # C# XML Documentation Guide

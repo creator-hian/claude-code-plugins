@@ -2,7 +2,7 @@
 name: gemini-claude-loop
 description: Dual-AI engineering loop orchestrating Claude Code (planning/implementation) and Gemini (validation/review). Use when (1) complex feature development requiring validation, (2) high-quality code with security/performance concerns, (3) large-scale refactoring, (4) user requests gemini-claude loop or dual-AI review. Do NOT use for simple one-off fixes or prototypes.
 requires:
-  - gemini-cli
+  - gemini-plugin:gemini-cli
 ---
 
 # Gemini-Claude Engineering Loop

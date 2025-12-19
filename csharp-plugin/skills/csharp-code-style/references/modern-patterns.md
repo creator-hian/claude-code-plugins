@@ -1,11 +1,43 @@
-# Modern C# Patterns Reference (C# 9.0 기준)
+# Modern C# Patterns Reference (C# 9.0)
+
+## Platform Compatibility
+
+### Unity Runtime Limitations
+
+> **IMPORTANT**: Unity uses Mono/IL2CPP runtime which does NOT include `System.Runtime.CompilerServices.IsExternalInit`.
+> This means `init` accessors cause compile error CS0518 in Unity projects.
+
+| Feature | .NET 5+ | Unity |
+|---------|---------|-------|
+| `init` accessor | ✅ Supported | ❌ Not available |
+| `private init` | ✅ Supported | ❌ Not available |
+| `required` (C# 11) | ✅ Supported | ❌ Not available |
+| Records | ✅ Full support | ⚠️ Without `init` |
+| Pattern matching | ✅ Full support | ✅ Supported |
+
+**Unity Alternatives**:
+```csharp
+// ❌ COMPILE ERROR in Unity
+public string Name { get; private init; }
+
+// ✅ Unity Option 1: private set
+public string Name { get; private set; }
+
+// ✅ Unity Option 2: readonly field + property (true immutability)
+private readonly string mName;
+public string Name => mName;
+```
+
+---
 
 ## C# 9.0 Features
 
 ### Init-Only Properties
 
+> **Note**: `init` accessors are NOT available in Unity. Use `private set` or readonly fields instead.
+
 ```csharp
-// private init - 생성자에서만 설정 가능 (권장)
+// private init - constructor-only assignment (recommended for .NET 5+)
 public class Customer
 {
     public int ID { get; private init; }
@@ -402,18 +434,18 @@ private bool shouldIncludeOrder(Order order)
 
 ## Recommended Patterns Summary
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `private init` | ✅ 권장 | C# 9.0 |
-| Records | ✅ 허용 | C# 9.0, DTO에 적합 |
-| Pattern matching | ✅ 허용 | switch expression 포함 |
-| File-scoped namespace | ✅ 권장 | C# 10.0 |
-| readonly record struct | ✅ 권장 | C# 10.0, 강타입에 적합 |
-| `var` | ❌ 금지 | 익명 타입/IEnumerable 제외 |
-| `??` | ❌ 금지 | 명시적 null 검사 사용 |
-| `new()` | ❌ 금지 | 명시적 타입 사용 |
-| using 선언 | ❌ 금지 | using 문 사용 |
-| inline out | ❌ 금지 | 별도 라인 선언 |
-| Async suffix | ❌ 금지 | 접미사 없이 사용 |
-| 객체 초기자 | ⚠️ 주의 | required/init 시만 허용 |
-| 멀티라인 람다 | ❌ 금지 | 메서드로 추출 |
+| Feature | Status | Unity | Notes |
+|---------|--------|-------|-------|
+| `private init` | ✅ Recommended | ❌ N/A | .NET 5+ only |
+| Records | ✅ Allowed | ⚠️ Limited | Without `init` in Unity |
+| Pattern matching | ✅ Allowed | ✅ OK | Includes switch expression |
+| File-scoped namespace | ✅ Recommended | ✅ OK | C# 10.0 |
+| readonly record struct | ✅ Recommended | ✅ OK | C# 10.0, strong typing |
+| `var` | ❌ Prohibited | ❌ | Except anonymous/IEnumerable |
+| `??` | ❌ Prohibited | ❌ | Use explicit null check |
+| `new()` | ❌ Prohibited | ❌ | Use explicit type |
+| using declaration | ❌ Prohibited | ❌ | Use using statement |
+| inline out | ❌ Prohibited | ❌ | Declare on separate line |
+| Async suffix | ❌ Prohibited | ❌ | No suffix |
+| Object initializer | ⚠️ Caution | ⚠️ | Only with required/init |
+| Multi-line lambda | ❌ Prohibited | ❌ | Extract to method |
