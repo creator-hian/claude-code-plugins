@@ -96,7 +96,7 @@ public class ProgressReporter : MonoBehaviour, IProgress<float>
 }
 
 // Usage
-var progress = GetComponent<ProgressReporter>();
+TryGetComponent<ProgressReporter>(out var progress);
 var handle = Addressables.LoadAssetAsync<GameObject>(key);
 await handle.ToUniTask(progress: progress, cancellationToken: token);
 ```

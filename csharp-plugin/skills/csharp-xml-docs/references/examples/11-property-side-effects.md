@@ -17,13 +17,13 @@ Most properties are simple getters and setters. When a property has side effects
 /// Gets or sets the animation mode. Setting this value automatically switches
 /// the underlying animation system. Returns null if no system is active.
 /// </value>
-public AnimationMode? CurrentMode
+public EAnimationMode? CurrentMode
 {
-    get => _currentSystem?.Mode;
+    get => mCurrentSystem?.Mode;
     set
     {
         if (value.HasValue)
-            ActivateAnimationSystemAsync(value.Value).Forget();
+            ActivateAnimationSystem(value.Value).Forget();
     }
 }
 ```
@@ -42,12 +42,12 @@ public AnimationMode? CurrentMode
 /// </value>
 public int MaxRetries
 {
-    get => _maxRetries;
+    get => mMaxRetries;
     set
     {
         if (value < 1 || value > 10)
             throw new ArgumentOutOfRangeException(nameof(value), "Must be between 1 and 10");
-        _maxRetries = value;
+        mMaxRetries = value;
     }
 }
 ```
@@ -64,14 +64,14 @@ public int MaxRetries
 /// </value>
 public string DisplayName
 {
-    get => _displayName;
+    get => mDisplayName;
     set
     {
-        var truncated = value?.Length > 50 ? value.Substring(0, 50) : value;
-        if (_displayName != truncated)
+        string truncated = value?.Length > 50 ? value.Substring(0, 50) : value;
+        if (mDisplayName != truncated)
         {
-            var oldValue = _displayName;
-            _displayName = truncated;
+            string oldValue = mDisplayName;
+            mDisplayName = truncated;
             OnDisplayNameChanged?.Invoke(oldValue, truncated);
         }
     }
@@ -91,15 +91,15 @@ public ConfigurationManager Config
 {
     get
     {
-        if (_config == null)
+        if (mConfig == null)
         {
-            lock (_lock)
+            lock (mLock)
             {
-                if (_config == null)
-                    _config = new ConfigurationManager();
+                if (mConfig == null)
+                    mConfig = new ConfigurationManager();
             }
         }
-        return _config;
+        return mConfig;
     }
 }
 ```
@@ -113,13 +113,13 @@ public ConfigurationManager Config
 /// 애니메이션 모드를 가져오거나 설정합니다. 값을 설정하면 자동으로
 /// 기본 애니메이션 시스템이 전환됩니다. 활성화된 시스템이 없으면 null을 반환합니다.
 /// </value>
-public AnimationMode? CurrentMode
+public EAnimationMode? CurrentMode
 {
-    get => _currentSystem?.Mode;
+    get => mCurrentSystem?.Mode;
     set
     {
         if (value.HasValue)
-            ActivateAnimationSystemAsync(value.Value).Forget();
+            ActivateAnimationSystem(value.Value).Forget();
     }
 }
 ```
@@ -203,10 +203,10 @@ public bool IsModelLoaded { get; private set; }
 /// </value>
 public string ConfigValue
 {
-    get => _value;
+    get => mValue;
     set
     {
-        _value = value;
+        mValue = value;
         SaveToDisk();  // Side effect!
     }
 }
@@ -219,12 +219,12 @@ public string ConfigValue
 /// </value>
 public int Priority
 {
-    get => _priority;
+    get => mPriority;
     set
     {
-        if (_priority != value)
+        if (mPriority != value)
         {
-            _priority = value;
+            mPriority = value;
             OnPropertyChanged?.Invoke();  // Event!
         }
     }
@@ -238,8 +238,8 @@ public int Priority
 /// </value>
 public int Percentage
 {
-    get => _percentage;
-    set => _percentage = Math.Clamp(value, 0, 100);  // Transformation!
+    get => mPercentage;
+    set => mPercentage = Math.Clamp(value, 0, 100);  // Transformation!
 }
 ```
 
@@ -252,9 +252,9 @@ public IService Service
 {
     get
     {
-        if (_service == null)
-            _service = ServiceFactory.Create();  // Lazy init!
-        return _service;
+        if (mService == null)
+            mService = ServiceFactory.Create();  // Lazy init!
+        return mService;
     }
 }
 ```
@@ -265,7 +265,7 @@ public IService Service
 /// Returns a deep clone of the internal collection.
 /// Changes to returned collection don't affect internal state.
 /// </value>
-public List<Item> Items => new List<Item>(_items);  // Clone!
+public List<Item> Items => new List<Item>(mItems);  // Clone!
 ```
 
 **6. Complex Computation:**
@@ -288,7 +288,7 @@ public bool IsActive { get; set; }
 
 **2. Obvious Computations:**
 ```csharp
-public int Count => _list.Count;
+public int Count => mList.Count;
 public bool IsEmpty => Count == 0;
 public string FullName => $"{FirstName} {LastName}";
 ```
@@ -350,16 +350,16 @@ public string Id { get; }
 /// </value>
 public AnimationClip ActiveClip
 {
-    get => _activeClip;
+    get => mActiveClip;
     set
     {
-        if (_activeClip != null)
-            StopAnimation(_activeClip);
+        if (mActiveClip != null)
+            stopAnimation(mActiveClip);
 
-        _activeClip = value;
+        mActiveClip = value;
 
-        if (value != null && !IsLoaded(value))
-            LoadClip(value);
+        if (value != null && !isLoaded(value))
+            loadClip(value);
 
         OnAnimationChanged?.Invoke(value);
     }
@@ -378,7 +378,7 @@ public AnimationClip ActiveClip
 /// </value>
 public Dictionary<string, IActionHandler> Handlers
 {
-    get => new Dictionary<string, IActionHandler>(_handlers);
+    get => new Dictionary<string, IActionHandler>(mHandlers);
 }
 ```
 

@@ -1,4 +1,4 @@
-# Async/Await Best Practices
+# Async/Await Best Practices (POCU)
 
 ## Table of Contents
 1. [Always Use CancellationToken](#1-always-use-cancellationtoken)
@@ -14,51 +14,67 @@
 ## 1. Always Use CancellationToken
 
 ```csharp
-// ✅ Good
-public async Task ProcessAsync(CancellationToken ct = default)
+public class DataProcessor
 {
-    await Task.Delay(1000, ct);
-    ct.ThrowIfCancellationRequested();
+    private readonly IDataService mDataService;
 
-    var result = await LongOperationAsync(ct);
-    return result;
-}
+    // ✅ POCU: Async 접미사 없음, CancellationToken 지원
+    public async Task<Result> Process(CancellationToken ct = default)
+    {
+        await Task.Delay(1000, ct);
+        ct.ThrowIfCancellationRequested();
 
-// ❌ Bad: No cancellation support
-public async Task ProcessAsync()
-{
-    await Task.Delay(1000);
-    var result = await LongOperationAsync();
+        Result result = await mDataService.LoadData(ct);
+        return result;
+    }
+
+    // ❌ WRONG: No cancellation support
+    public async Task<Result> ProcessBad()
+    {
+        await Task.Delay(1000);
+        Result result = await mDataService.LoadData();
+        return result;
+    }
 }
 ```
 
 ## 2. Avoid async void (Except Event Handlers)
 
 ```csharp
-// ❌ Bad: Exceptions unhandled
-public async void LoadData()
+public class DataLoader
 {
-    await FetchAsync();
-    throw new Exception("Lost!"); // Crashes app
-}
+    private readonly ILogger mLogger;
 
-// ✅ Good: Returns Task
-public async Task LoadDataAsync()
-{
-    await FetchAsync();
-    throw new Exception("Catchable");
-}
-
-// ✅ Exception: Event handlers
-private async void OnButtonClick(object sender, EventArgs e)
-{
-    try
+    // ❌ WRONG: Exceptions unhandled
+    public async void LoadData()
     {
-        await LoadDataAsync();
+        await fetch();
+        throw new Exception("Lost!"); // Crashes app
     }
-    catch (Exception ex)
+
+    // ✅ CORRECT: Returns Task, Async 접미사 없음
+    public async Task LoadData()
     {
-        LogError(ex);
+        await fetch();
+        throw new Exception("Catchable");
+    }
+
+    // ⚠️ EXCEPTION: Event handlers only
+    private async void OnButtonClick(object sender, EventArgs e)
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            mLogger.Error(ex, "Button click failed");
+        }
+    }
+
+    private async Task fetch()
+    {
+        // Implementation
     }
 }
 ```
@@ -66,20 +82,36 @@ private async void OnButtonClick(object sender, EventArgs e)
 ## 3. ConfigureAwait in Library Code
 
 ```csharp
-// Library code
-public async Task<string> LibraryMethodAsync()
+public class LibraryService
 {
-    // ✅ Don't capture synchronization context
-    var data = await GetDataAsync().ConfigureAwait(false);
-    return ProcessData(data);
+    private readonly IDataRepository mRepository;
+
+    // Library code: ConfigureAwait(false) 필수
+    public async Task<string> GetData()
+    {
+        // ✅ Don't capture synchronization context
+        string data = await mRepository.Fetch().ConfigureAwait(false);
+        return processData(data);
+    }
+
+    private string processData(string data)
+    {
+        Debug.Assert(data != null);
+        return data.Trim();
+    }
 }
 
-// UI/Application code
-public async Task UpdateUIAsync()
+public class UIController
 {
-    // ✅ Default captures context (ConfigureAwait(true))
-    var data = await GetDataAsync();
-    textField.Text = data; // Safe: on UI thread
+    private readonly TextField mTextField;
+
+    // UI/Application code: default captures context
+    public async Task UpdateUI()
+    {
+        // ✅ Default captures context (ConfigureAwait(true))
+        string data = await GetData();
+        mTextField.Text = data; // Safe: on UI thread
+    }
 }
 ```
 
@@ -88,81 +120,144 @@ public async Task UpdateUIAsync()
 ### Parallel Execution
 
 ```csharp
-// ✅ Good: Run tasks in parallel
-public async Task<(Data1, Data2)> LoadMultipleAsync()
+public class DashboardService
 {
-    var task1 = LoadData1Async();
-    var task2 = LoadData2Async();
+    private readonly IUserService mUserService;
+    private readonly IOrderService mOrderService;
 
-    await Task.WhenAll(task1, task2);
+    // ✅ POCU: Run tasks in parallel
+    public async Task<(Users, Orders)> LoadMultiple()
+    {
+        Task<Users> task1 = mUserService.GetUsers();
+        Task<Orders> task2 = mOrderService.GetOrders();
 
-    return (await task1, await task2);
+        await Task.WhenAll(task1, task2);
+
+        return (await task1, await task2);
+    }
 }
 ```
 
 ### Sequential with Dependency
 
 ```csharp
-// ✅ Good: Sequential execution
-public async Task<Result> ProcessAsync()
+public class OrderProcessor
 {
-    var data = await LoadDataAsync();
-    var processed = await ProcessDataAsync(data);
-    return await SaveAsync(processed);
+    private readonly IRepository mRepository;
+
+    // ✅ POCU: Sequential execution
+    public async Task<Result> Process()
+    {
+        Data data = await loadData();
+        ProcessedData processed = await processData(data);
+        return await save(processed);
+    }
+
+    private async Task<Data> loadData()
+    {
+        return await mRepository.GetData();
+    }
+
+    private async Task<ProcessedData> processData(Data data)
+    {
+        Debug.Assert(data != null);
+        return await mRepository.Process(data);
+    }
+
+    private async Task<Result> save(ProcessedData data)
+    {
+        Debug.Assert(data != null);
+        return await mRepository.Save(data);
+    }
 }
 ```
 
 ### First Wins
 
 ```csharp
-// ✅ Good: Use first completed result
-public async Task<string> LoadFromMultipleAsync()
+public class CacheService
 {
-    var task1 = LoadFromCache();
-    var task2 = LoadFromNetwork();
+    private readonly ICacheProvider mCache;
+    private readonly INetworkProvider mNetwork;
 
-    var completed = await Task.WhenAny(task1, task2);
-    return await completed;
+    // ✅ POCU: Use first completed result
+    public async Task<string> LoadFromMultiple()
+    {
+        Task<string> task1 = mCache.Load();
+        Task<string> task2 = mNetwork.Load();
+
+        Task<string> completed = await Task.WhenAny(task1, task2);
+        return await completed;
+    }
 }
 ```
 
 ## 5. ValueTask for Hot Paths
 
 ```csharp
-// ✅ Good: Allocation-free for cached results
-public ValueTask<int> GetCachedValueAsync()
+public class CachedRepository
 {
-    if (_cache.TryGetValue(key, out var value))
-        return new ValueTask<int>(value); // No allocation
+    private readonly Dictionary<string, int> mCache;
+    private readonly IDataSource mSource;
 
-    return new ValueTask<int>(FetchAsync());
-}
+    // ✅ POCU: Allocation-free for cached results
+    public ValueTask<int> GetCachedValue(string key)
+    {
+        Debug.Assert(key != null);
 
-// ❌ Bad: Task allocates even for cached values
-public Task<int> GetCachedValueBad()
-{
-    if (_cache.TryGetValue(key, out var value))
-        return Task.FromResult(value); // Allocates!
+        int value;
+        if (mCache.TryGetValue(key, out value))
+        {
+            return new ValueTask<int>(value); // No allocation
+        }
 
-    return FetchAsync();
+        return new ValueTask<int>(fetchFromSource(key));
+    }
+
+    private async Task<int> fetchFromSource(string key)
+    {
+        int value = await mSource.Fetch(key);
+        mCache[key] = value;
+        return value;
+    }
+
+    // ❌ WRONG: Task allocates even for cached values
+    public Task<int> GetCachedValueBad(string key)
+    {
+        int value;
+        if (mCache.TryGetValue(key, out value))
+        {
+            return Task.FromResult(value); // Allocates!
+        }
+
+        return fetchFromSource(key);
+    }
 }
 ```
 
 ## 6. Timeout Patterns
 
 ```csharp
-// ✅ Good: Timeout with cancellation
-public async Task<Data> LoadWithTimeoutAsync(TimeSpan timeout)
+public class TimeoutService
 {
-    using var cts = new CancellationTokenSource(timeout);
+    private readonly IDataLoader mLoader;
+    private readonly ILogger mLogger;
 
-    try
+    // ✅ POCU: using 문 사용, 명시적 타입
+    public async Task<Data> LoadWithTimeout(TimeSpan timeout)
     {
-        return await LoadDataAsync(cts.Token);
-    }
-    catch (OperationCanceledException) when (cts.IsCancellationRequested)
-    {
-        throw new TimeoutException("Operation timed out");
+        using (CancellationTokenSource cts = new CancellationTokenSource(timeout))
+        {
+            try
+            {
+                return await mLoader.Load(cts.Token);
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                mLogger.Warning("Operation timed out");
+                throw new TimeoutException("Operation timed out");
+            }
+        }
     }
 }
 ```
@@ -170,64 +265,100 @@ public async Task<Data> LoadWithTimeoutAsync(TimeSpan timeout)
 ## 7. Retry Logic
 
 ```csharp
-// ✅ Good: Exponential backoff retry
-public async Task<T> RetryAsync<T>(
-    Func<Task<T>> operation,
-    int maxAttempts = 3,
-    TimeSpan? initialDelay = null)
+public class RetryService
 {
-    var delay = initialDelay ?? TimeSpan.FromSeconds(1);
+    private readonly ILogger mLogger;
 
-    for (int attempt = 1; attempt <= maxAttempts; attempt++)
+    // ✅ POCU: Exponential backoff retry
+    public async Task<T> ExecuteWithRetry<T>(
+        Func<Task<T>> operation,
+        int maxAttempts = 3,
+        TimeSpan? initialDelayOrNull = null)
     {
-        try
-        {
-            return await operation();
-        }
-        catch (Exception ex) when (attempt < maxAttempts)
-        {
-            Log.Warning($"Attempt {attempt} failed, retrying...", ex);
-            await Task.Delay(delay);
-            delay *= 2; // Exponential backoff
-        }
-    }
+        Debug.Assert(operation != null);
+        Debug.Assert(maxAttempts > 0);
 
-    return await operation(); // Final attempt
+        TimeSpan delay;
+        if (initialDelayOrNull.HasValue)
+        {
+            delay = initialDelayOrNull.Value;
+        }
+        else
+        {
+            delay = TimeSpan.FromSeconds(1);
+        }
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                return await operation();
+            }
+            catch (Exception ex) when (attempt < maxAttempts)
+            {
+                mLogger.Warning($"Attempt {attempt} failed, retrying...", ex);
+                await Task.Delay(delay);
+                delay = TimeSpan.FromTicks(delay.Ticks * 2); // Exponential backoff
+            }
+        }
+
+        return await operation(); // Final attempt
+    }
 }
 ```
 
 ## 8. Proper Disposal with Async
 
 ```csharp
-// ✅ Good: IAsyncDisposable
+// ✅ POCU: IAsyncDisposable 구현
 public class AsyncResource : IAsyncDisposable
 {
-    private HttpClient _client;
+    private HttpClient mClient;
+    private bool mbIsDisposed;
 
     public async ValueTask DisposeAsync()
     {
-        if (_client != null)
+        if (mbIsDisposed)
         {
-            await _client.DisposeAsync();
-            _client = null;
+            return;
         }
+
+        if (mClient != null)
+        {
+            await mClient.DisposeAsync();
+            mClient = null;
+        }
+
+        mbIsDisposed = true;
     }
 }
 
-// Usage with await using
-await using var resource = new AsyncResource();
+// ✅ POCU: using 문 사용
+public class ResourceConsumer
+{
+    public async Task UseResource()
+    {
+        await using (AsyncResource resource = new AsyncResource())
+        {
+            await resource.Execute();
+        }
+    }
+}
 ```
 
 ## Checklist
 
 Before completing async implementation:
 
-- [ ] All async methods return Task, Task<T>, ValueTask, or ValueTask<T> (not async void)
-- [ ] CancellationToken parameter added to long-running operations
-- [ ] CancellationToken passed through to inner async calls
-- [ ] No .Result, .Wait(), or .GetAwaiter().GetResult() (deadlock risk)
-- [ ] ConfigureAwait(false) used in library code
-- [ ] Async operations properly tested with cancellation
-- [ ] ValueTask used for hot paths where appropriate
-- [ ] Timeout handling implemented for network operations
-- [ ] Retry logic added for transient failures
+- [ ] 모든 async 메서드는 Task, Task<T>, ValueTask, ValueTask<T> 반환 (async void 금지)
+- [ ] Async 접미사 없음 (POCU 표준)
+- [ ] 장기 실행 작업에 CancellationToken 매개변수 추가
+- [ ] 내부 async 호출에 CancellationToken 전달
+- [ ] .Result, .Wait(), .GetAwaiter().GetResult() 금지 (교착 위험)
+- [ ] 라이브러리 코드에서 ConfigureAwait(false) 사용
+- [ ] 취소와 함께 async 작업 테스트
+- [ ] 적절한 경우 hot path에 ValueTask 사용
+- [ ] 네트워크 작업에 타임아웃 처리 구현
+- [ ] 일시적 실패에 재시도 로직 추가
+- [ ] var 대신 명시적 타입 사용
+- [ ] using 선언 대신 using 문 사용

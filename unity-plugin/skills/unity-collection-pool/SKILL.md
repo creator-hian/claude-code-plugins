@@ -1,6 +1,8 @@
 ---
 name: unity-collection-pool
 description: Unity Collection Pool expert for GC-free collection management using ListPool, DictionaryPool, HashSetPool, and ObjectPool. Masters memory optimization, pool sizing, and allocation-free patterns. Use PROACTIVELY for collection allocations, GC pressure reduction, temporary list/dictionary usage, or performance-critical code paths.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Collection Pool - GC-Free Collection Management
@@ -9,7 +11,7 @@ description: Unity Collection Pool expert for GC-free collection management usin
 
 Unity's `UnityEngine.Pool` namespace (2021.1+) provides built-in collection pooling to eliminate GC allocations from temporary collection usage.
 
-**Foundation Required**: Understanding of C# generics, IDisposable pattern, Unity memory management
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), C# generics, IDisposable pattern
 
 **Core Topics**:
 - ListPool, HashSetPool, DictionaryPool usage
@@ -58,7 +60,8 @@ using UnityEngine.Pool;
 void ProcessWithUsing()
 {
     // Auto-release via PooledObject<T>
-    using (ListPool<int>.Get(out List<int> tempList))
+    List<int> tempList;
+    using (ListPool<int>.Get(out tempList))
     {
         tempList.Add(1);
         tempList.Add(2);
@@ -69,9 +72,10 @@ void ProcessWithUsing()
 // HashSet example
 void CheckDuplicates(IEnumerable<string> items)
 {
-    using (HashSetPool<string>.Get(out HashSet<string> seen))
+    HashSet<string> seen;
+    using (HashSetPool<string>.Get(out seen))
     {
-        foreach (var item in items)
+        foreach (string item in items)
         {
             if (!seen.Add(item))
                 Debug.Log($"Duplicate: {item}");
@@ -82,9 +86,10 @@ void CheckDuplicates(IEnumerable<string> items)
 // Dictionary example
 void BuildLookup(Item[] items)
 {
-    using (DictionaryPool<int, Item>.Get(out var lookup))
+    Dictionary<int, Item> lookup;
+    using (DictionaryPool<int, Item>.Get(out lookup))
     {
-        foreach (var item in items)
+        foreach (Item item in items)
             lookup[item.Id] = item;
 
         ProcessLookup(lookup);
@@ -111,7 +116,8 @@ void BuildLookup(Item[] items)
 ```csharp
 void DetectCollisions(Vector3 origin, Vector3 direction)
 {
-    using (ListPool<RaycastHit>.Get(out var hits))
+    List<RaycastHit> hits;
+    using (ListPool<RaycastHit>.Get(out hits))
     {
         int count = Physics.RaycastNonAlloc(origin, direction, hitsArray);
         for (int i = 0; i < count; i++)
@@ -127,10 +133,11 @@ void DetectCollisions(Vector3 origin, Vector3 direction)
 ```csharp
 void FindAllEnemies()
 {
-    using (ListPool<Enemy>.Get(out var enemies))
+    List<Enemy> enemies;
+    using (ListPool<Enemy>.Get(out enemies))
     {
         GetComponentsInChildren(enemies); // Overload that takes list
-        foreach (var enemy in enemies)
+        foreach (Enemy enemy in enemies)
             enemy.Alert();
     }
 }
@@ -140,17 +147,18 @@ void FindAllEnemies()
 
 ```csharp
 // AVOID: LINQ allocates
-var filtered = items.Where(x => x.IsActive).ToList();
+List<Item> filtered = items.Where(x => x.IsActive).ToList();
 
 // PREFER: Pooled collection
-using (ListPool<Item>.Get(out var filtered))
+List<Item> pooledFiltered;
+using (ListPool<Item>.Get(out pooledFiltered))
 {
-    foreach (var item in items)
+    foreach (Item item in items)
     {
         if (item.IsActive)
-            filtered.Add(item);
+            pooledFiltered.Add(item);
     }
-    Process(filtered);
+    Process(pooledFiltered);
 }
 ```
 
@@ -179,7 +187,8 @@ Avoid Pools:
 Span<int> small = stackalloc int[4];
 
 // For variable size or larger collections, use pool
-using (ListPool<int>.Get(out var larger))
+List<int> larger;
+using (ListPool<int>.Get(out larger))
 {
     // Variable size operations
 }
@@ -197,16 +206,16 @@ using (ListPool<int>.Get(out var larger))
 
 ```csharp
 // WRONG: Storing pooled reference
-private List<int> _cachedList;
+private List<int> mCachedList;
 void Bad()
 {
-    _cachedList = ListPool<int>.Get(); // Memory leak!
+    mCachedList = ListPool<int>.Get(); // Memory leak!
 }
 
 // WRONG: Missing release
 void AlsoBAD()
 {
-    var list = ListPool<int>.Get();
+    List<int> list = ListPool<int>.Get();
     Process(list);
     // Forgot to release - leak!
 }
@@ -214,7 +223,7 @@ void AlsoBAD()
 // WRONG: Releasing wrong pool
 void VeryBad()
 {
-    var list = ListPool<int>.Get();
+    List<int> list = ListPool<int>.Get();
     ListPool<float>.Release(list); // Type mismatch!
 }
 

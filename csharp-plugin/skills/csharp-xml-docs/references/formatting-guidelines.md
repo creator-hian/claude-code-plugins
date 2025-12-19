@@ -1,6 +1,6 @@
-# Formatting Guidelines
+# Formatting Guidelines (POCU)
 
-Guide for using various XML documentation tags effectively.
+Guide for using various XML documentation tags effectively following POCU coding standards.
 
 ## When to Use `<br/>` vs `<list>`
 
@@ -12,28 +12,36 @@ Guide for using various XML documentation tags effectively.
 - Compact line-separated content
 - Bilingual documentation with clear section breaks
 
-**Example: Numbered Steps**
+**Example: Numbered Steps (POCU)**
 ```csharp
-/// <summary>
-/// Executes event
-/// </summary>
-/// <remarks>
-/// <para>
-/// <strong>Execution Process:</strong><br/>
-/// 1. Event definition lookup<br/>
-/// 2. Event-level condition evaluation<br/>
-/// 3. Direct action list processing<br/>
-/// 4. Execution time and metadata configuration
-/// </para>
-/// </remarks>
-public async UniTask<EventActionResult> ExecuteEventAsync(
-    string systemId, string eventId, object contextData = null)
+public class EventExecutor
 {
-    // Implementation...
+    private readonly IEventRepository mRepository;
+
+    /// <summary>
+    /// Executes event
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Execution Process:</strong><br/>
+    /// 1. Event definition lookup<br/>
+    /// 2. Event-level condition evaluation<br/>
+    /// 3. Direct action list processing<br/>
+    /// 4. Execution time and metadata configuration
+    /// </para>
+    /// </remarks>
+    public async UniTask<EventActionResult> ExecuteEvent(
+        string systemId, string eventId, object contextDataOrNull = null)
+    {
+        Debug.Assert(systemId != null);
+        Debug.Assert(eventId != null);
+
+        // Implementation...
+    }
 }
 ```
 
-**Example: Bulleted Lists**
+**Example: Bulleted Lists (POCU)**
 ```csharp
 /// <summary>
 /// Action execution engine
@@ -41,14 +49,17 @@ public async UniTask<EventActionResult> ExecuteEventAsync(
 /// <remarks>
 /// <para>
 /// <strong>Key Features:</strong><br/>
-/// • Thread-safe action handler management<br/>
-/// • Event definition caching and updates<br/>
-/// • Condition-based action filtering<br/>
-/// • Performance measurement and result aggregation
+/// - Thread-safe action handler management<br/>
+/// - Event definition caching and updates<br/>
+/// - Condition-based action filtering<br/>
+/// - Performance measurement and result aggregation
 /// </para>
 /// </remarks>
 public class ActionExecutionEngine
 {
+    private readonly Dictionary<string, IActionHandler> mHandlers;
+    private readonly object mLock;
+
     // Implementation...
 }
 ```
@@ -60,29 +71,34 @@ public class ActionExecutionEngine
 - Thresholds and structured reference data
 - Data that benefits from tabular presentation
 
-**Example:**
+**Example (POCU):**
 ```csharp
-/// <summary>
-/// Returns performance grade based on execution time
-/// </summary>
-/// <remarks>
-/// <list type="table">
-/// <item><term>Fast</term><description>&lt; 10ms</description></item>
-/// <item><term>Normal</term><description>10-50ms</description></item>
-/// <item><term>Slow</term><description>50-200ms</description></item>
-/// <item><term>Critical</term><description>&gt;= 200ms</description></item>
-/// </list>
-/// </remarks>
-public string GetPerformanceGrade()
+public class PerformanceAnalyzer
 {
-    var ms = ExecutionTime.TotalMilliseconds;
-    return ms switch
+    private readonly TimeSpan mExecutionTime;
+
+    /// <summary>
+    /// Returns performance grade based on execution time
+    /// </summary>
+    /// <remarks>
+    /// <list type="table">
+    /// <item><term>Fast</term><description>&lt; 10ms</description></item>
+    /// <item><term>Normal</term><description>10-50ms</description></item>
+    /// <item><term>Slow</term><description>50-200ms</description></item>
+    /// <item><term>Critical</term><description>&gt;= 200ms</description></item>
+    /// </list>
+    /// </remarks>
+    public string GetPerformanceGrade()
     {
-        < 10 => "Fast",
-        < 50 => "Normal",
-        < 200 => "Slow",
-        _ => "Critical",
-    };
+        double ms = mExecutionTime.TotalMilliseconds;
+        return ms switch
+        {
+            < 10 => "Fast",
+            < 50 => "Normal",
+            < 200 => "Slow",
+            _ => "Critical",
+        };
+    }
 }
 ```
 
@@ -124,22 +140,41 @@ public string GetPerformanceGrade()
 
 Use `<value>` only when getter/setter have **side effects** or **non-obvious behavior**.
 
-**Example: Property with Side Effects**
+**Example: Property with Side Effects (POCU)**
 ```csharp
-/// <summary>
-/// Current animation mode
-/// </summary>
-/// <value>
-/// Gets or sets the animation mode. Setting this value automatically switches
-/// the underlying animation system. Returns null if no system is active.
-/// </value>
-public AnimationMode? CurrentMode
+public class AnimationController
 {
-    get => _currentSystem?.Mode;
-    set
+    private IAnimationSystem mCurrentSystem;
+
+    /// <summary>
+    /// Current animation mode
+    /// </summary>
+    /// <value>
+    /// Gets or sets the animation mode. Setting this value automatically switches
+    /// the underlying animation system. Returns null if no system is active.
+    /// </value>
+    public EAnimationMode? CurrentMode
     {
-        if (value.HasValue)
-            ActivateAnimationSystemAsync(value.Value).Forget();
+        get
+        {
+            if (mCurrentSystem != null)
+            {
+                return mCurrentSystem.Mode;
+            }
+            return null;
+        }
+        set
+        {
+            if (value.HasValue)
+            {
+                activateAnimationSystem(value.Value).Forget();
+            }
+        }
+    }
+
+    private async UniTask activateAnimationSystem(EAnimationMode mode)
+    {
+        // Implementation...
     }
 }
 ```
@@ -148,20 +183,25 @@ public AnimationMode? CurrentMode
 
 **Simple Properties (No `<value>` needed):**
 ```csharp
-/// <summary>
-/// Indicates whether the VRM model is loaded
-/// </summary>
-public bool IsModelLoaded { get; private set; }
+public class ModelState
+{
+    private readonly List<Animation> mAnimations;
 
-/// <summary>
-/// Number of available animations
-/// </summary>
-public int AnimationCount => _animations?.Count ?? 0;
+    /// <summary>
+    /// Indicates whether the VRM model is loaded
+    /// </summary>
+    public bool IsModelLoaded { get; private set; }
 
-/// <summary>
-/// User's display name
-/// </summary>
-public string DisplayName { get; set; }
+    /// <summary>
+    /// Number of available animations
+    /// </summary>
+    public int AnimationCount => mAnimations?.Count ?? 0;
+
+    /// <summary>
+    /// User's display name
+    /// </summary>
+    public string DisplayName { get; set; }
+}
 ```
 
 **Rationale:**
@@ -177,25 +217,34 @@ public string DisplayName { get; set; }
 
 Document exceptions that are **part of the method's contract** - exceptions that callers should be aware of and might need to handle.
 
-**Example:**
+**Example (POCU):**
 ```csharp
-/// <summary>
-/// Loads VRM model from specified path
-/// </summary>
-/// <param name="path">Addressable path to VRM asset</param>
-/// <returns>Loaded VRM instance</returns>
-/// <exception cref="ArgumentNullException">Thrown when path is null</exception>
-/// <exception cref="InvalidOperationException">Thrown when VRM context is not ready</exception>
-/// <exception cref="System.IO.FileNotFoundException">Thrown when VRM asset is not found</exception>
-public async UniTask<VrmInstance> LoadVRMAsync(string path)
+public class VRMLoader
 {
-    if (path == null)
-        throw new ArgumentNullException(nameof(path));
+    private bool mbIsReady;
 
-    if (!IsReady)
-        throw new InvalidOperationException("VRM context is not ready");
+    /// <summary>
+    /// Loads VRM model from specified path
+    /// </summary>
+    /// <param name="path">Addressable path to VRM asset</param>
+    /// <returns>Loaded VRM instance</returns>
+    /// <exception cref="ArgumentNullException">Thrown when path is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown when VRM context is not ready</exception>
+    /// <exception cref="System.IO.FileNotFoundException">Thrown when VRM asset is not found</exception>
+    public async UniTask<VrmInstance> LoadVRM(string path)
+    {
+        if (path == null)
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
 
-    // Implementation that might throw FileNotFoundException
+        if (!mbIsReady)
+        {
+            throw new InvalidOperationException("VRM context is not ready");
+        }
+
+        // Implementation that might throw FileNotFoundException
+    }
 }
 ```
 
@@ -222,28 +271,42 @@ public async UniTask<VrmInstance> LoadVRMAsync(string path)
 
 Use `<para>` to create **visual separation** between different topics in `<remarks>`.
 
-**Example:**
+**Example (POCU):**
 ```csharp
-/// <summary>
-/// Executes event with advanced options
-/// </summary>
-/// <remarks>
-/// <para>
-/// <strong>Execution Process:</strong><br/>
-/// 1. Event definition lookup<br/>
-/// 2. Condition evaluation<br/>
-/// 3. Action processing
-/// </para>
-/// <para>
-/// <strong>Performance Considerations:</strong><br/>
-/// • Event definitions are cached for repeated executions<br/>
-/// • Condition evaluation is optimized at event-level
-/// </para>
-/// <para>
-/// <strong>Error Handling:</strong><br/>
-/// Individual action failures don't stop execution unless configured otherwise.
-/// </para>
-/// </remarks>
+public class EventExecutor
+{
+    private readonly IEventRepository mRepository;
+    private readonly Dictionary<string, EventDefinition> mCache;
+
+    /// <summary>
+    /// Executes event with advanced options
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Execution Process:</strong><br/>
+    /// 1. Event definition lookup<br/>
+    /// 2. Condition evaluation<br/>
+    /// 3. Action processing
+    /// </para>
+    /// <para>
+    /// <strong>Performance Considerations:</strong><br/>
+    /// - Event definitions are cached for repeated executions<br/>
+    /// - Condition evaluation is optimized at event-level
+    /// </para>
+    /// <para>
+    /// <strong>Error Handling:</strong><br/>
+    /// Individual action failures don't stop execution unless configured otherwise.
+    /// </para>
+    /// </remarks>
+    public async UniTask<EventActionResult> ExecuteEvent(
+        string systemId, string eventId)
+    {
+        Debug.Assert(systemId != null);
+        Debug.Assert(eventId != null);
+
+        // Implementation...
+    }
+}
 ```
 
 **Rationale**: `<para>` creates logical grouping and improves readability in complex remarks.
@@ -252,26 +315,31 @@ Use `<para>` to create **visual separation** between different topics in `<remar
 
 ## Using `<code>` for Code Examples
 
-### Inline Code Examples
+### Inline Code Examples (POCU)
 
 ```csharp
-/// <summary>
-/// Parses animation path
-/// </summary>
-/// <remarks>
-/// Supports two formats:
-/// <code>
-/// "VRMA/animation_name"     // VRM Animation
-/// "State/Layer/StateName"   // Animator Controller
-/// </code>
-/// </remarks>
-public AnimationPathInfo ParsePath(string path)
+public class PathParser
 {
-    // Implementation...
+    /// <summary>
+    /// Parses animation path
+    /// </summary>
+    /// <remarks>
+    /// Supports two formats:
+    /// <code>
+    /// "VRMA/animation_name"     // VRM Animation
+    /// "State/Layer/StateName"   // Animator Controller
+    /// </code>
+    /// </remarks>
+    public AnimationPathInfo ParsePath(string path)
+    {
+        Debug.Assert(path != null);
+
+        // Implementation...
+    }
 }
 ```
 
-### Multi-Line Code Examples
+### Multi-Line Code Examples (POCU)
 
 ```csharp
 /// <summary>
@@ -281,17 +349,23 @@ public AnimationPathInfo ParsePath(string path)
 /// <para>
 /// <strong>Usage Example:</strong>
 /// <code>
-/// var engine = new ActionExecutionEngine();
+/// ActionExecutionEngine engine = new ActionExecutionEngine();
 /// engine.RegisterHandler("PlayerPrefs", new PlayerPrefsActionHandler());
 /// engine.RegisterHandler("Scene", new SceneActionHandler());
 ///
-/// var result = await engine.ExecuteAsync(eventAction);
+/// EventActionResult result = await engine.Execute(eventAction);
 /// </code>
 /// </para>
 /// </remarks>
+public class ActionExecutionEngine
+{
+    private readonly Dictionary<string, IActionHandler> mHandlers;
+
+    // Implementation...
+}
 ```
 
-**Rationale**: Code examples in documentation help developers understand usage patterns quickly.
+**Rationale**: Code examples in documentation help developers understand usage patterns quickly. Use explicit types, not var.
 
 ---
 
@@ -300,15 +374,20 @@ public AnimationPathInfo ParsePath(string path)
 ### `<see>` for Inline References
 
 ```csharp
-/// <summary>
-/// Executes event and returns detailed result
-/// </summary>
-/// <returns>
-/// Returns <see cref="EventActionResult"/> containing execution details
-/// </returns>
-public async UniTask<EventActionResult> ExecuteEventAsync(string eventId)
+public class EventExecutor
 {
-    // Implementation...
+    /// <summary>
+    /// Executes event and returns detailed result
+    /// </summary>
+    /// <returns>
+    /// Returns <see cref="EventActionResult"/> containing execution details
+    /// </returns>
+    public async UniTask<EventActionResult> ExecuteEvent(string eventId)
+    {
+        Debug.Assert(eventId != null);
+
+        // Implementation...
+    }
 }
 ```
 
@@ -325,6 +404,8 @@ public async UniTask<EventActionResult> ExecuteEventAsync(string eventId)
 /// <seealso cref="ActionExecutionEngine"/>
 public class ActionResult
 {
+    private Dictionary<string, object> mOutputData;
+
     // Implementation...
 }
 ```
@@ -353,6 +434,12 @@ public class ActionResult
 /// Handles condition evaluation, action processing, and result aggregation.
 /// </para>
 /// </remarks>
+public class ActionExecutionEngine
+{
+    private readonly Dictionary<string, IActionHandler> mHandlers;
+
+    // Implementation...
+}
 ```
 
 ### Pattern 2: Side-by-Side
@@ -365,22 +452,32 @@ public class ActionResult
 /// 조건 미충족 시 true / Set to true when conditions are not met<br/>
 /// Success와 독립적 / Independent of Success value
 /// </remarks>
+public bool Skipped { get; set; }
 ```
 
 ### Pattern 3: Primary Language + Translation
 
 ```csharp
-/// <summary>
-/// Executes event asynchronously
-/// </summary>
-/// <remarks>
-/// <para>
-/// Processes event definition, evaluates conditions, and executes actions.
-/// </para>
-/// <para>
-/// <strong>한글 설명:</strong> 이벤트 정의를 처리하고, 조건을 평가한 후, 액션을 실행합니다.
-/// </para>
-/// </remarks>
+public class EventExecutor
+{
+    /// <summary>
+    /// Executes event asynchronously
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Processes event definition, evaluates conditions, and executes actions.
+    /// </para>
+    /// <para>
+    /// <strong>한글 설명:</strong> 이벤트 정의를 처리하고, 조건을 평가한 후, 액션을 실행합니다.
+    /// </para>
+    /// </remarks>
+    public async UniTask<EventActionResult> ExecuteEvent(string eventId)
+    {
+        Debug.Assert(eventId != null);
+
+        // Implementation...
+    }
+}
 ```
 
 **Recommendation**: Choose one pattern and use it consistently within a file or project.
@@ -407,10 +504,13 @@ public class ActionResult
 | `<seealso>` | Related items | Related types/methods |
 | `<inheritdoc/>` | Inherit documentation | Implementation classes |
 
-### Best Practices
+### Best Practices (POCU)
 
 1. **Keep it simple**: Use minimal tags for straightforward cases
 2. **Add structure**: Use `<para>`, `<br/>`, `<list>` for complex remarks
 3. **Be consistent**: Choose formatting patterns and stick to them
 4. **Think readability**: Optimize for IntelliSense display
 5. **Document contracts**: Focus on public API contracts, not implementation details
+6. **POCU Naming**: Use mPascalCase for private fields, camelCase for private methods
+7. **No Async Suffix**: Method names don't need Async suffix per POCU
+8. **Explicit Types**: Use explicit types in code examples, not var

@@ -1,6 +1,8 @@
 ---
 name: unity-performance
 description: Optimize Unity game performance through profiling, draw call reduction, and resource management. Masters batching, LOD, occlusion culling, and mobile optimization. Use for performance bottlenecks, frame rate issues, or optimization strategies.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity Performance Optimization
@@ -8,6 +10,8 @@ description: Optimize Unity game performance through profiling, draw call reduct
 ## Overview
 
 Performance optimization for Unity games focusing on profiling and systematic optimization.
+
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
 
 **Core Topics**:
 - Unity Profiler analysis
@@ -28,7 +32,8 @@ GC-free pooling is critical for performance. Use Unity's built-in `UnityEngine.P
 using UnityEngine.Pool;
 
 // Temporary collection pooling - eliminates GC spikes
-using (ListPool<Enemy>.Get(out var enemies))
+List<Enemy> enemies;
+using (ListPool<Enemy>.Get(out enemies))
 {
     GetComponentsInChildren(enemies);
     ProcessEnemies(enemies);
@@ -59,7 +64,7 @@ using (ListPool<Enemy>.Get(out var enemies))
 ### CPU Optimization
 - ✅ Reduce Update/FixedUpdate calls
 - ✅ Object pooling for frequently spawned objects
-- ✅ Cache component references
+- ✅ Cache component references in Awake/Start
 - ✅ Use events instead of polling
 
 ### GPU Optimization
@@ -79,7 +84,7 @@ using (ListPool<Enemy>.Get(out var enemies))
 
 ## Related Skills
 
-- **unity-collection-pool**: GC-free collection management with ListPool, HashSetPool, DictionaryPool, and ObjectPool. Essential for eliminating GC spikes from temporary collection allocations.
+- **unity-collection-pool**: GC-free collection management with ListPool, HashSetPool, DictionaryPool, and ObjectPool. Essential for eliminating GC spikes.
 
 ## Best Practices
 

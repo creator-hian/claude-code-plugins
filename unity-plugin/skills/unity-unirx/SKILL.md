@@ -1,6 +1,8 @@
 ---
 name: unity-unirx
 description: UniRx (Reactive Extensions) library expert for legacy Unity projects. Specializes in UniRx-specific patterns, Observable streams, and ReactiveProperty. Use for maintaining existing UniRx codebases. For new projects, use unity-r3 skill instead.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity UniRx - Reactive Extensions for Unity (Legacy)
@@ -15,7 +17,7 @@ UniRx is a legacy Reactive Extensions library for Unity, widely used in pre-2022
 
 **Status**: ⚠️ Legacy library - Maintained but not actively developed. New projects should use R3.
 
-**Foundation Required**: `csharp-async-patterns` skill (async fundamentals) and `unity-async` skill (Unity context)
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `csharp-async-patterns` (async fundamentals), `unity-async` (Unity context)
 
 **Core Topics**:
 - Observable sequences and observers
@@ -134,12 +136,12 @@ public class ViewModel
     // Command can be enabled/disabled reactively
     public ReactiveCommand AttackCommand { get; }
 
-    private IntReactiveProperty stamina = new IntReactiveProperty(100);
+    private IntReactiveProperty mStamina = new IntReactiveProperty(100);
 
     public ViewModel()
     {
         // Command only enabled when stamina > 10
-        AttackCommand = stamina
+        AttackCommand = mStamina
             .Select(s => s > 10)
             .ToReactiveCommand();
 
@@ -154,7 +156,7 @@ public class ViewModel
 using UniRx;
 using System.Threading.Tasks;
 
-async Task BackgroundWorkAsync()
+async Task DoBackgroundWork()
 {
     // Do background work
     await Task.Run(() => HeavyComputation());
@@ -192,7 +194,7 @@ Observable.FromCoroutine<string>(observer => GetDataCoroutine(observer))
 
 IEnumerator GetDataCoroutine(IObserver<string> observer)
 {
-    var www = UnityWebRequest.Get(url);
+    UnityWebRequest www = UnityWebRequest.Get(url);
     yield return www.SendWebRequest();
     observer.OnNext(www.downloadHandler.text);
     observer.OnCompleted();
@@ -205,34 +207,34 @@ IEnumerator GetDataCoroutine(IObserver<string> observer)
 // ViewModel
 public class PlayerViewModel : IDisposable
 {
-    private CompositeDisposable disposables = new CompositeDisposable();
+    private CompositeDisposable mDisposables = new CompositeDisposable();
 
     public IReadOnlyReactiveProperty<int> Health { get; }
     public IReadOnlyReactiveProperty<string> Status { get; }
     public ReactiveCommand HealCommand { get; }
 
-    private IntReactiveProperty health = new IntReactiveProperty(100);
+    private IntReactiveProperty mHealth = new IntReactiveProperty(100);
 
     public PlayerViewModel()
     {
-        Health = health.ToReadOnlyReactiveProperty().AddTo(disposables);
+        Health = mHealth.ToReadOnlyReactiveProperty().AddTo(mDisposables);
 
-        Status = health
+        Status = mHealth
             .Select(h => h <= 30 ? "Critical" : h <= 70 ? "Wounded" : "Healthy")
             .ToReadOnlyReactiveProperty()
-            .AddTo(disposables);
+            .AddTo(mDisposables);
 
-        HealCommand = health
+        HealCommand = mHealth
             .Select(h => h < 100)
             .ToReactiveCommand()
-            .AddTo(disposables);
+            .AddTo(mDisposables);
 
-        HealCommand.Subscribe(_ => health.Value += 20).AddTo(disposables);
+        HealCommand.Subscribe(_ => mHealth.Value += 20).AddTo(mDisposables);
     }
 
     public void Dispose()
     {
-        disposables.Dispose();
+        mDisposables.Dispose();
     }
 }
 ```

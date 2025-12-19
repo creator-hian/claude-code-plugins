@@ -1,6 +1,8 @@
 ---
 name: unity-textmeshpro
 description: TextMeshPro (TMPro) expert for Unity text rendering with advanced typography, performance optimization, and professional text effects. Masters font asset creation, dynamic fonts, rich text formatting, material presets, and text mesh optimization. Use PROACTIVELY for text rendering, font management, localization text, UI text performance, or text effects implementation.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity TextMeshPro - Professional Text Rendering
@@ -9,7 +11,7 @@ description: TextMeshPro (TMPro) expert for Unity text rendering with advanced t
 
 TextMeshPro (TMPro) is Unity's advanced text rendering solution using Signed Distance Field (SDF) technology for resolution-independent, high-quality text with minimal performance overhead.
 
-**Foundation Required**: `unity-ui` skill (UI systems), basic understanding of Unity Canvas and UGUI
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `unity-ui` (UI systems, Canvas, UGUI)
 
 **Core Topics**:
 - SDF font asset creation and configuration
@@ -29,13 +31,13 @@ using UnityEngine;
 
 public class TextController : MonoBehaviour
 {
-    [SerializeField] private TMP_Text displayText;
+    [SerializeField] private TMP_Text mDisplayText;
 
     void Start()
     {
-        displayText.text = "Hello, World!";
-        displayText.fontSize = 36;
-        displayText.color = Color.white;
+        mDisplayText.text = "Hello, World!";
+        mDisplayText.fontSize = 36;
+        mDisplayText.color = Color.white;
     }
 }
 ```
@@ -44,13 +46,13 @@ public class TextController : MonoBehaviour
 
 ```csharp
 // TMP_Text - Base class, use for serialization (works with both)
-[SerializeField] private TMP_Text text;
+[SerializeField] private TMP_Text mText;
 
 // TextMeshProUGUI - Canvas UI text (most common)
-[SerializeField] private TextMeshProUGUI uiText;
+[SerializeField] private TextMeshProUGUI mUiText;
 
 // TextMeshPro - 3D world space text (MeshRenderer)
-[SerializeField] private TextMeshPro worldText;
+[SerializeField] private TextMeshPro mWorldText;
 ```
 
 ### Rich Text Formatting
@@ -119,13 +121,13 @@ void Update()
 }
 
 // GOOD: Update only when value changes
-private int _lastScore = -1;
+private int mLastScore = -1;
 
 void Update()
 {
-    if (score != _lastScore)
+    if (score != mLastScore)
     {
-        _lastScore = score;
+        mLastScore = score;
         scoreText.text = $"Score: {score}";
     }
 }
@@ -141,16 +143,16 @@ void UpdateScore(int score)
 
 ```csharp
 // Use StringBuilder for complex text construction
-private readonly StringBuilder _sb = new StringBuilder(256);
+private readonly StringBuilder mSb = new StringBuilder(256);
 
 void BuildComplexText()
 {
-    _sb.Clear();
-    _sb.Append("Player: ");
-    _sb.Append(playerName);
-    _sb.Append(" | Score: ");
-    _sb.Append(score);
-    displayText.SetText(_sb);
+    mSb.Clear();
+    mSb.Append("Player: ");
+    mSb.Append(playerName);
+    mSb.Append(" | Score: ");
+    mSb.Append(score);
+    displayText.SetText(mSb);
 }
 
 // Prefer SetText with parameters over string interpolation
@@ -163,17 +165,17 @@ text.text = $"{currentHP}/{maxHP}";         // More GC
 
 ```csharp
 // Apply material preset at runtime
-[SerializeField] private Material highlightMaterial;
-[SerializeField] private Material normalMaterial;
+[SerializeField] private Material mHighlightMaterial;
+[SerializeField] private Material mNormalMaterial;
 
 void Highlight(bool active)
 {
-    text.fontMaterial = active ? highlightMaterial : normalMaterial;
+    mText.fontMaterial = active ? mHighlightMaterial : mNormalMaterial;
 }
 
 // Modify material properties
-text.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
-text.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, Color.black);
+mText.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
+mText.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, Color.black);
 ```
 
 ## Reference Documentation

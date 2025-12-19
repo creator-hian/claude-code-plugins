@@ -195,7 +195,8 @@ public class BulletPool : MonoBehaviour
     Bullet CreateBullet()
     {
         var go = Instantiate(bulletPrefab);
-        return go.GetComponent<Bullet>();
+        go.TryGetComponent<Bullet>(out var bullet);
+        return bullet;
     }
 
     void OnGetBullet(Bullet bullet)
@@ -400,7 +401,7 @@ Task.Run(() =>
             list.Add(i);
 
         // UNSAFE: Unity API on background thread
-        // GetComponent<T>() // Would crash!
+        // TryGetComponent<T>() // Would crash!
     }
 });
 ```

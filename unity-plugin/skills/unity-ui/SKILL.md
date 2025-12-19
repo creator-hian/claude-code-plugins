@@ -1,6 +1,8 @@
 ---
 name: unity-ui
 description: Build and optimize Unity UI with UI Toolkit and UGUI. Masters responsive layouts, event systems, and performance optimization. Use for UI implementation, Canvas optimization, or cross-platform UI challenges.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity UI - User Interface Systems
@@ -8,6 +10,8 @@ description: Build and optimize Unity UI with UI Toolkit and UGUI. Masters respo
 ## Overview
 
 Unity UI systems covering both UI Toolkit (modern) and UGUI (Canvas-based legacy).
+
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
 
 **Core Topics**:
 - UI Toolkit (UIElements) for editor and runtime
@@ -26,17 +30,17 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    [SerializeField] private Button actionButton;
-    [SerializeField] private Text statusText;
+    [SerializeField] private Button mActionButton;
+    [SerializeField] private Text mStatusText;
 
     void Start()
     {
-        actionButton.onClick.AddListener(OnButtonClick);
+        mActionButton.onClick.AddListener(OnButtonClick);
     }
 
     void OnButtonClick()
     {
-        statusText.text = "Button clicked!";
+        mStatusText.text = "Button clicked!";
     }
 }
 ```
@@ -50,9 +54,13 @@ public class UIController : MonoBehaviour
 {
     void OnEnable()
     {
-        var root = GetComponent<UIDocument>().rootVisualElement;
-        var button = root.Q<Button>("action-button");
-        button.clicked += OnButtonClick;
+        UIDocument uiDocument;
+        if (TryGetComponent(out uiDocument))
+        {
+            VisualElement root = uiDocument.rootVisualElement;
+            Button button = root.Q<Button>("action-button");
+            button.clicked += OnButtonClick;
+        }
     }
 
     void OnButtonClick()
@@ -80,16 +88,19 @@ public class UIController : MonoBehaviour
 // Dynamic canvas: updates frequently
 
 // Disable raycasting on non-interactive elements
-[SerializeField] private Image background;
+[SerializeField] private Image mBackground;
 
 void Start()
 {
-    background.raycastTarget = false; // Not clickable
+    mBackground.raycastTarget = false; // Not clickable
 }
 
-// Use CanvasGroup for fade effects
-CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
-canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
+// Use CanvasGroup for fade effects (TryGetComponent for null-safe access)
+CanvasGroup canvasGroup;
+if (panel.TryGetComponent(out canvasGroup))
+{
+    canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
+}
 ```
 
 ## Responsive Layout
@@ -98,11 +109,14 @@ canvasGroup.alpha = 0.5f; // Fade without rebuilding Canvas
 // Use anchors for responsive design
 // Anchor presets: Stretch, Top-Left, Center, etc.
 
-// Canvas Scaler settings
-var scaler = GetComponent<CanvasScaler>();
-scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-scaler.referenceResolution = new Vector2(1920, 1080);
-scaler.matchWidthOrHeight = 0.5f; // Balance between width/height
+// Canvas Scaler settings (TryGetComponent pattern)
+CanvasScaler scaler;
+if (TryGetComponent(out scaler))
+{
+    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+    scaler.referenceResolution = new Vector2(1920, 1080);
+    scaler.matchWidthOrHeight = 0.5f; // Balance between width/height
+}
 ```
 
 ## Best Practices

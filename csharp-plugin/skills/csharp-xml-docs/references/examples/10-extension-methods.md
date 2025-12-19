@@ -177,16 +177,16 @@ public static class VRMAnimationExtensions
 /// <param name="path">Animation path</param>
 /// <returns>true if loaded and playing successfully</returns>
 /// <remarks>
-/// Convenience method combining LoadAnimationAsync and PlayAnimationAsync.
+/// Convenience method combining LoadAnimation and PlayAnimation.
 /// </remarks>
-public static async UniTask<bool> LoadAndPlayAsync(
+public static async UniTask<bool> LoadAndPlay(
     this VRMController controller,
     string path)
 {
-    if (!await controller.LoadAnimationAsync(path))
+    if (!await controller.LoadAnimation(path))
         return false;
 
-    return await controller.PlayAnimationAsync(path, WrapMode.Loop);
+    return await controller.PlayAnimation(path, EWrapMode.Loop);
 }
 ```
 
@@ -358,7 +358,7 @@ public static class UniTaskExtensions
 public static class EventActionListExtensions
 {
     /// <summary>Executes all actions in sequence</summary>
-    public static async UniTask<List<ActionResult>> ExecuteAllAsync(
+    public static async UniTask<List<ActionResult>> ExecuteAll(
         this List<EventAction> actions)
     {
         // Implementation...

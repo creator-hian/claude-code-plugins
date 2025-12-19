@@ -1,6 +1,8 @@
 ---
 name: unity-r3
 description: R3 (Reactive Extensions) library expert specializing in modern reactive programming patterns, event-driven architectures, and Observable streams. Masters R3-specific features, async enumerable integration, and Unity-optimized reactive patterns. Use PROACTIVELY for R3 implementation, reactive programming, or MVVM/MVP architecture.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity R3 - Modern Reactive Extensions for Unity
@@ -13,7 +15,7 @@ R3 is a modern, high-performance Reactive Extensions library for Unity developed
 
 **R3 vs UniRx**: R3 is the modern successor to UniRx with better performance, async enumerable support, and Unity 2022+ optimization. For legacy UniRx projects, see `unity-unirx` skill.
 
-**Foundation Required**: `csharp-async-patterns` skill (async fundamentals) and `unity-async` skill (Unity context)
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType), `csharp-async-patterns` (async fundamentals), `unity-async` (Unity context)
 
 **Core Topics**:
 - Observable sequences and observers

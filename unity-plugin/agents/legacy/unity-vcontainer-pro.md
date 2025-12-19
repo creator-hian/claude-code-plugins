@@ -66,7 +66,8 @@ public class GameLifetimeScope : LifetimeScope
         builder.RegisterFactory<Vector3, IEnemy>(position =>
         {
             var enemy = Instantiate(enemyPrefab, position, Quaternion.identity);
-            return enemy.GetComponent<IEnemy>();
+            enemy.TryGetComponent<IEnemy>(out var enemyComponent);
+            return enemyComponent;
         }, Lifetime.Transient);
         
         // Component registration from hierarchy
@@ -305,7 +306,8 @@ public class EnemyFactory : IEnemyFactory
         var prefab = prefabs[type];
         var instance = Object.Instantiate(prefab, position, Quaternion.identity);
         container.InjectGameObject(instance);
-        return instance.GetComponent<IEnemy>();
+        instance.TryGetComponent<IEnemy>(out var enemy);
+        return enemy;
     }
 }
 ```

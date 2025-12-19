@@ -1,6 +1,8 @@
 ---
 name: unity-vcontainer
 description: VContainer dependency injection expert specializing in IoC container configuration, lifecycle management, and Unity-optimized DI patterns. Masters dependency resolution, scoped containers, and testable architecture design. Use PROACTIVELY for VContainer setup, service registration, or SOLID principle implementation.
+requires:
+  - csharp-plugin:csharp-code-style
 ---
 
 # Unity VContainer - High-Performance DI for Unity
@@ -16,6 +18,8 @@ VContainer is a high-performance IoC container for Unity, providing dependency i
 - MonoBehaviour injection
 - Factory patterns with DI
 - Testing with mocks
+
+**Foundation Required**: `unity-csharp-fundamentals` (TryGetComponent, FindAnyObjectByType, null-safe coding)
 
 **Learning Path**: DI fundamentals → VContainer basics → Advanced patterns → Testing
 
@@ -50,9 +54,9 @@ public class GameLifetimeScope : LifetimeScope
 // Inject into MonoBehaviour
 public class PlayerController : MonoBehaviour
 {
-    [Inject] private readonly IPlayerService playerService;
+    [Inject] private readonly IPlayerService mPlayerService;
 
-    void Start() => playerService.Initialize();
+    void Start() => mPlayerService.Initialize();
 }
 ```
 

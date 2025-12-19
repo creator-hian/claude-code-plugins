@@ -49,7 +49,7 @@ public bool IsActive { get; set; }
 /// <summary>
 /// Validates user credentials and returns authentication token
 /// </summary>
-public async UniTask<string> AuthenticateAsync(string username, string password)
+public async UniTask<string> Authenticate(string username, string password)
 {
     // Implementation...
 }
@@ -95,7 +95,7 @@ public string Email { get; set; }
 /// <param name="username">The username</param>
 /// <param name="password">The password</param>
 /// <returns>Returns a Task of string</returns>
-public async UniTask<string> AuthenticateAsync(string username, string password)
+public async UniTask<string> Authenticate(string username, string password)
 {
     // Implementation...
 }
@@ -112,7 +112,7 @@ public async UniTask<string> AuthenticateAsync(string username, string password)
 /// <summary>
 /// Validates credentials and returns JWT token
 /// </summary>
-public async UniTask<string> AuthenticateAsync(string username, string password)
+public async UniTask<string> Authenticate(string username, string password)
 ```
 **Value added**: Specifies it returns a JWT token, not just any string.
 
@@ -232,7 +232,7 @@ public string DisplayName { get; set; }
 /// <summary>
 /// Sends email notification
 /// </summary>
-public async UniTask SendEmailAsync(string to, string subject, string body)
+public async UniTask SendEmail(string to, string subject, string body)
 {
     // Implementation...
 }
@@ -247,7 +247,7 @@ public async UniTask SendEmailAsync(string to, string subject, string body)
 /// Emails are queued and sent asynchronously. Method returns immediately.
 /// Check SendStatus for delivery confirmation.
 /// </remarks>
-public async UniTask SendEmailAsync(string to, string subject, string body)
+public async UniTask SendEmail(string to, string subject, string body)
 {
     // Implementation...
 }

@@ -2,7 +2,8 @@
 name: unity-async
 description: Handle Unity's asynchronous programming patterns including coroutines, async/await, and Job System. Masters Unity's main thread restrictions and threading models. Use when guidance needed on Unity async operations, coroutine optimization, or parallel processing in Unity context.
 requires:
-  - csharp-async-patterns
+  - csharp-plugin:csharp-code-style
+  - csharp-plugin:csharp-async-patterns
 ---
 
 # Unity Async Patterns
@@ -19,6 +20,8 @@ requires:
 > - ValueTask optimization
 >
 > **Learning Path**: Master C# async basics via `csharp-async-patterns` → Apply Unity-specific constraints and patterns via this skill
+
+> **🔧 Foundation**: `unity-csharp-fundamentals` - Required Unity C# patterns (TryGetComponent, FindAnyObjectByType, null-safe coding)
 
 ## Overview
 
@@ -42,16 +45,16 @@ Unity-specific async patterns extending foundational C# async/await concepts.
 IEnumerator LoadDataCoroutine()
 {
     yield return new WaitForSeconds(1f);
-    var request = UnityWebRequest.Get(url);
+    UnityWebRequest request = UnityWebRequest.Get(url);
     yield return request.SendWebRequest();
     ProcessData(request.downloadHandler.text);
 }
 
 // 2. Async/Await (C# standard + Unity constraints)
-async Task<string> LoadDataAsync(CancellationToken ct)
+async Task<string> LoadData(CancellationToken ct)
 {
     await Task.Delay(1000, ct);
-    using var request = UnityWebRequest.Get(url);
+    using UnityWebRequest request = UnityWebRequest.Get(url);
     await request.SendWebRequest();
     return request.downloadHandler.text;
     // Unity auto-marshals to main thread
@@ -125,7 +128,7 @@ yield return new WaitForFixedUpdate(); // Physics update
 
 ### Async Resource Loading
 ```csharp
-var asyncLoad = SceneManager.LoadSceneAsync("Scene");
+AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Scene");
 while (!asyncLoad.isDone)
 {
     float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
@@ -135,9 +138,9 @@ while (!asyncLoad.isDone)
 
 ### Addressables Integration
 ```csharp
-var handle = Addressables.LoadAssetAsync<GameObject>("AssetKey");
+AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("AssetKey");
 await handle.Task;
-var prefab = handle.Result;
+GameObject prefab = handle.Result;
 ```
 
 ## Platform Considerations

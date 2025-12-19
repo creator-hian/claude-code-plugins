@@ -71,7 +71,7 @@ Observable.EveryValueChanged(target, x => x.position)
 Starts emitting when subscribed, each subscription gets independent sequence:
 
 ```csharp
-var cold = Observable.Interval(TimeSpan.FromSeconds(1)).Take(3);
+IObservable<long> cold = Observable.Interval(TimeSpan.FromSeconds(1)).Take(3);
 
 cold.Subscribe(x => Debug.Log($"Sub1: {x}"));
 await UniTask.Delay(1500);
@@ -85,8 +85,8 @@ cold.Subscribe(x => Debug.Log($"Sub2: {x}"));
 Emits regardless of subscriptions, all subscribers share the same sequence:
 
 ```csharp
-var subject = new Subject<int>();
-var hot = subject.Publish();
+Subject<int> subject = new Subject<int>();
+IConnectableObservable<int> hot = subject.Publish();
 hot.Connect(); // Start emitting
 
 hot.Subscribe(x => Debug.Log($"Sub1: {x}"));
@@ -101,9 +101,9 @@ subject.OnNext(2);
 ### Converting Cold to Hot
 
 ```csharp
-var cold = Observable.Interval(TimeSpan.FromSeconds(1));
-var hot = cold.Publish(); // Convert to hot
-var connection = hot.Connect(); // Start emitting
+IObservable<long> cold = Observable.Interval(TimeSpan.FromSeconds(1));
+IConnectableObservable<long> hot = cold.Publish(); // Convert to hot
+IDisposable connection = hot.Connect(); // Start emitting
 
 // Later: connection.Dispose(); to stop
 ```
@@ -113,7 +113,7 @@ var connection = hot.Connect(); // Start emitting
 ### Manual Disposal
 
 ```csharp
-var subscription = observable.Subscribe(x => Debug.Log(x));
+IDisposable subscription = observable.Subscribe(x => Debug.Log(x));
 
 // Later
 subscription.Dispose(); // Unsubscribe
@@ -138,18 +138,18 @@ public class Example : MonoBehaviour
 ```csharp
 public class Example : MonoBehaviour
 {
-    private readonly CompositeDisposable disposables = new();
+    private readonly CompositeDisposable mDisposables = new CompositeDisposable();
 
     void Start()
     {
-        observable1.Subscribe(x => {}).AddTo(disposables);
-        observable2.Subscribe(x => {}).AddTo(disposables);
-        observable3.Subscribe(x => {}).AddTo(disposables);
+        observable1.Subscribe(x => {}).AddTo(mDisposables);
+        observable2.Subscribe(x => {}).AddTo(mDisposables);
+        observable3.Subscribe(x => {}).AddTo(mDisposables);
     }
 
     void OnDestroy()
     {
-        disposables.Dispose(); // Dispose all at once
+        mDisposables.Dispose(); // Dispose all at once
     }
 }
 ```
@@ -181,7 +181,7 @@ Observable.Range(1, 10)
 Only emit when value changes:
 
 ```csharp
-var property = new ReactiveProperty<int>(1);
+ReactiveProperty<int> property = new ReactiveProperty<int>(1);
 
 property.DistinctUntilChanged()
     .Subscribe(x => Debug.Log(x));
@@ -258,7 +258,7 @@ observable
 ### Simple Property
 
 ```csharp
-var health = new ReactiveProperty<int>(100);
+ReactiveProperty<int> health = new ReactiveProperty<int>(100);
 
 // Subscribe to changes
 health.Subscribe(h => Debug.Log($"Health: {h}"))
@@ -274,14 +274,14 @@ health.Value = 50;
 ```csharp
 public class Player : MonoBehaviour
 {
-    private readonly ReactiveProperty<int> health = new(100);
+    private readonly ReactiveProperty<int> mHealth = new ReactiveProperty<int>(100);
 
     // Expose as read-only
-    public IReadOnlyReactiveProperty<int> Health => health;
+    public IReadOnlyReactiveProperty<int> Health => mHealth;
 
     public void TakeDamage(int amount)
     {
-        health.Value -= amount;
+        mHealth.Value -= amount;
     }
 }
 ```
@@ -289,8 +289,8 @@ public class Player : MonoBehaviour
 ### Derived Property
 
 ```csharp
-var health = new ReactiveProperty<int>(100);
-var isDead = health
+ReactiveProperty<int> health = new ReactiveProperty<int>(100);
+ReadOnlyReactiveProperty<bool> isDead = health
     .Select(h => h <= 0)
     .ToReadOnlyReactiveProperty();
 

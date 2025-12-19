@@ -1,4 +1,4 @@
-# Async/Await Code Examples
+# Async/Await Code Examples (POCU)
 
 ## Table of Contents
 1. [Basic Examples](#basic-examples)
@@ -13,22 +13,40 @@
 ### Simple Async Operation
 
 ```csharp
-public async Task<string> FetchDataAsync()
+public class DataFetcher
 {
-    using var client = new HttpClient();
-    return await client.GetStringAsync("https://api.example.com/data");
+    private readonly ILogger mLogger;
+
+    // ✅ POCU: Async 접미사 없음, using 문 사용
+    public async Task<string> FetchData()
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            string result = await client.GetStringAsync("https://api.example.com/data");
+            return result;
+        }
+    }
 }
 ```
 
 ### With Cancellation
 
 ```csharp
-public async Task<string> FetchDataAsync(CancellationToken ct)
+public class CancellableDataFetcher
 {
-    using var client = new HttpClient();
-    var response = await client.GetAsync("https://api.example.com/data", ct);
-    response.EnsureSuccessStatusCode();
-    return await response.Content.ReadAsStringAsync();
+    private readonly ILogger mLogger;
+
+    // ✅ POCU: CancellationToken 지원
+    public async Task<string> FetchData(CancellationToken ct)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync("https://api.example.com/data", ct);
+            response.EnsureSuccessStatusCode();
+            string content = await response.Content.ReadAsStringAsync();
+            return content;
+        }
+    }
 }
 ```
 
@@ -37,43 +55,72 @@ public async Task<string> FetchDataAsync(CancellationToken ct)
 ### Multiple Independent Operations
 
 ```csharp
-public async Task<Summary> GetDashboardDataAsync()
+public class DashboardService
 {
-    var usersTask = GetUsersAsync();
-    var ordersTask = GetOrdersAsync();
-    var statsTask = GetStatsAsync();
+    private readonly IUserRepository mUserRepository;
+    private readonly IOrderRepository mOrderRepository;
+    private readonly IStatsRepository mStatsRepository;
 
-    await Task.WhenAll(usersTask, ordersTask, statsTask);
-
-    return new Summary
+    // ✅ POCU: 명시적 타입 사용
+    public async Task<Summary> GetDashboardData()
     {
-        Users = await usersTask,
-        Orders = await ordersTask,
-        Stats = await statsTask
-    };
+        Task<List<User>> usersTask = mUserRepository.GetAll();
+        Task<List<Order>> ordersTask = mOrderRepository.GetAll();
+        Task<Stats> statsTask = mStatsRepository.GetCurrent();
+
+        await Task.WhenAll(usersTask, ordersTask, statsTask);
+
+        Summary summary = new Summary(
+            await usersTask,
+            await ordersTask,
+            await statsTask);
+
+        return summary;
+    }
 }
 ```
 
 ### Bounded Parallelism
 
 ```csharp
-public async Task ProcessItemsAsync(List<Item> items, int maxConcurrency = 5)
+public class BatchProcessor
 {
-    using var semaphore = new SemaphoreSlim(maxConcurrency);
-    var tasks = items.Select(async item =>
+    private readonly IItemProcessor mProcessor;
+    private readonly ILogger mLogger;
+
+    // ✅ POCU: using 문 사용, 명시적 타입
+    public async Task ProcessItems(List<Item> items, int maxConcurrency = 5)
     {
-        await semaphore.WaitAsync();
+        Debug.Assert(items != null);
+        Debug.Assert(maxConcurrency > 0);
+
+        using (SemaphoreSlim semaphore = new SemaphoreSlim(maxConcurrency))
+        {
+            List<Task> tasks = new List<Task>();
+
+            foreach (Item item in items)
+            {
+                await semaphore.WaitAsync();
+
+                Task task = processItemWithSemaphore(item, semaphore);
+                tasks.Add(task);
+            }
+
+            await Task.WhenAll(tasks);
+        }
+    }
+
+    private async Task processItemWithSemaphore(Item item, SemaphoreSlim semaphore)
+    {
         try
         {
-            await ProcessItemAsync(item);
+            await mProcessor.Process(item);
         }
         finally
         {
             semaphore.Release();
         }
-    });
-
-    await Task.WhenAll(tasks);
+    }
 }
 ```
 
@@ -82,56 +129,84 @@ public async Task ProcessItemsAsync(List<Item> items, int maxConcurrency = 5)
 ### Try-Catch with Specific Exceptions
 
 ```csharp
-public async Task<Data> LoadDataWithRetryAsync(CancellationToken ct)
+public class ResilientDataLoader
 {
-    int attempts = 0;
-    const int maxAttempts = 3;
+    private readonly IDataFetcher mFetcher;
+    private readonly ILogger mLogger;
 
-    while (attempts < maxAttempts)
+    private const int MAX_ATTEMPTS = 3;
+
+    // ✅ POCU: 명시적 타입, 상수 ALL_CAPS
+    public async Task<Data> LoadDataWithRetry(CancellationToken ct)
     {
-        try
-        {
-            return await FetchDataAsync(ct);
-        }
-        catch (HttpRequestException ex) when (attempts < maxAttempts - 1)
-        {
-            attempts++;
-            Log.Warning($"Attempt {attempts} failed: {ex.Message}");
-            await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempts)), ct);
-        }
-        catch (OperationCanceledException)
-        {
-            Log.Info("Operation cancelled");
-            throw;
-        }
-    }
+        int attempts = 0;
 
-    throw new InvalidOperationException("Max retry attempts exceeded");
+        while (attempts < MAX_ATTEMPTS)
+        {
+            try
+            {
+                Data data = await mFetcher.Fetch(ct);
+                return data;
+            }
+            catch (HttpRequestException ex) when (attempts < MAX_ATTEMPTS - 1)
+            {
+                attempts++;
+                mLogger.Warning($"Attempt {attempts} failed: {ex.Message}");
+
+                int delaySeconds = (int)Math.Pow(2, attempts);
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), ct);
+            }
+            catch (OperationCanceledException)
+            {
+                mLogger.Info("Operation cancelled");
+                throw;
+            }
+        }
+
+        throw new InvalidOperationException("Max retry attempts exceeded");
+    }
 }
 ```
 
 ### Exception Aggregation
 
 ```csharp
-public async Task ProcessAllAsync(List<Item> items)
+public class ParallelProcessor
 {
-    var tasks = items.Select(ProcessItemAsync).ToList();
+    private readonly IItemProcessor mProcessor;
 
-    try
+    // ✅ POCU: 명시적 타입
+    public async Task ProcessAll(List<Item> items)
     {
-        await Task.WhenAll(tasks);
-    }
-    catch
-    {
-        // Collect all exceptions
-        var exceptions = tasks
-            .Where(t => t.IsFaulted)
-            .Select(t => t.Exception)
-            .ToList();
+        Debug.Assert(items != null);
 
-        if (exceptions.Any())
+        List<Task> tasks = new List<Task>();
+        foreach (Item item in items)
         {
-            throw new AggregateException(exceptions);
+            Task task = mProcessor.Process(item);
+            tasks.Add(task);
+        }
+
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch
+        {
+            // Collect all exceptions
+            List<AggregateException> exceptions = new List<AggregateException>();
+            foreach (Task task in tasks)
+            {
+                if (task.IsFaulted && task.Exception != null)
+                {
+                    exceptions.Add(task.Exception);
+                }
+            }
+
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
+            }
         }
     }
 }
@@ -142,17 +217,26 @@ public async Task ProcessAllAsync(List<Item> items)
 ### Using CancellationTokenSource
 
 ```csharp
-public async Task<Data> LoadWithTimeoutAsync(TimeSpan timeout)
+public class TimeoutLoader
 {
-    using var cts = new CancellationTokenSource(timeout);
+    private readonly IDataLoader mLoader;
+    private readonly ILogger mLogger;
 
-    try
+    // ✅ POCU: using 문 사용
+    public async Task<Data> LoadWithTimeout(TimeSpan timeout)
     {
-        return await LoadDataAsync(cts.Token);
-    }
-    catch (OperationCanceledException) when (cts.IsCancellationRequested)
-    {
-        throw new TimeoutException($"Operation exceeded {timeout}");
+        using (CancellationTokenSource cts = new CancellationTokenSource(timeout))
+        {
+            try
+            {
+                Data data = await mLoader.Load(cts.Token);
+                return data;
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Operation exceeded {timeout}");
+            }
+        }
     }
 }
 ```
@@ -160,19 +244,26 @@ public async Task<Data> LoadWithTimeoutAsync(TimeSpan timeout)
 ### Using Task.WhenAny
 
 ```csharp
-public async Task<Data> LoadWithTimeoutAsync2(TimeSpan timeout)
+public class WhenAnyTimeoutLoader
 {
-    var dataTask = LoadDataAsync();
-    var timeoutTask = Task.Delay(timeout);
+    private readonly IDataLoader mLoader;
 
-    var completed = await Task.WhenAny(dataTask, timeoutTask);
-
-    if (completed == timeoutTask)
+    // ✅ POCU: 명시적 타입
+    public async Task<Data> LoadWithTimeout(TimeSpan timeout)
     {
-        throw new TimeoutException($"Operation exceeded {timeout}");
-    }
+        Task<Data> dataTask = mLoader.Load();
+        Task timeoutTask = Task.Delay(timeout);
 
-    return await dataTask;
+        Task completed = await Task.WhenAny(dataTask, timeoutTask);
+
+        if (completed == timeoutTask)
+        {
+            throw new TimeoutException($"Operation exceeded {timeout}");
+        }
+
+        Data data = await dataTask;
+        return data;
+    }
 }
 ```
 
@@ -181,33 +272,62 @@ public async Task<Data> LoadWithTimeoutAsync2(TimeSpan timeout)
 ### IProgress<T> Pattern
 
 ```csharp
-public async Task<Data> ProcessWithProgressAsync(
-    IProgress<int> progress,
-    CancellationToken ct)
+public class ProgressiveProcessor
 {
-    var items = await LoadItemsAsync(ct);
-    int total = items.Count;
+    private readonly IItemLoader mLoader;
+    private readonly IItemProcessor mProcessor;
 
-    for (int i = 0; i < total; i++)
+    // ✅ POCU: IProgress<T> 패턴
+    public async Task<Summary> ProcessWithProgress(
+        IProgress<int> progressOrNull,
+        CancellationToken ct)
     {
-        ct.ThrowIfCancellationRequested();
+        List<Item> items = await mLoader.Load(ct);
+        int total = items.Count;
 
-        await ProcessItemAsync(items[i], ct);
+        Debug.Assert(total > 0);
 
-        // Report progress percentage
-        progress?.Report((i + 1) * 100 / total);
+        for (int i = 0; i < total; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            await mProcessor.Process(items[i], ct);
+
+            // Report progress percentage
+            if (progressOrNull != null)
+            {
+                int percent = (i + 1) * 100 / total;
+                progressOrNull.Report(percent);
+            }
+        }
+
+        Summary summary = createSummary(items);
+        return summary;
     }
 
-    return CreateSummary(items);
+    private Summary createSummary(List<Item> items)
+    {
+        Debug.Assert(items != null);
+        return new Summary(items);
+    }
 }
 
 // Usage
-var progress = new Progress<int>(percent =>
+public class ProgressConsumer
 {
-    Console.WriteLine($"Progress: {percent}%");
-});
+    private readonly ProgressiveProcessor mProcessor;
+    private readonly ILogger mLogger;
 
-await ProcessWithProgressAsync(progress, CancellationToken.None);
+    public async Task Execute()
+    {
+        Progress<int> progress = new Progress<int>(percent =>
+        {
+            mLogger.Info($"Progress: {percent}%");
+        });
+
+        Summary summary = await mProcessor.ProcessWithProgress(progress, CancellationToken.None);
+    }
+}
 ```
 
 ## Advanced Patterns
@@ -215,45 +335,72 @@ await ProcessWithProgressAsync(progress, CancellationToken.None);
 ### Lazy Async Initialization
 
 ```csharp
+// ✅ POCU: mPascalCase for private fields
 public class AsyncLazy<T>
 {
-    private readonly Lazy<Task<T>> _instance;
+    private readonly Lazy<Task<T>> mInstance;
 
     public AsyncLazy(Func<Task<T>> factory)
     {
-        _instance = new Lazy<Task<T>>(factory);
+        Debug.Assert(factory != null);
+        mInstance = new Lazy<Task<T>>(factory);
     }
 
-    public Task<T> Value => _instance.Value;
+    public Task<T> Value => mInstance.Value;
 }
 
 // Usage
-private readonly AsyncLazy<Config> _config = new AsyncLazy<Config>(
-    () => LoadConfigAsync());
-
-public async Task UseConfigAsync()
+public class ConfigService
 {
-    var config = await _config.Value; // Loads once, reuses thereafter
+    private readonly AsyncLazy<Config> mConfig;
+    private readonly IConfigLoader mLoader;
+
+    public ConfigService(IConfigLoader loader)
+    {
+        mLoader = loader;
+        mConfig = new AsyncLazy<Config>(() => mLoader.Load());
+    }
+
+    public async Task UseConfig()
+    {
+        Config config = await mConfig.Value; // Loads once, reuses thereafter
+        applyConfig(config);
+    }
+
+    private void applyConfig(Config config)
+    {
+        Debug.Assert(config != null);
+        // Apply configuration
+    }
 }
 ```
 
 ### Async Semaphore
 
 ```csharp
+// ✅ POCU: mPascalCase, camelCase for private methods
 public class AsyncResource
 {
-    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim mSemaphore;
 
-    public async Task<T> ExecuteAsync<T>(Func<Task<T>> operation)
+    public AsyncResource()
     {
-        await _semaphore.WaitAsync();
+        mSemaphore = new SemaphoreSlim(1, 1);
+    }
+
+    public async Task<T> Execute<T>(Func<Task<T>> operation)
+    {
+        Debug.Assert(operation != null);
+
+        await mSemaphore.WaitAsync();
         try
         {
-            return await operation();
+            T result = await operation();
+            return result;
         }
         finally
         {
-            _semaphore.Release();
+            mSemaphore.Release();
         }
     }
 }
@@ -262,18 +409,37 @@ public class AsyncResource
 ### Async Event
 
 ```csharp
+// ✅ POCU: mPascalCase for private fields
 public class AsyncEventHandler
 {
-    private readonly List<Func<Task>> _handlers = new();
+    private readonly List<Func<Task>> mHandlers;
+
+    public AsyncEventHandler()
+    {
+        mHandlers = new List<Func<Task>>();
+    }
 
     public void Subscribe(Func<Task> handler)
     {
-        _handlers.Add(handler);
+        Debug.Assert(handler != null);
+        mHandlers.Add(handler);
     }
 
-    public async Task RaiseAsync()
+    public void Unsubscribe(Func<Task> handler)
     {
-        var tasks = _handlers.Select(h => h()).ToList();
+        Debug.Assert(handler != null);
+        mHandlers.Remove(handler);
+    }
+
+    public async Task Raise()
+    {
+        List<Task> tasks = new List<Task>();
+        foreach (Func<Task> handler in mHandlers)
+        {
+            Task task = handler();
+            tasks.Add(task);
+        }
+
         await Task.WhenAll(tasks);
     }
 }
