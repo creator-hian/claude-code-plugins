@@ -1,6 +1,7 @@
 ---
 name: csharp-xml-docs
-description: Unity C# XML documentation standards with flexible Korean/English language support. Use when writing XML comments, documenting C# APIs, or need guidance on proper documentation patterns for properties, methods, classes, and interfaces.
+version: 1.1.0
+description: C# XML documentation with on-demand Haiku→Expert Review→Final workflow. Flexible Korean/English language support. Use when documenting C# APIs, properties, methods, classes, and interfaces.
 requires:
   - csharp-plugin:csharp-code-style
 ---
@@ -93,6 +94,28 @@ public class ActionResult
 | Interface method | Yes (full) | Yes | All applicable | `IActionHandler.Execute()` |
 | Implementation method | `<inheritdoc/>` | Implementation details only | Override if needed | `PlayerPrefsActionHandler.Execute()` |
 
+## On-Demand Documentation Workflow
+
+**Critical Principle**: XML documentation is **NOT auto-applied**. Only generated when explicitly requested.
+
+### 3-Step Review Process
+
+1. **Claude-Haiku (Draft Generation)**
+   - Fast, efficient initial documentation draft
+   - Follows established patterns from Pattern Library
+   - Sets foundation for review
+
+2. **Gemini or Codex CLI (Expert Review)**
+   - Professional review and refinement
+   - Cross-validates patterns and consistency
+   - Improves clarity and completeness
+
+3. **Final Approval**
+   - Manual confirmation of reviewed documentation
+   - Integration into codebase
+
+See **[XML Documentation Workflow](references/xml-workflow.md)** for detailed process.
+
 ## Reference Documentation
 
 ### [Pattern Library](references/pattern-library.md)
@@ -121,6 +144,9 @@ Essential principles for effective documentation:
 - Be consistent with language choice
 - Avoid redundancy
 - Document special cases
+
+### [XML Documentation Workflow](references/xml-workflow.md)
+3-step documentation process using Claude-Haiku, Gemini/Codex review, and final approval
 
 ## Critical Pattern: Interface vs Implementation
 
@@ -176,14 +202,16 @@ public partial class VRMController : IVTuberAnimationController
 
 ## Key Principles
 
-1. **Keep it simple**: Concise summaries for straightforward elements
-2. **Add context where needed**: Complex concepts deserve detailed explanations in remarks
-3. **Think about your audience**: Choose language (Korean/English/Mixed) that serves your team best
-4. **Be consistent**: Follow established patterns and use consistent language throughout
-5. **Interface vs Implementation**: Full docs in interface, `<inheritdoc/>` + implementation specifics in class
-6. **Document exceptions**: Use `<exception>` for exceptions that are part of the method's contract
-7. **Property side effects**: Use `<value>` tag when getter/setter have non-obvious behavior
-8. **POCU Naming**: Use mPascalCase for private fields, camelCase for private methods
+1. **On-Demand Only**: XML documentation is NEVER auto-applied. Only generate when explicitly requested
+2. **Keep it simple**: Concise summaries for straightforward elements
+3. **Add context where needed**: Complex concepts deserve detailed explanations in remarks
+4. **Think about your audience**: Choose language (Korean/English/Mixed) that serves your team best
+5. **Be consistent**: Follow established patterns and use consistent language throughout
+6. **Dual-Review Process**: Claude-Haiku draft → Expert Review (Gemini/Codex) → Final Approval
+7. **Interface vs Implementation**: Full docs in interface, `<inheritdoc/>` + implementation specifics in class
+8. **Document exceptions**: Use `<exception>` for exceptions that are part of the method's contract
+9. **Property side effects**: Use `<value>` tag when getter/setter have non-obvious behavior
+10. **POCU Naming**: Use mPascalCase for private fields, camelCase for private methods
 
 ## IDE Experience
 
