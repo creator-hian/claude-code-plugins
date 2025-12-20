@@ -91,6 +91,12 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 - **Skills**: 1개
   - `ai-orchestration-feedback-loop` - Triple-AI/Dual-AI 모드, 역할 분담 (Claude=계획/구현, Codex=검증/보안, Gemini=창의적 리뷰/UX)
 
+### 6. **git-plugin**
+- **설명**: Git 커밋 자동화 (Conventional Commits 지원)
+- **버전**: 1.0.0
+- **위치**: `./git-plugin`
+- **Commands**: 1개 (`/git-commit`)
+
 ---
 
 ## 📊 플러그인 요약 테이블
@@ -102,6 +108,7 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 | **codex-plugin** | 1.0.0 | 0 | 2 | Codex CLI, Claude-Codex 협업 |
 | **gemini-plugin** | 1.0.0 | 0 | 2 | Gemini CLI, Claude-Gemini 협업 |
 | **ai-orchestration-plugin** | 1.0.0 | 0 | 1 | Multi-AI (Triple/Dual) 오케스트레이션 |
+| **git-plugin** | 1.0.0 | 0 | 0 | Git 커밋 자동화 |
 | **총계** | - | **3** | **16** | - |
 
 ### Skills 상세 목록
@@ -216,12 +223,19 @@ claude-code-plugins/
 │   │       └── SKILL.md
 │   └── README.md
 │
-└── ai-orchestration-plugin/     # Multi-AI 오케스트레이션 플러그인
+├── ai-orchestration-plugin/     # Multi-AI 오케스트레이션 플러그인
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── skills/
+│   │   └── ai-orchestration-feedback-loop/  # Triple/Dual AI 통합 스킬
+│   │       └── SKILL.md
+│   └── README.md
+│
+└── git-plugin/                  # Git 커밋 자동화 플러그인
     ├── .claude-plugin/
     │   └── plugin.json
-    ├── skills/
-    │   └── ai-orchestration-feedback-loop/  # Triple/Dual AI 통합 스킬
-    │       └── SKILL.md
+    ├── command/
+    │   └── git-commit.md        # /git-commit 명령어
     └── README.md
 ```
 
