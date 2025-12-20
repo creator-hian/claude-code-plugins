@@ -33,6 +33,11 @@
       "name": "prompt-improver-plugin",
       "source": "./prompt-improver-plugin",
       "description": "Prompt enhancement hook that enriches vague prompts with targeted clarifying questions"
+    },
+    {
+      "name": "git-plugin",
+      "source": "./git-plugin",
+      "description": "Git commit automation with Conventional Commits format (/git-commit command)"
     }
   ]
 }

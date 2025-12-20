@@ -1,0 +1,8 @@
+{
+  "name": "git-plugin",
+  "description": "Git commit automation with Conventional Commits format (/git-commit command)",
+  "version": "1.0.0",
+  "author": {
+    "name": "Creator Hian"
+  }
+}
