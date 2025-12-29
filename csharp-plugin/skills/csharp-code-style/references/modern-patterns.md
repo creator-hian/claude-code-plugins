@@ -9,21 +9,21 @@
 
 | Feature | .NET 5+ | Unity |
 |---------|---------|-------|
-| `init` accessor | ✅ Supported | ❌ Not available |
-| `private init` | ✅ Supported | ❌ Not available |
-| `required` (C# 11) | ✅ Supported | ❌ Not available |
-| Records | ✅ Full support | ⚠️ Without `init` |
-| Pattern matching | ✅ Full support | ✅ Supported |
+| `init` accessor | [OK] Supported | [N/A] Not available |
+| `private init` | [OK] Supported | [N/A] Not available |
+| `required` (C# 11) | [OK] Supported | [N/A] Not available |
+| Records | [OK] Full support | [LIMIT] Without `init` |
+| Pattern matching | [OK] Full support | [OK] Supported |
 
 **Unity Alternatives**:
 ```csharp
-// ❌ COMPILE ERROR in Unity
+// [WRONG] COMPILE ERROR in Unity
 public string Name { get; private init; }
 
-// ✅ Unity Option 1: private set
+// [CORRECT] Unity Option 1: private set
 public string Name { get; private set; }
 
-// ✅ Unity Option 2: readonly field + property (true immutability)
+// [CORRECT] Unity Option 2: readonly field + property (true immutability)
 private readonly string mName;
 public string Name => mName;
 ```
@@ -67,7 +67,7 @@ OrderDto order = new OrderDto
     CustomerName = "John",
     TotalAmount = 99.99m
 };
-// order.ID = 2;  // ❌ Compile error - cannot modify after init
+// order.ID = 2;  // [WRONG] Compile error - cannot modify after init
 ```
 
 ### Records
@@ -143,12 +143,12 @@ public decimal CalculateDiscount(object customer)
 ### Target-Typed new (금지)
 
 ```csharp
-// ❌ WRONG: Target-typed new 사용 금지
+// [WRONG] Target-typed new 사용 금지
 List<Order> orders = new();
 Dictionary<string, int> cache = new();
 Customer customer = new("John");
 
-// ✅ CORRECT: 명시적 타입 사용
+// [CORRECT] 명시적 타입 사용
 List<Order> orders = new List<Order>();
 Dictionary<string, int> cache = new Dictionary<string, int>();
 Customer customer = new Customer("John");
@@ -159,20 +159,20 @@ Customer customer = new Customer("John");
 ### var Keyword (금지)
 
 ```csharp
-// ❌ WRONG: var 사용 금지
+// [WRONG] var 사용 금지
 var order = GetOrder(1);
 var customers = new List<Customer>();
 var result = Calculate();
 
-// ✅ CORRECT: 명시적 타입 선언
+// [CORRECT] 명시적 타입 선언
 Order order = GetOrder(1);
 List<Customer> customers = new List<Customer>();
 int result = Calculate();
 
-// ⚠️ EXCEPTION: Anonymous types only
+// [CAUTION] EXCEPTION: Anonymous types only
 var anonymousObj = new { Name = "John", Age = 30 };
 
-// ⚠️ EXCEPTION: IEnumerable with complex LINQ
+// [CAUTION] EXCEPTION: IEnumerable with complex LINQ
 var query = from c in customers
             where c.Age > 18
             select new { c.Name, c.Email };
@@ -181,12 +181,12 @@ var query = from c in customers
 ### Null Coalescing Operator (금지)
 
 ```csharp
-// ❌ WRONG: ?? 연산자 사용 금지
+// [WRONG] ?? 연산자 사용 금지
 string name = inputName ?? "Default";
 int count = nullableCount ?? 0;
 Order order = GetOrderOrNull(id) ?? new Order();
 
-// ✅ CORRECT: 명시적 null 검사
+// [CORRECT] 명시적 null 검사
 string name;
 if (inputName != null)
 {
@@ -217,11 +217,11 @@ if (order == null)
 ### Using Declaration (금지)
 
 ```csharp
-// ❌ WRONG: using 선언 (C# 8.0) 사용 금지
+// [WRONG] using 선언 (C# 8.0) 사용 금지
 using FileStream stream = new FileStream(path, FileMode.Open);
 DoSomething(stream);
 
-// ✅ CORRECT: using 문 사용
+// [CORRECT] using 문 사용
 using (FileStream stream = new FileStream(path, FileMode.Open))
 {
     DoSomething(stream);
@@ -238,7 +238,7 @@ using (FileStream output = new FileStream(outputPath, FileMode.Create))
 ### Inline Out Declaration (금지)
 
 ```csharp
-// ❌ WRONG: 인라인 out 선언 금지
+// [WRONG] 인라인 out 선언 금지
 if (int.TryParse(input, out int result))
 {
     Process(result);
@@ -249,7 +249,7 @@ if (mCache.TryGetValue(key, out Customer customer))
     return customer;
 }
 
-// ✅ CORRECT: 별도 라인에 선언
+// [CORRECT] 별도 라인에 선언
 int result;
 if (int.TryParse(input, out result))
 {
@@ -266,12 +266,12 @@ if (mCache.TryGetValue(key, out customer))
 ### Async Suffix (금지)
 
 ```csharp
-// ❌ WRONG: Async 접미사 사용 금지
+// [WRONG] Async 접미사 사용 금지
 public async Task<Order> GetOrderAsync(int id);
 public async Task SaveOrderAsync(Order order);
 public async Task<List<Customer>> FindCustomersAsync(string query);
 
-// ✅ CORRECT: Async 접미사 없음
+// [CORRECT] Async 접미사 없음
 public async Task<Order> GetOrder(int id)
 {
     return await mRepository.Find(id);
@@ -375,8 +375,8 @@ public string Categorize(Customer customer)
 ## Object Initializer (주의)
 
 ```csharp
-// ⚠️ 객체 초기자: 일반적으로 회피
-// ❌ AVOID in most cases
+// [CAUTION] 객체 초기자: 일반적으로 회피
+// [WRONG] AVOID in most cases
 Order order = new Order
 {
     CustomerID = 1,
@@ -384,10 +384,10 @@ Order order = new Order
     Status = EOrderStatus.Pending
 };
 
-// ✅ PREFER constructor
+// [CORRECT] PREFER constructor
 Order order = new Order(1, 100m, EOrderStatus.Pending);
 
-// ✅ EXCEPTION: required/init 사용 시 허용 (C# 11+)
+// [CORRECT] EXCEPTION: required/init 사용 시 허용 (C# 11+)
 public class OrderDto
 {
     public required int CustomerID { get; init; }
@@ -404,12 +404,12 @@ OrderDto dto = new OrderDto
 ## Inline Lambda (한 줄만 허용)
 
 ```csharp
-// ✅ CORRECT: Single line lambda
+// [CORRECT] Single line lambda
 List<Order> pending = orders.Where(o => o.Status == EOrderStatus.Pending).ToList();
 int maxAge = customers.Max(c => c.Age);
 Customer found = customers.FirstOrDefault(c => c.ID == id);
 
-// ❌ WRONG: Multi-line inline lambda
+// [WRONG] Multi-line inline lambda
 List<Order> filtered = orders.Where(o =>
 {
     if (o.Status == EOrderStatus.Pending)
@@ -419,7 +419,7 @@ List<Order> filtered = orders.Where(o =>
     return false;
 }).ToList();
 
-// ✅ CORRECT: Extract to method for complex logic
+// [CORRECT] Extract to method for complex logic
 List<Order> filtered = orders.Where(shouldIncludeOrder).ToList();
 
 private bool shouldIncludeOrder(Order order)
@@ -436,16 +436,16 @@ private bool shouldIncludeOrder(Order order)
 
 | Feature | Status | Unity | Notes |
 |---------|--------|-------|-------|
-| `private init` | ✅ Recommended | ❌ N/A | .NET 5+ only |
-| Records | ✅ Allowed | ⚠️ Limited | Without `init` in Unity |
-| Pattern matching | ✅ Allowed | ✅ OK | Includes switch expression |
-| File-scoped namespace | ✅ Recommended | ✅ OK | C# 10.0 |
-| readonly record struct | ✅ Recommended | ✅ OK | C# 10.0, strong typing |
-| `var` | ❌ Prohibited | ❌ | Except anonymous/IEnumerable |
-| `??` | ❌ Prohibited | ❌ | Use explicit null check |
-| `new()` | ❌ Prohibited | ❌ | Use explicit type |
-| using declaration | ❌ Prohibited | ❌ | Use using statement |
-| inline out | ❌ Prohibited | ❌ | Declare on separate line |
-| Async suffix | ❌ Prohibited | ❌ | No suffix |
-| Object initializer | ⚠️ Caution | ⚠️ | Only with required/init |
-| Multi-line lambda | ❌ Prohibited | ❌ | Extract to method |
+| `private init` | [OK] Recommended | [N/A] | .NET 5+ only |
+| Records | [OK] Allowed | [LIMIT] Limited | Without `init` in Unity |
+| Pattern matching | [OK] Allowed | [OK] | Includes switch expression |
+| File-scoped namespace | [OK] Recommended | [OK] | C# 10.0 |
+| readonly record struct | [OK] Recommended | [OK] | C# 10.0, strong typing |
+| `var` | [NO] Prohibited | [NO] | Except anonymous/IEnumerable |
+| `??` | [NO] Prohibited | [NO] | Use explicit null check |
+| `new()` | [NO] Prohibited | [NO] | Use explicit type |
+| using declaration | [NO] Prohibited | [NO] | Use using statement |
+| inline out | [NO] Prohibited | [NO] | Declare on separate line |
+| Async suffix | [NO] Prohibited | [NO] | No suffix |
+| Object initializer | [CAUTION] | [CAUTION] | Only with required/init |
+| Multi-line lambda | [NO] Prohibited | [NO] | Extract to method |
