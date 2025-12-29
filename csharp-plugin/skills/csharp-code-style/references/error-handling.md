@@ -183,13 +183,13 @@ public class CustomerService
 ```csharp
 public class OrderRepository
 {
-    // ❌ AVOID: null 반환
+    // [WRONG] AVOID: null 반환
     public Order GetOrder(int id)
     {
         return mOrders.FirstOrDefault(o => o.ID == id);  // null 가능
     }
 
-    // ✅ OPTION 1: OrNull suffix로 명시
+    // [CORRECT] OPTION 1: OrNull suffix로 명시
     public Order GetOrderOrNull(int id)
     {
         Order order;
@@ -200,7 +200,7 @@ public class OrderRepository
         return null;
     }
 
-    // ✅ OPTION 2: 존재 확인 후 예외 (경계 함수에서)
+    // [CORRECT] OPTION 2: 존재 확인 후 예외 (경계 함수에서)
     public Order GetOrder(int id)
     {
         Order order = GetOrderOrNull(id);
@@ -208,7 +208,7 @@ public class OrderRepository
         return order;
     }
 
-    // ✅ OPTION 3: bool 반환 패턴
+    // [CORRECT] OPTION 3: bool 반환 패턴
     public bool TryGetOrder(int id, out Order order)
     {
         return mOrders.TryGetValue(id, out order);
@@ -289,20 +289,20 @@ public class ProductService
 ```csharp
 public class EventProcessor
 {
-    // ❌ WRONG: async void 사용 금지
+    // [WRONG] async void 사용 금지
     public async void ProcessEvent(Event evt)
     {
         await handleEvent(evt);
     }
 
-    // ✅ CORRECT: async Task 사용
+    // [CORRECT] async Task 사용
     public async Task ProcessEvent(Event evt)
     {
         Debug.Assert(evt != null);
         await handleEvent(evt);
     }
 
-    // ⚠️ EXCEPTION: 이벤트 핸들러만 async void 허용
+    // [CAUTION] EXCEPTION: 이벤트 핸들러만 async void 허용
     private async void OnButtonClick(object sender, EventArgs e)
     {
         try

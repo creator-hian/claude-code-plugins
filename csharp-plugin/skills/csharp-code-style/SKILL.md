@@ -136,18 +136,18 @@ public int FibonacciRecursive(int n)
 ### Prohibited Patterns
 
 ```csharp
-// ❌ WRONG: var keyword
+// [WRONG] var keyword
 var order = GetOrder(1);
 var items = new List<Item>();
 
-// ✅ CORRECT: Explicit type
+// [CORRECT] Explicit type
 Order order = GetOrder(1);
 List<Item> items = new List<Item>();
 
-// ❌ WRONG: Null coalescing operator (??)
+// [WRONG] Null coalescing operator (??)
 string name = inputName ?? "Default";
 
-// ✅ CORRECT: Explicit null check
+// [CORRECT] Explicit null check
 string name;
 if (inputName != null)
 {
@@ -158,31 +158,31 @@ else
     name = "Default";
 }
 
-// ❌ WRONG: using declaration (C# 8.0)
+// [WRONG] using declaration (C# 8.0)
 using FileStream stream = new FileStream(path, FileMode.Open);
 
-// ✅ CORRECT: using statement
+// [CORRECT] using statement
 using (FileStream stream = new FileStream(path, FileMode.Open))
 {
     // ...
 }
 
-// ❌ WRONG: target-typed new()
+// [WRONG] target-typed new()
 List<Order> orders = new();
 
-// ✅ CORRECT: Explicit type
+// [CORRECT] Explicit type
 List<Order> orders = new List<Order>();
 
-// ❌ WRONG: Async suffix
+// [WRONG] Async suffix
 public async Task<Order> GetOrderAsync(int id);
 
-// ✅ CORRECT: No Async suffix
+// [CORRECT] No Async suffix
 public async Task<Order> GetOrder(int id);
 
-// ❌ WRONG: inline out declaration
+// [WRONG] inline out declaration
 if (int.TryParse(input, out int result))
 
-// ✅ CORRECT: separate out declaration
+// [CORRECT] separate out declaration
 int result;
 if (int.TryParse(input, out result))
 ```
@@ -219,14 +219,14 @@ Debug.Assert(order != null, "Order should not be null");
 Debug.Assert(count > 0, "Count must be positive");
 
 // Properties instead of getter/setter methods
-// ❌ WRONG
+// [WRONG]
 public int GetAge() { return mAge; }
 public void SetAge(int age) { mAge = age; }
 
-// ✅ CORRECT (.NET 5+ only - NOT available in Unity)
+// [CORRECT] (.NET 5+ only - NOT available in Unity)
 public int Age { get; private init; }
 
-// ✅ CORRECT (Unity compatible)
+// [CORRECT] (Unity compatible)
 public int Age { get; private set; }
 ```
 
@@ -347,3 +347,4 @@ Error handling patterns:
 4. **Assertion**: 모든 가정에 Debug.Assert 사용
 5. **경계 검증**: 외부 데이터는 경계에서만 검증
 6. **Use init**: Prefer C# 9.0 private init (.NET 5+ only, NOT available in Unity)
+7. **No Emoji**: 코드 예제 및 문서에서 이모지 사용 금지, 텍스트 태그 사용 ([WRONG], [CORRECT], [CAUTION])

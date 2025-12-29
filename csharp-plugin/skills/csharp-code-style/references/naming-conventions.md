@@ -350,10 +350,10 @@ public class MathUtils
 ```csharp
 public class OrderService
 {
-    // ❌ WRONG: Async suffix
+    // [WRONG] Async suffix
     public async Task<Order> GetOrderAsync(int id) { }
 
-    // ✅ CORRECT: No Async suffix
+    // [CORRECT] No Async suffix
     public async Task<Order> GetOrder(int id)
     {
         return await mRepository.Find(id);
@@ -395,7 +395,7 @@ public string GetHtmlContent() { }
 public class JsonSerializer { }
 public int HttpStatusCode { get; }
 
-// ❌ WRONG
+// [WRONG]
 public class XMLParser { }
 public string GetHTMLContent { }
 ```
@@ -428,45 +428,45 @@ public class Configuration
 ### Avoid These Naming Patterns
 
 ```csharp
-// ❌ WRONG: Hungarian notation for types (except m, mb, b)
-private string strName;      // ❌
-private int iCount;          // ❌
-private List<Order> lstOrders;  // ❌
+// [WRONG] Hungarian notation for types (except m, mb, b)
+private string strName;      // [WRONG]
+private int iCount;          // [WRONG]
+private List<Order> lstOrders;  // [WRONG]
 
-// ✅ CORRECT
+// [CORRECT]
 private string mName;
 private int mCount;
 private List<Order> mOrders;
 
-// ❌ WRONG: Underscore prefix (Microsoft style)
+// [WRONG] Underscore prefix (Microsoft style)
 private readonly ILogger _logger;
 private int _count;
 
-// ✅ CORRECT: m prefix (POCU style)
+// [CORRECT] m prefix (POCU style)
 private readonly ILogger mLogger;
 private int mCount;
 
-// ❌ WRONG: No prefix for private fields
+// [WRONG] No prefix for private fields
 private ILogger logger;
 private int count;
 
-// ✅ CORRECT
+// [CORRECT]
 private ILogger mLogger;
 private int mCount;
 
-// ❌ WRONG: Enum without E prefix
+// [WRONG] Enum without E prefix
 public enum OrderStatus { }
 public enum Direction { }
 
-// ✅ CORRECT
+// [CORRECT]
 public enum EOrderStatus { }
 public enum EDirection { }
 
-// ❌ WRONG: Struct without S prefix (non-readonly)
+// [WRONG] Struct without S prefix (non-readonly)
 public struct UserID { }
 public struct Vector3 { }
 
-// ✅ CORRECT
+// [CORRECT]
 public struct SUserID { }
 public struct SVector3 { }
 ```
