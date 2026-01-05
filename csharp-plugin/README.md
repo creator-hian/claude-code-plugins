@@ -113,6 +113,23 @@ Each skill includes comprehensive reference documentation:
 - **Code Examples**: Comprehensive code examples for common scenarios
 - **Anti-Patterns**: Common mistakes to avoid and their solutions
 
+## Hooks
+
+### CSharpier Auto-Format Hook
+
+Automatically formats C# files after Write/Edit operations using [CSharpier](https://csharpier.com/).
+
+**Auto-integrated** - No manual configuration required!
+
+**Prerequisites:**
+```bash
+dotnet tool install -g csharpier
+```
+
+The hook is defined in `hooks/hooks.json` and automatically activates when the plugin is installed.
+
+See [hooks/README.md](hooks/README.md) for detailed documentation.
+
 ## Key Principles
 
 1. **Async All the Way**: Once you go async, stay async throughout the call stack
