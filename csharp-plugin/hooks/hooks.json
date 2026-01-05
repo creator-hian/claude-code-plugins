@@ -1,0 +1,17 @@
+{
+  "description": "C# Plugin Hooks - Auto-format C# files with CSharpier",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/csharpier-format.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
