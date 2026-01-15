@@ -1,7 +1,7 @@
 {
   "name": "git-plugin",
   "description": "Git workflow automation - PR enhancement based on work history (/pr-enhance)",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": {
     "name": "Creator Hian"
   }
