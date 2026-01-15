@@ -1,7 +1,7 @@
 {
   "name": "git-plugin",
-  "description": "Git commit automation with Conventional Commits format (/git-commit command)",
-  "version": "1.0.1",
+  "description": "Git workflow automation - PR enhancement based on work history (/pr-enhance)",
+  "version": "1.1.0",
   "author": {
     "name": "Creator Hian"
   }
