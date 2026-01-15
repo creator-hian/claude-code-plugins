@@ -49,8 +49,8 @@ gh pr view $ARGUMENTS --json commits
 ### Step 4: Calculate File Statistics
 
 ```bash
-# Get diff stats
-gh pr diff $ARGUMENTS --stat
+# Get file change stats from PR (additions, deletions, filename)
+gh pr view $ARGUMENTS --json files --jq '.files[] | "\(.additions)\t\(.deletions)\t\(.path)"'
 
 # For documentation PRs, calculate file sizes
 ls -la {changed_files}
