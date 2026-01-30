@@ -4,7 +4,7 @@ Modern Unity game development plugin with specialized agents and skills for comp
 
 ## Overview
 
-This plugin provides expert-level Unity development support with **2 main agents** and **9 specialized skills** covering all aspects of Unity game development, from async programming to DOTS, mobile optimization, and UI systems.
+This plugin provides expert-level Unity development support with **2 main agents** and **10 specialized skills** covering all aspects of Unity game development, from async programming to DOTS, mobile optimization, testing, and UI systems.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ This plugin provides expert-level Unity development support with **2 main agents
 - Burst compiler and Job System optimization
 - High-performance massive-scale simulations
 
-### Skills (9)
+### Skills (10)
 
 | Skill | Library/Focus | Description | Key Topics |
 |-------|---------------|-------------|------------|
@@ -30,6 +30,7 @@ This plugin provides expert-level Unity development support with **2 main agents
 | **unity-r3** | R3 (Cysharp) | Modern reactive programming | Observables, ReactiveProperty, MVVM, async enumerable |
 | **unity-unirx** | UniRx (Legacy) | Legacy reactive programming | UniRx patterns, MessageBroker, ReactiveCommand |
 | **unity-vcontainer** | VContainer | Dependency injection | IoC container, service lifetimes, testable architecture |
+| **unity-testrunner** | Test Framework | Test automation | CLI execution, NUnit, EditMode/PlayMode, CI/CD, TDD |
 | **unity-mobile** | Platform | Mobile optimization | iOS/Android, IL2CPP, battery life, platform-specific code |
 | **unity-networking** | Multiplayer | Multiplayer development | Netcode, Mirror, Photon, state sync, lag compensation |
 | **unity-performance** | Optimization | Performance optimization | Profiling, draw calls, batching, LOD, object pooling |
@@ -271,6 +272,16 @@ unity-async provides Unity-specific foundation for:
 - LifetimeScope hierarchies
 - Factory patterns
 
+### unity-testrunner
+**Focus**: Unity Test Framework CLI automation
+
+**Core Topics:**
+- CLI batchmode execution (EditMode/PlayMode)
+- NUnit assertions and test attributes
+- Test assembly configuration (asmdef)
+- Result parsing and CI/CD integration
+- TDD workflow support
+
 ### unity-mobile, unity-networking, unity-performance, unity-ui
 Focused skills with SKILL.md containing quick reference patterns and best practices.
 
@@ -329,7 +340,7 @@ Focused skills with SKILL.md containing quick reference patterns and best practi
 - ✅ Restructured to skill-based architecture
 - ✅ Separated unity-reactive → unity-r3 + unity-unirx
 - ✅ Renamed unity-di → unity-vcontainer (library-specific)
-- ✅ Added 9 specialized skills
+- ✅ Added 10 specialized skills
 - ✅ Reduced to 2 main coordinating agents
 - ✅ Improved library clarity and selection guidance
 
