@@ -7,7 +7,7 @@
     {
       "name": "unity-plugin",
       "source": "./unity-plugin",
-      "description": "Unity game development with async patterns, collection pooling, TextMeshPro, performance optimization, and reactive programming"
+      "description": "Unity game development with async patterns, test automation, collection pooling, TextMeshPro, performance optimization, and reactive programming"
     },
     {
       "name": "csharp-plugin",
