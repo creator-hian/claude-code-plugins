@@ -38,6 +38,11 @@
       "name": "git-plugin",
       "source": "./git-plugin",
       "description": "Git commit automation with Conventional Commits format (/git-commit command)"
+    },
+    {
+      "name": "agent-team-plugin",
+      "source": "./agent-team-plugin",
+      "description": "Agent team-based parallel dispatch for multi-perspective planning and adversarial review"
     }
   ]
 }
