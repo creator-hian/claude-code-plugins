@@ -43,6 +43,14 @@
       "name": "prompt-reinforcement-plugin",
       "source": "./prompt-reinforcement-plugin",
       "description": "Reinforce user prompts by re-injecting them as system context to improve instruction adherence"
+    },
+    {
+      "name": "customaize-agent",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/NeoLabHQ/context-engineering-kit.git"
+      },
+      "description": "Commands and skills for writing and refining commands, hooks, skills for Claude Code, includes Anthropic Best Practices and Agent Persuasion Principles"
     }
   ]
 }
