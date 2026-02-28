@@ -14,7 +14,7 @@ Gemini CLI 기본 사용법을 제공하는 foundation 스킬입니다.
 
 **범위:**
 - `gemini -p` 명령어 사용법 (non-interactive mode)
-- 모델 선택 (`gemini-3-flash-preview` (기본), `gemini-3-pro-preview` (복잡한 경우만))
+- 모델 선택 (`gemini-3-flash-preview` (기본), `gemini-3.1-pro-preview` (복잡한 경우만))
 - Output format (`json`, `stream-json`)
 - 디렉토리 관리 (`--include-directories`)
 - 세션 관리 (`/chat save`, `/chat resume`)
@@ -97,7 +97,7 @@ gemini -p "Review this code for bugs"
 gemini -p "Analyze architecture" --output-format json
 
 # With specific model (Pro for complex analysis only)
-gemini -m gemini-3-pro-preview -p "Complex architecture analysis"
+gemini -m gemini-3.1-pro-preview -p "Complex architecture analysis"
 ```
 
 ### Claude Code에서 사용

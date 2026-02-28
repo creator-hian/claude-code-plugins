@@ -146,7 +146,7 @@ observable.Subscribe(
 
 ---
 
-#### Unity Plugin (`unity-reactive-pro` agent)
+#### Unity Plugin (`unity-r3` skill)
 
 **Scope**: R3 (Unity-optimized Reactive Extensions)
 
@@ -237,7 +237,7 @@ public class UserController
 
 ---
 
-#### Unity Plugin (`unity-vcontainer-pro` agent)
+#### Unity Plugin (`unity-vcontainer` skill)
 
 **Scope**: VContainer (Unity-optimized DI framework)
 
@@ -292,7 +292,7 @@ public class PlayerController : MonoBehaviour
 
 ---
 
-#### Unity Plugin (`unity-unitask-pro` agent)
+#### Unity Plugin (`unity-unitask` skill)
 
 **Scope**: UniTask (Unity-optimized async library)
 
@@ -353,7 +353,7 @@ Are you using Unity?
 └── YES → Use unity-async skill
     ├── Frame-based timing? → Coroutines
     ├── Standard async? → async/await + Unity constraints
-    ├── Zero-allocation critical? → unity-unitask-pro agent
+    ├── Zero-allocation critical? → unity-unitask skill
     └── Parallel data processing? → Job System
 ```
 
@@ -364,7 +364,7 @@ Are you using Unity?
 ├── NO → Use csharp-reactive-patterns (Rx.NET)
 │   └── IObservable, LINQ operators, Schedulers
 │
-└── YES → Use unity-reactive-pro agent (R3)
+└── YES → Use unity-r3 skill (R3)
     └── ReactiveProperty, Unity events, MVVM patterns
 ```
 
@@ -375,7 +375,7 @@ Are you using Unity?
 ├── NO → Use csharp-di-patterns (MS.Extensions.DI)
 │   └── IServiceCollection, IServiceProvider
 │
-└── YES → Use unity-vcontainer-pro agent
+└── YES → Use unity-vcontainer skill
     └── LifetimeScope, MonoBehaviour injection
 ```
 
@@ -389,9 +389,9 @@ C# Plugin (Foundation)
                                   │
                          Unity Plugin (Specialization)
                          ├── unity-async (extends C# async)
-                         ├── unity-unitask-pro (Unity-optimized async)
-                         ├── unity-reactive-pro (Unity-optimized Rx)
-                         ├── unity-vcontainer-pro (Unity-optimized DI)
+                         ├── unity-unitask (Unity-optimized async)
+                         ├── unity-r3 (Unity-optimized Rx)
+                         ├── unity-vcontainer (Unity-optimized DI)
                          ├── unity-dots
                          ├── unity-mobile
                          ├── unity-networking
@@ -446,7 +446,7 @@ When creating a new skill or agent, ask:
 ### Scenario 3: Unity Game with UniTask
 **Decision**: Unity Plugin
 **Reason**: UniTask is Unity-only library
-**Use**: `unity-unitask-pro` agent
+**Use**: `unity-unitask` skill
 
 ### Scenario 4: Console App with Rx.NET
 **Decision**: C# Plugin
@@ -456,7 +456,7 @@ When creating a new skill or agent, ask:
 ### Scenario 5: Unity Game with R3
 **Decision**: Unity Plugin
 **Reason**: R3 is Unity-optimized Rx
-**Use**: `unity-reactive-pro` agent
+**Use**: `unity-r3` skill
 
 ### Scenario 6: ASP.NET with DI
 **Decision**: C# Plugin
@@ -466,7 +466,7 @@ When creating a new skill or agent, ask:
 ### Scenario 7: Unity Game with VContainer
 **Decision**: Unity Plugin
 **Reason**: VContainer is Unity-specific
-**Use**: `unity-vcontainer-pro` agent
+**Use**: `unity-vcontainer` skill
 
 ## Future Expansion
 

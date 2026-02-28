@@ -10,7 +10,7 @@ This plugin provides specialized C# development support with a focus on modern a
 
 ### Included Agents
 
-#### 🔧 C# Pro Agent
+#### C# Pro Agent
 
 Expert C# agent specializing in modern .NET development and enterprise-grade applications.
 
@@ -35,7 +35,7 @@ Expert C# agent specializing in modern .NET development and enterprise-grade app
 
 ### Included Skills
 
-#### = C# Async/Await Patterns
+#### C# Async/Await Patterns (`csharp-async-patterns`)
 
 Comprehensive guidance on modern asynchronous programming in C#.
 
@@ -57,12 +57,12 @@ Comprehensive guidance on modern asynchronous programming in C#.
 
 **Quick Example:**
 ```csharp
-// Basic async method with cancellation support
-public async Task<Data> LoadDataAsync(CancellationToken ct = default)
+// Basic async method with cancellation support (POCU style)
+public async Task<Data> LoadData(CancellationToken ct = default)
 {
     try
     {
-        var data = await FetchAsync(ct);
+        Data data = await Fetch(ct);
         return ProcessData(data);
     }
     catch (OperationCanceledException)
@@ -72,6 +72,36 @@ public async Task<Data> LoadDataAsync(CancellationToken ct = default)
     }
 }
 ```
+
+#### C# Code Style (`csharp-code-style`)
+
+C# coding standards based on POCU conventions (C# 9.0).
+
+**Core Topics:**
+- Naming conventions (mPascalCase for private fields, bBoolean prefix, E/S prefix)
+- Prohibited patterns (var, null coalescing, target-typed new, Async suffix)
+- Class structure ordering
+- Required patterns (braces, Debug.Assert, explicit types)
+
+**When to Use:**
+- Establishing C# project coding standards
+- Code reviews for style compliance
+- Refactoring code to follow POCU conventions
+
+#### C# XML Documentation (`csharp-xml-docs`)
+
+XML documentation standards with on-demand Haiku-Expert Review-Final workflow.
+
+**Core Topics:**
+- XML comment patterns for properties, methods, classes, interfaces
+- Interface vs Implementation documentation (`<inheritdoc/>`)
+- Language choice guidelines (Korean/English/Mixed)
+- 3-step review process (Haiku draft, Expert review, Final approval)
+
+**When to Use:**
+- Documenting C# APIs, properties, methods, classes
+- Setting up XML documentation standards for a project
+- Generating documentation with multi-step review
 
 ## Installation
 
@@ -140,7 +170,7 @@ See [hooks/README.md](hooks/README.md) for detailed documentation.
 
 ## Version
 
-**Version**: 1.0.0
+**Version**: 1.4.0
 **Author**: Creator Hian
 
 ## License

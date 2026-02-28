@@ -197,16 +197,7 @@ public partial struct SpatialHashSystem : ISystem
 
 ### GameObject to Entity Conversion
 ```csharp
-// Legacy conversion (pre-Entities 1.0)
-public class ConversionAuthoring : MonoBehaviour, IConvertGameObjectToEntity
-{
-    public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
-    {
-        dstManager.AddComponentData(entity, new Health { Value = 100 });
-    }
-}
-
-// Modern baking (Entities 1.0+)
+// Baking (Entities 1.0+)
 public class HealthAuthoring : MonoBehaviour
 {
     public int MaxHealth = 100;

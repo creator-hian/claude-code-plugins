@@ -1,6 +1,6 @@
 ---
 name: gemini-cli
-description: Google Gemini CLI fundamentals for code analysis, review, and validation. Use when (1) executing gemini commands for code review/analysis, (2) configuring models (gemini-3-flash-preview (default)/gemini-3-pro-preview (complex only)), output formats (text/json/stream-json), or sandbox modes, (3) managing Gemini sessions with /chat save/resume, (4) integrating Gemini into automation scripts and CI/CD pipelines. Do NOT use for orchestration patterns (use gemini-claude-loop instead).
+description: Google Gemini CLI fundamentals for code analysis, review, and validation. Use when (1) executing gemini commands for code review/analysis, (2) configuring models (gemini-3-flash-preview (default)/gemini-3.1-pro-preview (complex only)), output formats (text/json/stream-json), or sandbox modes, (3) managing Gemini sessions with /chat save/resume, (4) integrating Gemini into automation scripts and CI/CD pipelines. Do NOT use for orchestration patterns (use gemini-claude-loop instead).
 ---
 
 # Gemini CLI Skill
@@ -47,10 +47,12 @@ response=$(echo "$result" | jq -r '.response')
 
 ## Available Models
 
+> **Note**: Model names change as Google releases new versions. Run `gemini --help` or check [Gemini API Models](https://ai.google.dev/gemini-api/docs/models) for the current list.
+
 | Model | Description | Best For |
 |-------|-------------|----------|
 | `gemini-3-flash-preview` | Fast and efficient (DEFAULT) | Standard reviews, batch operations, general use |
-| `gemini-3-pro-preview` | Flagship model | Complex architecture analysis, security audits only |
+| `gemini-3.1-pro-preview` | Latest flagship model | Complex architecture analysis, security audits |
 
 ## Output Formats
 
@@ -102,7 +104,7 @@ gemini --include-directories ./backend,./frontend -p "Review API integration"
 | Standard review | 5 minutes | `timeout: 300000` |
 | Deep analysis | **10 minutes** | `timeout: 600000` |
 
-**Recommendation**: Use `timeout: 600000` for complex analysis with `gemini-3-pro-preview`.
+**Recommendation**: Use `timeout: 600000` for complex analysis with `gemini-3.1-pro-preview`.
 
 ## Error Handling
 
@@ -123,5 +125,5 @@ gemini --include-directories ./backend,./frontend -p "Review API integration"
 3. **Parse with `jq`** for reliable extraction
 4. **Check `.error`** in JSON response for error handling
 5. **Use `--include-directories`** for multi-directory context
-6. **Match model to task**: `gemini-3-flash-preview` for most tasks, `gemini-3-pro-preview` only for complex architecture/security
+6. **Match model to task**: `gemini-3-flash-preview` for most tasks, `gemini-3.1-pro-preview` only for complex architecture/security
 7. **Set 10-minute timeout** for deep analysis (`timeout: 600000`)

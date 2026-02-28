@@ -2,7 +2,7 @@
 name: unity-performance
 description: Optimize Unity game performance through profiling, draw call reduction, and resource management. Masters batching, LOD, occlusion culling, and mobile optimization. Use for performance bottlenecks, frame rate issues, or optimization strategies.
 requires:
-  - csharp-plugin:csharp-code-style
+  - unity-csharp-fundamentals
 ---
 
 # Unity Performance Optimization
@@ -81,6 +81,14 @@ using (ListPool<Enemy>.Get(out enemies))
 - ✅ Asset bundle management
 - ✅ Unload unused assets
 - ✅ **Collection pooling** (see `unity-collection-pool` skill)
+
+## Reference Documentation
+
+### [Profiling and Optimization Patterns](references/profiling-optimization.md)
+Detailed profiling workflows:
+- Unity Profiler module usage
+- Draw call reduction techniques
+- GPU instancing and SRP Batcher patterns
 
 ## Related Skills
 

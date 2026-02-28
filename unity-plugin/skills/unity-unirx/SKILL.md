@@ -2,7 +2,9 @@
 name: unity-unirx
 description: UniRx (Reactive Extensions) library expert for legacy Unity projects. Specializes in UniRx-specific patterns, Observable streams, and ReactiveProperty. Use for maintaining existing UniRx codebases. For new projects, use unity-r3 skill instead.
 requires:
-  - csharp-plugin:csharp-code-style
+  - unity-csharp-fundamentals
+  - csharp-plugin:csharp-async-patterns
+  - unity-async
 ---
 
 # Unity UniRx - Reactive Extensions for Unity (Legacy)
@@ -299,9 +301,16 @@ UniRx performance is good but R3 offers:
 
 For performance-critical applications on Unity 2022+, migrate to R3.
 
-## Reference
+## Reference Documentation
 
-For detailed UniRx patterns, refer to:
+### [UniRx Advanced Patterns](references/unirx-patterns.md)
+Detailed UniRx patterns:
+- MVVM architecture with ReactiveProperty
+- Event aggregator and state management
+- Custom operator creation
+- Error handling strategies
+
+### External Resources
 - [UniRx GitHub](https://github.com/neuecc/UniRx)
 - [UniRx Official Wiki](https://github.com/neuecc/UniRx/wiki)
 

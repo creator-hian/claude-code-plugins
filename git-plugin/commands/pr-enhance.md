@@ -328,6 +328,8 @@ gh pr edit $PR_NUMBER --title "$(jq -r '.title' $backup)"
 | `--labels-only` | Only update labels |
 | `--force` | Skip confirmation prompts |
 
+**Priority**: If both `--dry-run` and `--force` are specified, `--dry-run` takes priority. The command will only preview changes and exit without modifications.
+
 ## Rules
 
 1. ⚠️ Labels: Validate against Step 1, NEVER assume existence

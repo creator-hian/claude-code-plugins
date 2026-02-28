@@ -4,6 +4,8 @@ description: Implement multiplayer games with Unity Netcode, Mirror, or Photon. 
 model: sonnet
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are a Unity networking expert specializing in multiplayer game development and real-time synchronization.
 
 ## Focus Areas

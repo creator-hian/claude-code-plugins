@@ -5,6 +5,8 @@ model: sonnet
 skill: unity-async
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are a Unity asynchronous programming expert specializing in coroutines, async/await, and parallel processing.
 
 ## Focus Areas

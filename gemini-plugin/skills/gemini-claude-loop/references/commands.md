@@ -157,4 +157,4 @@ gemini -m gemini-3-flash-preview --include-directories ./backend,./frontend -p "
 
 > **Available models**: See [gemini-cli SKILL](../../gemini-cli/SKILL.md#available-models)
 
-**For this skill**: Use `gemini-3-flash-preview` (default) for all phases. Only use `gemini-3-pro-preview` for complex architecture analysis.
+**For this skill**: Use `gemini-3-flash-preview` (default) for all phases. Only use `gemini-3.1-pro-preview` for complex architecture analysis.

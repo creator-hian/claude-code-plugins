@@ -2,7 +2,7 @@
 name: unity-mobile
 description: Optimize Unity games for mobile platforms with IL2CPP, platform-specific code, and memory management. Masters iOS/Android deployment, app size reduction, and battery optimization. Use for mobile builds, platform issues, or device-specific optimization.
 requires:
-  - csharp-plugin:csharp-code-style
+  - unity-csharp-fundamentals
 ---
 
 # Unity Mobile Optimization
@@ -58,6 +58,14 @@ if (Input.touchCount > 0)
 - ✅ Reduce draw calls: <100 mobile, batching
 - ✅ IL2CPP optimization: Strip engine code, managed stripping
 - ✅ Battery: Lower target framerate, reduce update frequency
+
+## Reference Documentation
+
+### [Mobile Platform Optimization](references/mobile-optimization.md)
+Platform-specific optimization:
+- IL2CPP build configuration and stripping
+- Touch input handling patterns
+- Memory budgets and thermal management
 
 ## Best Practices
 

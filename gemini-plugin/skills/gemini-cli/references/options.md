@@ -17,10 +17,12 @@
 
 ## Models
 
+> **Note**: Model names change as Google releases new versions. Run `gemini --help` or check [Gemini API Models](https://ai.google.dev/gemini-api/docs/models) for the current list.
+
 | Model | Description | Best For |
 |-------|-------------|----------|
 | `gemini-3-flash-preview` | Fast and efficient (DEFAULT) | Standard reviews, batch operations, general use |
-| `gemini-3-pro-preview` | Flagship model | Complex architecture analysis, security audits only |
+| `gemini-3.1-pro-preview` | Flagship model | Complex architecture analysis, security audits only |
 
 ### Model Selection Guidelines
 
@@ -30,8 +32,8 @@
 | Quick syntax checks | `gemini-3-flash-preview` |
 | Batch processing | `gemini-3-flash-preview` |
 | General analysis | `gemini-3-flash-preview` |
-| Complex architecture analysis | `gemini-3-pro-preview` |
-| Security audits (critical) | `gemini-3-pro-preview` |
+| Complex architecture analysis | `gemini-3.1-pro-preview` |
+| Security audits (critical) | `gemini-3.1-pro-preview` |
 
 ## Output Formats
 
@@ -177,7 +179,7 @@ gemini --include-directories ./backend,./frontend,./shared -p "Full stack analys
 gemini -m gemini-3-flash-preview -p "Review for bugs" --output-format json
 
 # Complex Architecture Analysis (Pro only)
-gemini -m gemini-3-pro-preview --include-directories ./src,./lib -p "Architecture analysis"
+gemini -m gemini-3.1-pro-preview --include-directories ./src,./lib -p "Architecture analysis"
 
 # Batch Processing - DEFAULT
 gemini -m gemini-3-flash-preview -p "Quick check" --output-format json

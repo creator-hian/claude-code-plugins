@@ -70,9 +70,9 @@ struct VelocityJob : IJobParallelFor
 - Job System parallelization
 - Main thread restrictions and solutions
 
-### Specialized Agents
-- **unity-unitask-pro**: Zero-allocation async, memory-critical scenarios
-- **unity-reactive-pro**: Event streams, MVVM/MVP, reactive state management
+### Specialized Skills
+- **unity-unitask**: Zero-allocation async, memory-critical scenarios
+- **unity-r3**: Event streams, MVVM/MVP, reactive state management
 
 ## Reference Documentation
 
@@ -143,6 +143,6 @@ Unity Async Needs
 ├── Frame timing → unity-async (coroutines)
 ├── Standard async → unity-async (async/await)
 ├── Parallel data → unity-async (Job System)
-├── Zero-allocation → unity-unitask-pro agent
-└── Reactive patterns → unity-reactive-pro agent
+├── Zero-allocation → unity-unitask skill
+└── Reactive patterns → unity-r3 skill
 ```

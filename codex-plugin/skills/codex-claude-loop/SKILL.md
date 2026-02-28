@@ -31,6 +31,7 @@ Before executing any Codex command:
 ```bash
 mkdir -p .codex-loop
 ```
+Add `.codex-loop/` to your project's `.gitignore` to avoid committing session artifacts.
 
 2. **Check Git Repository Status**
 ```bash
@@ -54,7 +55,7 @@ codex exec --skip-git-repo-check -s read-only "prompt"
 ```
 
 5. **Ask user via `AskUserQuestion`**:
-   - Model preference (gpt-5.2-codex, gpt-5.2, gpt-5.1-codex-max, gpt-5.1-codex-mini)
+   - Model preference (gpt-5.3-codex, gpt-5.2, gpt-5.1-codex-max, gpt-5-codex-mini)
    - Reasoning effort level (low, medium, high, xhigh)
 
 ## Phase 1: Planning (Claude)
@@ -160,4 +161,5 @@ Claude response by severity:
 
 ## References
 
+- **Prompt templates & context file formats**: See [references/prompt-templates.md](references/prompt-templates.md)
 - **Codex CLI fundamentals**: See [codex-cli SKILL](../codex-cli/SKILL.md) (models, options, error handling)

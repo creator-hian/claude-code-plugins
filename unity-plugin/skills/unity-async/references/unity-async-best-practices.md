@@ -315,14 +315,14 @@ async Task OperationAsync(CancellationToken ct)
 
 ## Delegation to Specialized Agents
 
-### When to Use unity-unitask-pro
+### When to Use unity-unitask
 - Zero-allocation async operations needed
 - PlayerLoop integration required
 - DOTween integration
 - Addressables with progress reporting
 - Advanced cancellation patterns
 
-### When to Use unity-reactive-pro
+### When to Use unity-r3
 - Event streams with complex transformations
 - MVVM/MVP data binding
 - UI event handling with throttling/debouncing

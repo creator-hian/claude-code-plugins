@@ -4,6 +4,8 @@ description: VContainer dependency injection expert specializing in IoC containe
 model: sonnet
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are a VContainer dependency injection expert specializing in high-performance IoC container management for Unity.
 
 ## Activation Triggers

@@ -2,7 +2,7 @@
 name: unity-networking
 description: Implement multiplayer games with Unity Netcode, Mirror, or Photon. Masters client-server architecture, state synchronization, and lag compensation. Use for multiplayer features, networking issues, or real-time synchronization.
 requires:
-  - csharp-plugin:csharp-code-style
+  - unity-csharp-fundamentals
 ---
 
 # Unity Networking - Multiplayer Game Development
@@ -28,7 +28,7 @@ using Unity.Netcode;
 
 public class Player : NetworkBehaviour
 {
-    private NetworkVariable<int> mHealth = new(100);
+    private NetworkVariable<int> mHealth = new NetworkVariable<int>(100);
 
     public override void OnNetworkSpawn()
     {
@@ -68,6 +68,14 @@ public class Player : NetworkBehaviour
 - **Network Variables**: Automatic state replication
 - **RPCs**: Remote method calls
 - **Ownership**: Who can modify what
+
+## Reference Documentation
+
+### [Netcode for GameObjects Fundamentals](references/netcode-fundamentals.md)
+Core networking concepts:
+- NetworkManager setup and configuration
+- Client-server architecture patterns
+- State synchronization and RPCs
 
 ## Best Practices
 

@@ -29,6 +29,30 @@
 2. **da-review**: 적대적 에이전트 팀이 계획/코드의 약점을 공격 → 개선점 도출
 3. 리뷰 결과 반영 후 실행 (`superpowers:executing-plans`)
 
+### Chained Workflow: diverse-plan → da-review
+
+두 스킬은 순차적으로 결합할 때 가장 효과적입니다:
+
+1. `diverse-plan`으로 다관점 통합 계획을 생성합니다
+2. `da-review`가 생성된 계획 파일을 자동 감지하여 적대적 리뷰를 수행합니다
+3. da-review 결과의 CRITICAL/HIGH 이슈를 반영하여 계획을 수정합니다
+4. 수정된 계획을 `superpowers:executing-plans`로 실행합니다
+
+`da-review`는 `diverse-plan`의 출력 파일(계획 파일)을 자동으로 감지하므로, 별도의 파일 경로 지정 없이 바로 실행할 수 있습니다.
+
+**권장 반복 횟수:** da-review는 동일 대상에 대해 최대 **2회**까지 권장됩니다. 2회 리뷰 후에도 CRITICAL 이슈가 남아있다면, 점진적 수정보다 `diverse-plan`을 다시 실행하여 근본적으로 재설계하는 것이 효과적입니다.
+
+### da-review 에이전트 실패 기준 (Majority Rule)
+
+da-review의 Agent Failure Handling은 **과반수(Majority) 규칙**을 따릅니다:
+
+| 상황 | 동작 |
+|------|------|
+| 1개 에이전트 실패/타임아웃 | 나머지 결과로 진행, 누락된 관점을 사용자에게 알림 |
+| **과반수** 에이전트 실패 | 통합 중단, 사용자에게 재시도 여부 확인 |
+
+"과반수"란 디스패치된 에이전트 중 절반 이상이 실패한 경우를 의미합니다. 예: 3명 중 2명 실패, 4명 중 3명 실패. 이 경우 남은 결과만으로는 신뢰할 수 있는 통합 평가가 불가능하므로 통합을 중단합니다.
+
 ## Skills 상세
 
 ### diverse-plan (다관점 계획 수립)

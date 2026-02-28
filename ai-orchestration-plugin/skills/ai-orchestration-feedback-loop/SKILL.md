@@ -44,7 +44,9 @@ When asking user for model selection in Phase 0, present options based on the cu
 mkdir -p .ai-orchestration
 ```
 
-Ask user via `AskUserQuestion` with **4 questions**:
+Add `.ai-orchestration/` to your project's `.gitignore` to avoid committing session artifacts.
+
+Ask user via `AskUserQuestion` with **4-7 questions** (4 base + 1 always asked + 2 conditional if Co-Implementation enabled):
 
 ### Question 1: AI Participation Mode
 **Header**: "Mode"

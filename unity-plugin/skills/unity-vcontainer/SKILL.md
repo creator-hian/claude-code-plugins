@@ -2,7 +2,7 @@
 name: unity-vcontainer
 description: VContainer dependency injection expert specializing in IoC container configuration, lifecycle management, and Unity-optimized DI patterns. Masters dependency resolution, scoped containers, and testable architecture design. Use PROACTIVELY for VContainer setup, service registration, or SOLID principle implementation.
 requires:
-  - csharp-plugin:csharp-code-style
+  - unity-csharp-fundamentals
 ---
 
 # Unity VContainer - High-Performance DI for Unity
@@ -74,7 +74,16 @@ public class PlayerController : MonoBehaviour
 
 ## Reference Documentation
 
-See [VContainer Best Practices](references/vcontainer-patterns.md) for detailed patterns.
+### [VContainer Best Practices](references/vcontainer-patterns.md)
+Core DI patterns:
+- Registration patterns and lifetime management
+- LifetimeScope hierarchies
+- Testing with mock dependencies
+
+### [VContainer Integration Patterns](references/vcontainer-integrations.md)
+Advanced integrations:
+- MVVM with reactive properties
+- Cross-framework integration patterns
 
 ## Best Practices
 

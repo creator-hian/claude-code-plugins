@@ -4,6 +4,8 @@ description: UniTask library expert specializing in allocation-free async/await 
 model: sonnet
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are a UniTask library expert specializing in high-performance asynchronous programming for Unity.
 
 ## Activation Triggers

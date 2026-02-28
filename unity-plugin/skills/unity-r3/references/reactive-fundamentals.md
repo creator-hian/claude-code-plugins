@@ -17,10 +17,11 @@ Observable.Interval(TimeSpan.FromSeconds(1))
 
 ```csharp
 // Observer receives three types of notifications
+// R3 uses onErrorResume (not onError) - errors don't unsubscribe
 observable.Subscribe(
     onNext: value => Debug.Log($"Value: {value}"),
-    onError: error => Debug.LogError($"Error: {error}"),
-    onCompleted: () => Debug.Log("Completed")
+    onErrorResume: error => Debug.LogError($"Error: {error}"),
+    onCompleted: result => Debug.Log($"Completed: {result}")
 );
 ```
 
@@ -36,7 +37,8 @@ Observable.Return(42).Subscribe(x => Debug.Log(x)); // 42
 Observable.Range(1, 5).Subscribe(x => Debug.Log(x)); // 1,2,3,4,5
 
 // Create from events
-Observable.FromEvent<UnityAction>(
+Observable.FromEvent(
+    h => new UnityAction(h),
     h => button.onClick.AddListener(h),
     h => button.onClick.RemoveListener(h)
 ).Subscribe(_ => Debug.Log("Clicked"));
@@ -46,7 +48,7 @@ Observable.Create<int>(observer =>
 {
     observer.OnNext(1);
     observer.OnNext(2);
-    observer.OnCompleted();
+    observer.OnCompleted(Result.Success);
     return Disposable.Empty;
 });
 ```
@@ -54,10 +56,13 @@ Observable.Create<int>(observer =>
 ### Unity-Specific Creation
 
 ```csharp
-// Frame-based observables
-Observable.EveryUpdate().Subscribe(_ => Debug.Log("Update"));
-Observable.EveryFixedUpdate().Subscribe(_ => Debug.Log("FixedUpdate"));
-Observable.EveryLateUpdate().Subscribe(_ => Debug.Log("LateUpdate"));
+// Frame-based observables (CancellationToken ties lifetime to MonoBehaviour)
+Observable.EveryUpdate(destroyCancellationToken)
+    .Subscribe(_ => Debug.Log("Update"));
+Observable.EveryFixedUpdate(destroyCancellationToken)
+    .Subscribe(_ => Debug.Log("FixedUpdate"));
+Observable.EveryLateUpdate(destroyCancellationToken)
+    .Subscribe(_ => Debug.Log("LateUpdate"));
 
 // Value change observation
 Observable.EveryValueChanged(target, x => x.position)
@@ -71,7 +76,7 @@ Observable.EveryValueChanged(target, x => x.position)
 Starts emitting when subscribed, each subscription gets independent sequence:
 
 ```csharp
-IObservable<long> cold = Observable.Interval(TimeSpan.FromSeconds(1)).Take(3);
+Observable<long> cold = Observable.Interval(TimeSpan.FromSeconds(1)).Take(3);
 
 cold.Subscribe(x => Debug.Log($"Sub1: {x}"));
 await UniTask.Delay(1500);
@@ -82,30 +87,35 @@ cold.Subscribe(x => Debug.Log($"Sub2: {x}"));
 
 ### Hot Observable
 
-Emits regardless of subscriptions, all subscribers share the same sequence:
+In R3, `Subject<T>` is inherently hot. It distributes values to all current subscribers immediately - no `Publish()` or `Connect()` needed:
 
 ```csharp
 Subject<int> subject = new Subject<int>();
-IConnectableObservable<int> hot = subject.Publish();
-hot.Connect(); // Start emitting
 
-hot.Subscribe(x => Debug.Log($"Sub1: {x}"));
+subject.Subscribe(x => Debug.Log($"Sub1: {x}"));
 subject.OnNext(1);
 
-hot.Subscribe(x => Debug.Log($"Sub2: {x}"));
+subject.Subscribe(x => Debug.Log($"Sub2: {x}"));
 subject.OnNext(2);
 
 // Sub1: 1, Sub1: 2, Sub2: 2
 ```
 
-### Converting Cold to Hot
+### Sharing a Cold Observable
+
+To share a cold observable among multiple subscribers, use `ReplaySubject` or manually bridge through a `Subject`:
 
 ```csharp
-IObservable<long> cold = Observable.Interval(TimeSpan.FromSeconds(1));
-IConnectableObservable<long> hot = cold.Publish(); // Convert to hot
-IDisposable connection = hot.Connect(); // Start emitting
+// ReplaySubject replays buffered values to late subscribers
+ReplaySubject<int> replay = new ReplaySubject<int>(bufferSize: 3);
 
-// Later: connection.Dispose(); to stop
+// Bridge a cold source into the replay subject
+Observable.Interval(TimeSpan.FromSeconds(1))
+    .Subscribe(x => replay.OnNext((int)x));
+
+replay.Subscribe(x => Debug.Log($"Sub1: {x}"));
+// Late subscriber still receives buffered values
+replay.Subscribe(x => Debug.Log($"Sub2: {x}"));
 ```
 
 ## Subscription Lifecycle
@@ -133,18 +143,20 @@ public class Example : MonoBehaviour
 }
 ```
 
-### Composite Disposal
+### DisposableBag (Preferred in R3)
+
+R3 prefers `DisposableBag` over `CompositeDisposable` for better performance when Remove is not needed:
 
 ```csharp
 public class Example : MonoBehaviour
 {
-    private readonly CompositeDisposable mDisposables = new CompositeDisposable();
+    private DisposableBag mDisposables;
 
     void Start()
     {
-        observable1.Subscribe(x => {}).AddTo(mDisposables);
-        observable2.Subscribe(x => {}).AddTo(mDisposables);
-        observable3.Subscribe(x => {}).AddTo(mDisposables);
+        observable1.Subscribe(x => {}).AddTo(ref mDisposables);
+        observable2.Subscribe(x => {}).AddTo(ref mDisposables);
+        observable3.Subscribe(x => {}).AddTo(ref mDisposables);
     }
 
     void OnDestroy()
@@ -192,16 +204,16 @@ property.Value = 2; // Not emitted (same value)
 property.Value = 3; // Emitted
 ```
 
-### First / FirstOrDefault
+### FirstAsync / FirstOrDefaultAsync
 
-Get first emitted value:
+Get first emitted value asynchronously:
 
 ```csharp
 await Observable.Range(1, 5)
-    .First(); // Returns 1
+    .FirstAsync(); // Returns 1
 
 await Observable.Empty<int>()
-    .FirstOrDefault(); // Returns default(int) = 0
+    .FirstOrDefaultAsync(); // Returns default(int) = 0
 ```
 
 ## Marble Diagrams
@@ -230,27 +242,34 @@ Legend:
 
 ## Error Handling Basics
 
-### Try-Catch Pattern
+### OnErrorResume Pattern
+
+In R3, errors flow to `OnErrorResume` and do NOT unsubscribe the observer (unlike traditional Rx):
 
 ```csharp
 observable
     .Subscribe(
         onNext: x => ProcessValue(x),
-        onError: ex => Debug.LogError($"Error: {ex.Message}"),
-        onCompleted: () => Debug.Log("Completed")
+        onErrorResume: ex => Debug.LogError($"Error: {ex.Message}"),
+        onCompleted: result => Debug.Log($"Completed: {result}")
     );
 ```
 
-### Catch Operator
+### Converting Errors to Completion
+
+Use `OnErrorResumeAsFailure()` to convert `OnErrorResume` exceptions into `OnCompleted(Result.Failure(exception))`:
 
 ```csharp
 observable
-    .Catch<int, Exception>(ex =>
-    {
-        Debug.LogError(ex);
-        return Observable.Return(-1); // Fallback value
-    })
-    .Subscribe(x => Debug.Log(x));
+    .OnErrorResumeAsFailure()
+    .Subscribe(
+        onNext: x => Debug.Log(x),
+        onCompleted: result =>
+        {
+            if (result.IsFailure)
+                Debug.LogError($"Failed: {result.Exception}");
+        }
+    );
 ```
 
 ## ReactiveProperty Basics
@@ -292,7 +311,7 @@ public class Player : MonoBehaviour
 ReactiveProperty<int> health = new ReactiveProperty<int>(100);
 ReadOnlyReactiveProperty<bool> isDead = health
     .Select(h => h <= 0)
-    .ToReadOnlyReactiveProperty();
+    .ToReadOnlyReactiveProperty(initialValue: false);
 
 isDead.Subscribe(dead =>
 {
@@ -302,9 +321,9 @@ isDead.Subscribe(dead =>
 
 ## Best Practices
 
-1. **Always dispose**: Use `AddTo(this)` or `CompositeDisposable`
-2. **Understand hot/cold**: Know when work starts
+1. **Always dispose**: Use `AddTo(this)` or `DisposableBag` (prefer over `CompositeDisposable` unless Remove is needed)
+2. **Understand hot/cold**: `Subject<T>` is hot; factory methods produce cold observables
 3. **Use DistinctUntilChanged**: Avoid redundant processing
 4. **ReactiveProperty for state**: Better than manual events
 5. **Marble diagrams**: Visualize complex streams
-6. **Test with TestScheduler**: Deterministic async testing
+6. **OnErrorResume != OnError**: R3 errors don't unsubscribe - handle or convert with `OnErrorResumeAsFailure()`

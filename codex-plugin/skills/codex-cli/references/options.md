@@ -2,17 +2,19 @@
 
 ## Model Selection (-m, --model)
 
+> **Note**: Model names change frequently. Run `codex --help` or check [OpenAI Codex Models](https://developers.openai.com/codex/models/) for the current list.
+
 | Model | Description | Best For |
 |-------|-------------|----------|
-| `gpt-5.2-codex` | Latest Codex-optimized frontier model (recommended) | Complex analysis, critical systems |
-| `gpt-5.2` | Latest frontier model - best general performance | General AI tasks, multi-domain |
-| `gpt-5.1-codex-max` | Codex-optimized flagship for deep reasoning | Security audits, architecture review |
-| `gpt-5.1-codex-mini` | Cheaper, faster, less capable | Quick checks, batch operations |
+| `gpt-5.3-codex` | Most capable agentic coding model (recommended) | Complex analysis, critical systems |
+| `gpt-5.2` | General frontier model | General AI tasks, multi-domain |
+| `gpt-5.1-codex-max` | Long-horizon agentic coding | Security audits, architecture review |
+| `gpt-5-codex-mini` | Cost-effective smaller model | Quick checks, batch operations |
 
 ```bash
-codex -m gpt-5.2-codex "Deep security audit"
+codex -m gpt-5.3-codex "Deep security audit"
 codex -m gpt-5.2 "General analysis"
-codex -m gpt-5.1-codex-mini "Quick syntax check"
+codex -m gpt-5-codex-mini "Quick syntax check"
 ```
 
 ---
@@ -33,7 +35,7 @@ codex -c model_reasoning_effort=low "Quick check"
 codex -c model_reasoning_effort=xhigh "Exhaustive security audit"
 
 # Combine with model
-codex -m gpt-5.2-codex -c model_reasoning_effort=xhigh "Maximum depth analysis"
+codex -m gpt-5.3-codex -c model_reasoning_effort=xhigh "Maximum depth analysis"
 ```
 
 ---

@@ -4,6 +4,8 @@ description: Build and optimize Unity UI with UI Toolkit and UGUI. Masters respo
 model: sonnet
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are a Unity UI expert specializing in user interface systems and optimization.
 
 ## Focus Areas

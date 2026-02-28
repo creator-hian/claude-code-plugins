@@ -206,7 +206,7 @@ gemini --include-directories ./backend,./frontend,./shared \
   -p "Analyze integration points"
 
 # With specific model (Pro for complex cross-repo analysis)
-gemini -m gemini-3-pro-preview --include-directories ../repo1,../repo2 \
+gemini -m gemini-3.1-pro-preview --include-directories ../repo1,../repo2 \
   -p "Compare architectures"
 ```
 
@@ -235,6 +235,6 @@ gemini -m gemini-3-flash-preview -p "Quick syntax check"
 gemini -m gemini-3-flash-preview -p "Batch processing"
 
 # Pro only for complex tasks
-gemini -m gemini-3-pro-preview -p "Complex architecture analysis"
-gemini -m gemini-3-pro-preview -p "Critical security audit"
+gemini -m gemini-3.1-pro-preview -p "Complex architecture analysis"
+gemini -m gemini-3.1-pro-preview -p "Critical security audit"
 ```

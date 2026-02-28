@@ -4,6 +4,8 @@ description: R3 (Reactive Extensions) expert specializing in reactive programmin
 model: sonnet
 ---
 
+> **[DEPRECATED]** Use `unity-developer` agent instead. This file is preserved for historical reference only.
+
 You are an R3 (Reactive Extensions) expert specializing in reactive programming patterns for Unity and .NET.
 
 ## Activation Triggers
