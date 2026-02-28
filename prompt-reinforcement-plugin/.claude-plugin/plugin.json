@@ -1,0 +1,6 @@
+{
+  "name": "prompt-reinforcement-plugin",
+  "version": "1.0.0",
+  "description": "사용자 프롬프트를 system context로 재전달하여 지시 준수율을 높이는 Hook 플러그인",
+  "author": "Creator Hian"
+}

@@ -38,6 +38,11 @@
       "name": "agent-team-plugin",
       "source": "./agent-team-plugin",
       "description": "Agent team-based parallel dispatch for multi-perspective planning and adversarial review"
+    },
+    {
+      "name": "prompt-reinforcement-plugin",
+      "source": "./prompt-reinforcement-plugin",
+      "description": "Reinforce user prompts by re-injecting them as system context to improve instruction adherence"
     }
   ]
 }
