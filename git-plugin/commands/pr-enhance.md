@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(gh pr view:*), Bash(gh issue view:*), Bash(gh label list:*), Bash(gh repo view:*), Bash(git log:*), Bash(git diff:*), Bash(git remote -v), Bash(git remote get-url:*), Bash(mcp-cli tools plugin_github_github), Bash(mcp-cli info plugin_github_github/*), Bash(mcp-cli call plugin_github_github/pull_request_read:*), Bash(mcp-cli call plugin_github_github/issue_read:*), Bash(mcp-cli call plugin_github_github/get_file_contents:*), Bash(mcp-cli call plugin_github_github/list_*), Bash(wc:*), Bash(ls -la), Read, Grep
 description: Enhance PR description based on commits, files, and linked issue checklist
-model: claude-sonnet-4-5
+model: sonnet
 ---
 
 # PR Enhance
@@ -264,7 +264,7 @@ Body:
 
 ### 7-2. Backup Current State
 ```bash
-gh pr view $PR_NUMBER --json title,body,labels > /tmp/pr-$PR_NUMBER-backup.json
+gh pr view $PR_NUMBER --json title,body,labels > ${TEMP:-/tmp}/pr-$PR_NUMBER-backup.json
 ```
 
 ### 7-3. Apply Updates (use heredoc for multiline body)
@@ -303,7 +303,7 @@ gh pr edit $PR_NUMBER --title "{FIXED_TITLE}"
 
 🔗 {PR_URL}
 
-💾 Backup: /tmp/pr-$PR_NUMBER-backup.json
+💾 Backup: ${TEMP:-/tmp}/pr-$PR_NUMBER-backup.json
 ```
 
 ---
@@ -313,7 +313,7 @@ gh pr edit $PR_NUMBER --title "{FIXED_TITLE}"
 If update is incorrect:
 ```bash
 # Restore from backup
-backup="/tmp/pr-$PR_NUMBER-backup.json"
+backup="${TEMP:-/tmp}/pr-$PR_NUMBER-backup.json"
 gh pr edit $PR_NUMBER --body "$(jq -r '.body' $backup)"
 gh pr edit $PR_NUMBER --title "$(jq -r '.title' $backup)"
 ```

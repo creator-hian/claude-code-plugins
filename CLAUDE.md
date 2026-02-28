@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Claude Code Plugin Marketplace** - a collection of custom plugins that extend Claude Code's capabilities through Skills, Agents, Commands, and Hooks. The repository currently contains 6 plugins with 18 skills total.
+This is a **Claude Code Plugin Marketplace** - a collection of custom plugins that extend Claude Code's capabilities through Skills, Agents, Commands, and Hooks. The repository currently contains 7 plugins with 23 skills total.
 
 ## Repository Structure
 
 ```
 claude-code-plugins/
-├── csharp-plugin/          # C# async patterns, XML docs
-├── unity-plugin/           # Unity game development (9 skills)
+├── csharp-plugin/          # C# async patterns, code style, XML docs
+├── unity-plugin/           # Unity game development (13 skills)
 ├── codex-plugin/           # OpenAI Codex CLI integration
 ├── gemini-plugin/          # Google Gemini CLI integration
 ├── ai-orchestration-plugin/# Multi-AI orchestration (Claude+Codex+Gemini)
@@ -34,8 +34,8 @@ plugin-name/
 │   └── skill-name/
 │       ├── SKILL.md        # L1 metadata + L2 instructions
 │       └── references/     # L3 detailed resources
-├── command/                # Slash commands
-└── hook/                   # Lifecycle hooks
+├── commands/               # Slash commands
+└── hooks/                  # Lifecycle hooks
 ```
 
 ## 3-Level Progressive Disclosure (Skills)
@@ -76,11 +76,12 @@ See `docs/architecture/SKILL_SEPARATION_STRATEGY.md` for detailed decision tree.
 
 | Plugin | Skills | Focus |
 |--------|--------|-------|
-| csharp-plugin | 2 | async/await, XML docs |
-| unity-plugin | 9 | Async, reactive, DI, performance, UI, mobile, networking |
+| csharp-plugin | 3 | async/await, code style, XML docs |
+| unity-plugin | 13 | Async, reactive, DI, performance, UI, mobile, networking, testing |
 | codex-plugin | 2 | Codex CLI, Claude-Codex dual-AI loop |
 | gemini-plugin | 2 | Gemini CLI, Claude-Gemini dual-AI loop |
 | ai-orchestration-plugin | 1 | Triple-AI (Claude+Codex+Gemini) orchestration |
+| git-plugin | 0 | PR enhancement automation |
 | agent-team-plugin | 2 | Agent team planning, adversarial review |
 
 ## Development Workflow

@@ -7,37 +7,32 @@
     {
       "name": "unity-plugin",
       "source": "./unity-plugin",
-      "description": "Unity game development with async patterns, test automation, collection pooling, TextMeshPro, performance optimization, and reactive programming"
+      "description": "Unity game development plugin with async patterns, test automation, performance optimization, and architecture for Creator Hian Marketplace"
     },
     {
       "name": "csharp-plugin",
       "source": "./csharp-plugin",
-      "description": "C# Plugin for Creator Hian Marketplace"
+      "description": "C# plugin with modern async/await patterns and code style guidelines for Creator Hian Marketplace"
     },
     {
       "name": "codex-plugin",
       "source": "./codex-plugin",
-      "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns"
+      "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns for Claude Code"
     },
     {
       "name": "gemini-plugin",
       "source": "./gemini-plugin",
-      "description": "Google Gemini CLI integration and dual-AI orchestration patterns"
+      "description": "Google Gemini CLI integration and dual-AI orchestration patterns for Claude Code"
     },
     {
       "name": "ai-orchestration-plugin",
       "source": "./ai-orchestration-plugin",
-      "description": "Multi-AI orchestration patterns combining Claude, Codex, and Gemini for comprehensive validation and review"
-    },
-    {
-      "name": "prompt-improver-plugin",
-      "source": "./prompt-improver-plugin",
-      "description": "Prompt enhancement hook that enriches vague prompts with targeted clarifying questions"
+      "description": "Multi-AI orchestration patterns for Claude Code - combining Claude, Codex, and Gemini for comprehensive validation and co-implementation"
     },
     {
       "name": "git-plugin",
       "source": "./git-plugin",
-      "description": "Git commit automation with Conventional Commits format (/git-commit command)"
+      "description": "Git workflow automation - PR enhancement based on work history (/pr-enhance)"
     },
     {
       "name": "agent-team-plugin",

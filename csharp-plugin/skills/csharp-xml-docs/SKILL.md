@@ -1,6 +1,5 @@
 ---
 name: csharp-xml-docs
-version: 1.1.0
 description: C# XML documentation with on-demand Haiku→Expert Review→Final workflow. Flexible Korean/English language support. Use when documenting C# APIs, properties, methods, classes, and interfaces.
 requires:
   - csharp-plugin:csharp-code-style

@@ -32,8 +32,19 @@ from pathlib import Path
 
 
 def check_csharpier_installed() -> bool:
-    """Check if CSharpier is available in PATH."""
-    return shutil.which("dotnet") is not None
+    """Check if both dotnet CLI and CSharpier tool are available."""
+    if shutil.which("dotnet") is None:
+        return False
+    try:
+        result = subprocess.run(
+            ["dotnet", "csharpier", "--version"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        return False
 
 
 def run_csharpier(file_path: str) -> tuple[bool, str]:

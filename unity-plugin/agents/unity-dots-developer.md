@@ -55,8 +55,7 @@ You are a Unity DOTS expert specializing in Entity Component System (ECS) and hi
 ```csharp
 // Create entity archetype
 var archetype = entityManager.CreateArchetype(
-    typeof(Translation),
-    typeof(Rotation),
+    typeof(LocalTransform),
     typeof(Velocity)
 );
 
@@ -234,11 +233,12 @@ public class HealthBaker : Baker<HealthAuthoring>
 var entities = new NativeArray<Entity>(100000, Allocator.Temp);
 entityManager.CreateEntity(archetype, entities);
 
+var random = new Unity.Mathematics.Random(42);
 for (int i = 0; i < entities.Length; i++)
 {
     entityManager.SetComponentData(entities[i], new Velocity
     {
-        Value = new float3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f))
+        Value = new float3(random.NextFloat(-1f, 1f), 0, random.NextFloat(-1f, 1f))
     });
 }
 
