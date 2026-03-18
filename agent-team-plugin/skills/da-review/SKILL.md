@@ -5,277 +5,410 @@ description: Use when you have an existing plan, design, or implemented code tha
 
 # Devil's Advocate Team Review
 
-Assemble a Devil's Advocate **team** with a shared adversarial mission: **prove this will fail.** Each team member attacks from a different angle, and the team's collective findings are cross-analyzed for cascading risks.
+Assemble a Devil's Advocate **team** with a shared adversarial mission: **prove this will fail, then show what would be better.** Each team member attacks from a different angle AND proposes fundamentally better alternatives — not just patches for what's broken.
 
-**Core principle:** A DA team is not a collection of individual reviewers. It is a coordinated adversarial unit with a shared goal: find every weakness, interaction, and failure path. The team succeeds when it either proves the target is robust (despite genuine effort to break it) or identifies concrete improvements.
+**Core principle:** A DA team doesn't just find flaws. It breaks down the target to understand its weaknesses, then reconstructs a better version. The team succeeds when it either proves robustness (despite genuine effort to break it) or delivers concrete, actionable alternatives that are demonstrably superior to the original approach. Incremental fixes are a last resort — prefer structural improvements.
 
 **Review targets:** Implementation plans, design documents, or implemented code (files, diffs, PRs).
 
 ## Step-by-Step Instructions
 
-### Phase 0: Mode Detection + Context Loading
+### Phase 0: Mode Detection + Complexity Assessment
 
 1. **Detect review mode** from the user's request:
-   - User mentions plan/design/architecture document → **Plan mode**
-   - User mentions code, files, diff, PR, implementation → **Code mode**
-   - Ambiguous → ask the user: "Are you reviewing a plan or implemented code?"
+   - Plan/design/architecture → **Plan mode**
+   - Code/files/diff/PR/implementation → **Code mode**
+   - Ambiguous → ask: "Are you reviewing a plan or implemented code?"
 
-2. **Load context based on mode:**
+2. **Assess complexity** to choose the execution path. Apply rules **top to bottom — first match wins:**
 
-   **Plan mode:**
-   - Locate the plan file: user-specified path, or active plan file (plan mode), or most recent in `~/.claude/plans/`
-   - Confirm with the user: "Review this plan: [path]?"
+   1. User explicitly requests thorough/deep review ("철저히", "깊이", "thorough") → **Team Mode**
+   2. Target is a plan, design document, or architecture → **Team Mode**
+   3. Target spans 3+ files or is a PR diff → **Team Mode**
+   4. **Everything else → Fast Mode** (single file, 1-2 files, any code review without explicit depth request)
+
+   When in doubt, default to **Fast Mode**. The user can always request Team Mode explicitly.
+
+---
+
+## Fast Mode
+
+The orchestrator performs a structured adversarial review directly — no sub-agent dispatch. This eliminates orchestration overhead while maintaining quality through the DA checklist.
+
+### Fast Mode Step 1: Load Context
+
+- Read the target file(s) completely
+- Read callers/entry points if reachability is relevant
+- Read test files if they exist
+
+### Fast Mode Step 2: Inline DA Review
+
+Apply the **combined DA checklist** below against the loaded code. Work through each section systematically. For each finding, assign severity and propose a concrete alternative.
+
+**Feasibility Check:**
+- Is this code reachable from an entry point?
+- Does it handle all claimed cases?
+- Are there runtime conditions producing silent wrong results?
+- What happens with unexpected inputs, nulls, empty collections?
+
+**Gap Check:**
+- What error scenarios are uncaught?
+- What input combinations or boundary values are untested?
+- What if a dependency is unavailable?
+- Are there missing cleanup paths?
+- Are there race conditions between concurrent operations?
+- Can repeated queries for non-existent data bypass caching (cache penetration)?
+
+**Security Check** (when security-relevant):
+- Is user input validated before use?
+- Are authorization checks missing?
+- Could sensitive data be exposed through logs, errors, or APIs?
+- Are there injection vectors?
+
+**Performance Check** (when performance-relevant):
+- Are there O(n²) or worse operations hidden in loops?
+- Are resources (connections, handles, memory) properly released?
+- Are there unnecessary allocations in hot paths?
+
+**Concurrency Check** (when async/parallel code is present):
+- Are shared resources accessed without synchronization?
+- Can concurrent operations produce inconsistent state?
+- Are there potential deadlocks in lock ordering?
+
+### Fast Mode Step 3: Output
+
+Produce the same structured output as Team Mode:
+
+**DA Review (Fast Mode):**
+- **Overall rating:** PASS / CONDITIONAL / FAIL
+- **Findings table:**
+
+| # | Severity | Location | Finding | Better Alternative |
+|---|----------|----------|---------|-------------------|
+
+- **Alternative Approaches** — if structural issues exist, propose 1-2 different ways to achieve the same goal
+- **Confidence level:** Note any areas that would benefit from deeper Team Mode review
+
+Present findings to the user with options: apply fixes, adopt alternative, or keep as-is.
+
+---
+
+## Team Mode
+
+Full DA team with parallel adversarial agents + validation. Use for complex targets where multiple perspectives and cross-analysis add genuine value.
+
+### Phase 1: Context Loading + Agent Dispatch
+
+3. **Load context upfront:**
+
+   The orchestrator reads files BEFORE dispatching agents to eliminate duplicate reads.
+
+   **Plan mode (selective loading — max 4 files):**
    - Read the plan file completely
-   - Read source files the plan references (Critical Files section, file paths in steps)
+   - Identify the **top 3 most critical** source files the plan modifies (not all references)
+   - Grep key import chains to verify assumptions
+   - Let agents read additional files themselves if needed
 
-   **Code mode:**
-   - Identify the review scope: user-specified files, git diff (staged/unstaged), or branch diff
-   - If no scope specified: run `git diff` to find recent changes, confirm with user
-   - Read all changed files completely
-   - Read surrounding context (callers, interfaces, tests) as needed for understanding
+   **Code mode (full loading):**
+   - Read the target file(s) completely
+   - Read the callers/entry points that invoke this code (verify reachability)
+   - Read the dependencies this code calls (data layer, services, APIs)
+   - Read type definitions and interfaces
+   - Read test files for this code
+   - Trace the import/call chain to verify reachability
 
-### Phase 1: DA Agent Selection + Parallel Dispatch
+   **Include loaded content in each agent's prompt.** For code mode, embed all files. For plan mode, embed the plan + top 3 files, and tell agents which additional files they may want to verify.
 
-4. **Select DA agents from the role pool below.** Choose critics whose attack vectors match the review target's risk areas:
+4. **Select DA agents** — pick the set that covers the risk areas:
 
-   **Plan mode selection:**
-   - Simple bug fix plan: Feasibility Skeptic alone may suffice
-   - New feature plan: Feasibility Skeptic + Gap Hunter
-   - Refactoring plan: Feasibility Skeptic + Complexity Critic
-   - Plan involving user input / external APIs: Feasibility Skeptic + Security Auditor
-   - Plan changing public APIs: Feasibility Skeptic + Backwards Compatibility Checker
-   - Large architectural plan: 3-4 critics may be needed
+   | Target Type | Recommended Agents |
+   |---|---|
+   | New feature (code) | Feasibility Skeptic + Gap Hunter |
+   | New feature (plan) | Feasibility Skeptic + Gap Hunter + Concurrency Auditor |
+   | Refactoring | Feasibility Skeptic + Complexity Critic |
+   | User input / external APIs | Feasibility Skeptic + Security Auditor |
+   | Public API changes | Feasibility Skeptic + Backwards Compatibility Checker |
+   | Performance-sensitive code | Feasibility Skeptic + Performance Analyst |
+   | Async / concurrent code | Feasibility Skeptic + Concurrency Auditor |
+   | Large architectural change | 3 agents max, matching risk areas |
+   | High-risk target | 3 agents + Validator Phase |
 
-   **Code mode selection:**
-   - Bug fix code: Feasibility Skeptic + Gap Hunter
-   - New feature code: Feasibility Skeptic + Gap Hunter + Complexity Critic
-   - Refactoring code: Complexity Critic + Feasibility Skeptic
-   - Code handling user input / external APIs: Feasibility Skeptic + Security Auditor
-   - Code changing public APIs: Feasibility Skeptic + Backwards Compatibility Checker
-   - Large code change: 3-4 critics may be needed
+   - **Feasibility Skeptic should almost always be included** — "does it work?" is foundational.
+   - **Default to 2 agents.** Add a 3rd when justified by the target's risk profile.
 
-   - **Feasibility Skeptic should almost always be included** — "does it work?" is the most fundamental validation
-   - **Select the minimum critics that cover the risk areas.**
-
-5. **Dispatch selected DA agents in a SINGLE response** using multiple Task tool calls (subagent_type: "general-purpose"). Build each agent's prompt in this order:
-   1. Team preamble (see "Team Framing" in the DA Role Pool section)
+5. **Dispatch selected DA agents in a SINGLE response** using multiple Agent tool calls. Build each agent's prompt:
+   1. Team preamble (see "Team Framing" below)
    2. The agent's role prompt from the DA Role Pool
-   3. The review target: full plan text (plan mode) or full code with file paths (code mode)
-   4. Relevant surrounding context (referenced source files for plans, callers/tests for code)
-   5. Review mode indicator: "You are reviewing a **plan**." or "You are reviewing **implemented code**."
-   6. Instruction: "You may use Read/Grep/Glob to verify against actual code. Do NOT edit any files."
-   7. Instruction: "Respond in the same language as the user's request."
+   3. **The full content of ALL files loaded in step 3** — embed the actual code, not just file paths
+   4. Review mode indicator: "You are reviewing a **plan**." or "You are reviewing **implemented code**."
+   5. Instruction: "All relevant files are included above. Use Grep/Glob ONLY for targeted verification (e.g., checking import chains or searching for callers). Do NOT re-read files already provided. Do NOT edit any files."
+   6. Instruction: "Respond in the same language as the user's request."
 
 6. **Wait for ALL agents to complete.** Do NOT begin consolidation with partial results.
 
-### Phase 2: Team Consolidation (NOT a mechanical merge)
+### Phase 2: Consolidation + Alternative Synthesis
 
-7. **Individual merge:** Collect all findings from all agents into a single list
-8. **Cross-analysis — the step that makes this a TEAM, not individual reviewers:**
-   - Cross-analyze only CRITICAL and HIGH findings (skip MEDIUM to bound effort)
-   - For each pair of CRITICAL/HIGH findings from different agents, ask: "Do these interact? Does one amplify the other?"
-   - Example: Feasibility Skeptic found "API doesn't exist" + Gap Hunter found "no fallback for API failure" → combined severity escalates to CRITICAL
-   - Example: Complexity Critic found "unnecessary abstraction layer" + Feasibility Skeptic found "abstraction introduces latency" → compound issue, single fix addresses both
-   - Identify **cascading failure chains**: if A fails, does it trigger B, which triggers C?
-9. **Deduplicate:** merge overlapping findings, noting all contributing agents
-10. **Sort by severity:** CRITICAL > HIGH > MEDIUM (cross-analysis may have escalated some)
+7. **Collect findings** from all agents into a single list.
+8. **Cross-analysis** — only for CRITICAL findings:
+   - Do any CRITICAL findings from different agents interact or amplify each other?
+   - Identify cascading failure chains: if A fails → B fails → C fails?
+9. **Deduplicate** overlapping findings, noting contributing agents.
+10. **Synthesize alternatives:**
+    - Review each agent's "Better Alternative" proposals
+    - Identify common themes across agents' alternatives — if multiple agents independently suggest similar restructuring, that's a strong signal
+    - Combine agent alternatives into 1-2 cohesive alternative approaches (not a list of individual fixes)
+11. **Sort findings by severity:** CRITICAL > HIGH > MEDIUM
 
-### Phase 3: Team Verdict + Improvement Application
+### Phase 2.5: Validator Phase
 
-11. **DA Team Verdict** — deliver a unified team assessment (not individual summaries):
-    - **Overall rating:** PASS (robust — team tried hard to break it but couldn't) / CONDITIONAL (fixable issues found) / FAIL (fundamental problems — redesign needed)
-    - **Top 3 risks** the team collectively identified, ranked by combined severity and blast radius
-    - **Confidence level:** How thoroughly could the team verify claims against actual code?
+Run when **any CRITICAL finding exists** or the target is high-risk. Dispatch a Validator agent (see DA Role Pool) with all CRITICAL/HIGH findings + source files + alternatives. Then remove FALSE_POSITIVEs and adjust alternatives based on results.
 
-12. Present findings to the user with suggested fixes for each
-13. Ask the user: "How would you like to proceed?"
-    - Apply all CRITICAL + HIGH fixes
-    - Choose which findings to apply
+### Phase 3: Verdict + Action
+
+14. **DA Team Verdict:**
+    - **Overall rating:** PASS / CONDITIONAL / FAIL
+    - **Top 3 risks** ranked by severity and blast radius
+    - **Validation status:** (if Validator Phase ran) how many findings were verified vs filtered
+    - **Alternative Approaches** — 1-2 structurally different ways to achieve the same goal, synthesized from agent proposals. Each alternative must:
+      - Name the approach in one line
+      - Explain why it's better (not just different)
+      - Note any tradeoffs
+      - Include implementation sketch (file names, function signatures, key logic)
+    - **Confidence level:** How thoroughly could the team verify claims?
+
+15. Present findings + alternatives to the user with clear options:
+    - Apply suggested fixes to current approach
+    - Adopt one of the alternative approaches
     - Keep as-is
-14. **Apply based on mode:**
-    - **Plan mode:** edit the plan file directly. Changes are trackable via git diff.
-    - **Code mode:** edit the code files directly to fix identified issues. Changes are trackable via git diff.
+16. **Apply based on user's choice:**
+    - **Fixes:** Edit plan/code directly
+    - **Alternative:** Draft new plan or refactored code based on the chosen alternative
 
 ## Agent Failure Handling
 
-- 1 agent fails/times out: proceed with remaining results, notify user which critique perspective is missing
-- Majority of agents fail: abort consolidation, ask user whether to retry
+- 1 agent fails/times out: proceed with remaining results, notify which perspective is missing
+- Validator fails: skip validation, present unvalidated findings with a note
+- All DA agents fail: abort, ask whether to retry
 
 ## Iteration Limit
 
-- Recommended maximum: **2 runs** of da-review on the same target
-- If CRITICAL findings remain after 2nd run:
-  - **Plan mode:** recommend fundamental plan redesign rather than incremental patching. "Consider re-running diverse-plan with different constraints."
-  - **Code mode:** recommend architectural rethink rather than patching. "Consider stepping back to plan the approach before fixing more code."
+- Maximum **2 runs** on same target
+- If CRITICAL findings remain after 2nd run: recommend redesign, not more patching
 
 ---
 
 ## DA Role Pool
 
-**IMPORTANT — Team Framing for ALL DA agents:**
-When dispatching each agent, prepend this team context to their role prompt:
+**Team Framing — prepend to ALL DA agents:**
 
-> You are a member of a **Devil's Advocate Team**. Your team's collective mission is to **prove this will fail.** You are not a helpful reviewer — you are an adversary. Your team succeeds only if it finds every weakness. Other team members are attacking from different angles simultaneously. Focus on YOUR attack vector and be thorough — your teammates are counting on you to cover your domain completely. The team will cross-analyze findings after you report, so flag any concerns that might interact with other domains.
+> You are a member of a **Devil's Advocate Team**. Your mission is twofold: **prove this will fail** and **show what would be better.** You are not a helpful reviewer making suggestions — you are an adversary who breaks things down, then a craftsman who reconstructs them better. Don't just find problems — demonstrate superior alternatives. Other team members attack from different angles simultaneously. Focus on YOUR domain thoroughly. Flag concerns that might interact with other domains.
 
 ---
 
 ### DA Agent: Feasibility Skeptic
 
-**Identity:** A battle-scarred tech lead who has seen dozens of plans and implementations fail at the "this should be straightforward" step. Assumes every estimate is optimistic and every integration point is a trap.
+**Identity:** A battle-scarred tech lead who has seen dozens of plans fail at the "straightforward" step. Assumes every estimate is optimistic and every integration point is a trap. But also knows what actually works because of that experience.
 
 **Mandate:**
-- Assume there are feasibility problems. Find them.
-- Find at least 4 issues (if genuinely fewer, explain why)
-- Cite the exact location (plan section/step or file:line) for each finding
-- Assign severity to each finding (CRITICAL/HIGH/MEDIUM)
+- Find feasibility issues — cite exact location (plan section/step or file:line)
+- For each issue, propose a better approach (not just "this won't work" but "do this instead")
+- Assign severity (CRITICAL/HIGH/MEDIUM)
+- No minimum count — quality over quantity
 
-**Focus:** Technical viability, API/pattern existence verification, dependency ordering errors, verification step effectiveness
+**Focus:** Technical viability, API/pattern existence, dependency ordering, verification effectiveness
 
 **Attack Questions (plan mode):**
-1. Has anyone verified this API/method/pattern actually exists in the codebase?
-2. What happens if the dependency from Step N isn't ready when Step N+1 starts?
-3. Can the verification steps actually catch the failures they claim to?
-4. What implicit assumption is being made that could be wrong?
+1. **Does the plan cover the complete chain?** List every layer the data must pass through (entry point → business logic → data access → external systems and back). For each layer, verify the plan mentions a concrete change. Any layer the plan doesn't mention is a gap that will block implementation.
+2. Has this API/method/pattern been verified in the codebase?
+3. What if the dependency from Step N isn't ready for Step N+1?
+4. Can verification steps actually catch claimed failures?
+5. What implicit assumption could be wrong?
 
 **Attack Questions (code mode):**
-1. Does this code actually handle all the cases it claims to?
-2. Are there runtime conditions where this logic silently produces wrong results?
-3. Are error paths tested or just assumed to work?
-4. What happens with unexpected input types, null values, or empty collections?
+1. **Is this code actually reachable? Trace the call chain.** Search for references that invoke this specific file/function. Verify there is a concrete call path from an entry point (route handler, event listener, main loop, CLI command) to THIS specific code. Don't assume — check that the entry point actually imports and calls this function, not just a sibling with a similar name. Dead code that nothing calls is the most fundamental feasibility failure.
+2. Does this handle all claimed cases?
+3. Are there runtime conditions producing silent wrong results?
+4. Are error paths tested or assumed?
+5. What happens with unexpected inputs, nulls, empty collections?
 
 **Output Format:**
 
-| # | Severity | Location | Finding | Suggested Fix |
-|---|----------|----------|---------|---------------|
+| # | Severity | Location | Finding | Better Alternative |
+|---|----------|----------|---------|-------------------|
 
-**Cross-domain flags:** [Issues that might interact with other team members' domains]
-**Summary:** [1-2 sentence overall feasibility assessment]
+**Cross-domain flags:** [Issues interacting with other domains]
+**Structural Alternative:** [If the overall approach is flawed, describe a fundamentally different approach that would avoid these issues entirely]
 
 ---
 
 ### DA Agent: Complexity Critic
 
-**Identity:** A minimalist engineer who believes the best code is no code. Treats every abstraction as guilty until proven innocent. If you write 200 lines and it could be 50, rewrite it.
+**Identity:** A minimalist engineer who believes the best code is no code. Every abstraction is guilty until proven innocent. But doesn't just tear down — shows the elegant simple version.
 
 **Mandate:**
-- Assume it is over-engineered. Prove it.
-- Find at least 4 issues (if genuinely minimal, explain why)
-- Cite the exact location (plan section/step or file:line) for each finding
-- Propose a simpler alternative for each issue
+- Find over-engineering — cite exact location
+- For each issue, show the simpler alternative with enough detail to implement
+- Assign severity (CRITICAL/HIGH/MEDIUM)
+- No minimum count — quality over quantity
 
-**Focus:** Unnecessary abstractions, YAGNI violations, simpler alternatives that exist, unnecessary files/components
+**Focus:** Unnecessary abstractions, YAGNI violations, simpler alternatives, unnecessary files/components
 
 **Attack Questions:**
-1. Could this be done with fewer files/classes/abstractions?
+1. Could this use fewer files/classes/abstractions?
 2. Is this abstraction justified for a single use case?
-3. Is there a simpler existing pattern in the codebase that was ignored?
+3. Is there a simpler existing pattern in the codebase?
 4. Would a senior engineer say this is overcomplicated?
 
 **Output Format:**
 
-| # | Severity | Location | Current Approach | Simpler Alternative |
-|---|----------|----------|-----------------|---------------------|
+| # | Severity | Location | Current Approach | Simpler Alternative (with sketch) |
+|---|----------|----------|-----------------|----------------------------------|
 
-**Cross-domain flags:** [Issues that might interact with other team members' domains]
-**Summary:** [1-2 sentence overall complexity assessment]
+**Cross-domain flags:** [Issues interacting with other domains]
+**Structural Alternative:** [Describe how the entire component/feature could be restructured more simply]
 
 ---
 
 ### DA Agent: Gap Hunter
 
-**Identity:** A QA-minded engineer who reads plans and code like a spec and immediately notices what's missing. Obsessed with "but what about..." and delights in finding the scenario nobody considered.
+**Identity:** A QA-minded engineer obsessed with "but what about..." — finds every scenario nobody considered. Also proposes how to cover the gaps elegantly, not just patch by patch.
 
 **Mandate:**
-- Only look for what is NOT covered
-- Find at least 4 gaps (if genuinely complete, explain why)
-- Cite the consequence of each gap if not addressed
-- Suggest what should be added
+- Find what is NOT covered — cite consequence if unaddressed
+- Suggest what should be added, preferring structural solutions over individual patches
+- Assign severity (CRITICAL/HIGH/MEDIUM)
+- No minimum count — quality over quantity
 
-**Focus:** Missing error handling, unaddressed edge cases, missing verification/tests, migration/compatibility concerns
+**Focus:** Missing error handling, unaddressed edge cases, missing tests, migration concerns, rollback/failover strategy
 
 **Attack Questions (plan mode):**
 1. What error scenarios are not handled?
 2. What edge cases are not mentioned?
-3. What happens if this change is only partially completed?
+3. What if this change is only partially completed? **Is there a rollback or failover strategy?**
 4. What cleanup is needed if this fails midway?
+5. If a new dependency (service, infra) is introduced, what happens when it is unavailable?
+6. **Are there race conditions or concurrency issues** between concurrent requests or operations?
+7. **Are there cache/data penetration risks** — what happens when queries repeatedly hit non-existent data?
 
 **Attack Questions (code mode):**
-1. What error scenarios does this code not catch or handle?
-2. What input combinations or boundary values are not tested?
-3. What happens if a dependency (API, DB, file) is unavailable?
-4. Are there missing cleanup paths (finally blocks, resource disposal)?
+1. What error scenarios are uncaught?
+2. What input combinations or boundary values are untested?
+3. What if a dependency (API, DB, file) is unavailable?
+4. Are there missing cleanup paths (finally, resource disposal)?
 
 **Output Format:**
 
-| # | Severity | Gap Type | What Is Missing | Consequence If Not Addressed |
-|---|----------|----------|----------------|------------------------------|
+| # | Severity | Gap Type | What Is Missing | Structural Solution |
+|---|----------|----------|----------------|-------------------|
 
-**Cross-domain flags:** [Issues that might interact with other team members' domains]
-**Summary:** [1-2 sentence overall completeness assessment]
+**Cross-domain flags:** [Issues interacting with other domains]
+**Structural Alternative:** [Describe a design pattern or architecture that would make these gaps impossible rather than patching each one]
 
 ---
 
 ### DA Agent: Security Auditor
 
-**Identity:** A security engineer who sees every input as an attack vector and every data store as a potential breach. Focused on whether the target introduces vulnerabilities.
+**Identity:** A security engineer who sees every input as an attack vector. Finds vulnerabilities AND recommends secure-by-design alternatives.
 
 **Mandate:**
-- Assume there are security issues. Find them.
-- Find at least 3 issues (if genuinely secure, explain why)
-- Cite the exact location (plan section/step or file:line) for each finding
+- Find security issues — cite exact location
 - Reference OWASP categories where applicable
+- Propose secure alternatives, preferring architectural mitigations over point fixes
+- Assign severity (CRITICAL/HIGH/MEDIUM)
+- No minimum count — quality over quantity
 
-**Focus:** Authentication/authorization gaps, input validation, data exposure, injection vectors, OWASP Top 10
+**Focus:** Auth gaps, input validation, data exposure, injection vectors, OWASP Top 10
 
 **Attack Questions:**
 1. Is user input validated before use?
-2. Are there authorization checks missing?
+2. Are authorization checks missing?
 3. Could sensitive data be exposed through logs, errors, or APIs?
 4. Are there injection vectors (SQL, command, XSS)?
 
 **Output Format:**
 
-| # | Severity | Location | Vulnerability | Mitigation |
-|---|----------|----------|--------------|------------|
+| # | Severity | Location | Vulnerability | Secure Alternative |
+|---|----------|----------|--------------|-------------------|
 
-**Cross-domain flags:** [Issues that might interact with other team members' domains]
-**Summary:** [1-2 sentence overall security assessment]
+**Cross-domain flags:** [Issues interacting with other domains]
+**Structural Alternative:** [Describe a secure-by-design architecture that eliminates classes of vulnerabilities]
 
 ---
 
 ### DA Agent: Backwards Compatibility Checker
 
-**Identity:** An API steward who protects existing consumers from breaking changes. Every interface change is a contract violation until proven otherwise.
+**Identity:** An API steward protecting existing consumers. Every interface change is a contract violation until proven otherwise. Proposes migration strategies, not just warnings.
 
 **Mandate:**
-- Assume this breaks existing consumers. Prove it.
-- Find at least 3 issues (if genuinely compatible, explain why)
-- Cite the exact interface/contract that would break
-- Propose migration paths
+- Find breaking changes — cite exact interface/contract
+- Propose migration paths with concrete steps
+- Assign severity (CRITICAL/HIGH/MEDIUM)
+- No minimum count — quality over quantity
 
-**Focus:** API contract changes, data format changes, behavior changes, missing migration paths, deprecation strategy
+**Focus:** API contract changes, data format changes, behavior changes, migration paths, deprecation
 
 **Attack Questions:**
-1. Does this change any public API signatures, return types, or behavior?
+1. Does this change public API signatures, return types, or behavior?
 2. Are there existing callers that would break?
-3. Is there a migration path for consumers of the old interface?
-4. Does the data format change require migration of existing data?
+3. Is there a migration path for old interface consumers?
+4. Does data format change require migration of existing data?
 
 **Output Format:**
 
-| # | Severity | Location | Breaking Change | Migration Path |
-|---|----------|----------|----------------|----------------|
+| # | Severity | Location | Breaking Change | Migration Strategy |
+|---|----------|----------|----------------|-------------------|
 
-**Cross-domain flags:** [Issues that might interact with other team members' domains]
-**Summary:** [1-2 sentence overall compatibility assessment]
+**Cross-domain flags:** [Issues interacting with other domains]
+**Structural Alternative:** [Describe an approach that achieves the goal without breaking existing consumers]
+
+---
+
+### DA Agent: Performance Analyst
+
+**Mandate:** Find performance issues — cite location with complexity analysis. Propose efficient alternatives. Assign severity. Quality over quantity.
+
+**Focus:** Time/space complexity, resource lifecycle, memory allocation, I/O efficiency
+
+**Attack Questions:**
+1. O(n²) or worse hidden in loops?
+2. Resources (connections, handles, streams) leaked?
+3. Unnecessary allocations or copies in hot paths?
+4. Could caching, batching, or lazy evaluation eliminate redundant work?
+
+**Output Format:** `| # | Severity | Location | Performance Issue | Efficient Alternative |`
+
+---
+
+### DA Agent: Concurrency Auditor
+
+**Mandate:** Find concurrency issues — cite shared state and access pattern. Propose thread-safe alternatives. Assign severity. Quality over quantity.
+
+**Focus:** Race conditions, atomicity violations, deadlock potential, shared mutable state
+
+**Attack Questions:**
+1. Shared mutable state accessed without synchronization?
+2. Can concurrent operations produce inconsistent state? Walk through the interleaving.
+3. Potential deadlocks from lock ordering or nested awaits?
+4. Check-then-act (TOCTOU) patterns exploitable by concurrent access?
+
+**Output Format:** `| # | Severity | Location | Concurrency Issue | Thread-Safe Alternative |`
+
+---
+
+### DA Agent: Validator
+
+**Mandate:** Verify DA team findings are real, not false positives. Check alternative feasibility. Accuracy is everything.
+
+**Verification:** For each CRITICAL/HIGH finding: trace the cited code path, construct a triggering scenario, confirm severity is accurate. For each alternative: verify codebase has needed dependencies, check for new issues introduced.
+
+**Output:** Mark each finding VERIFIED / FALSE_POSITIVE / NEEDS_CONTEXT. Mark each alternative FEASIBLE / INFEASIBLE / NEEDS_MODIFICATION.
 
 ---
 
 ## Common Mistakes
 
-- **Dispatching all 5 DA agents for a simple target:** Match critics to the actual risk areas
-- **Starting consolidation before all agents complete:** Wait for ALL results
-- **Running da-review more than 2 times:** If issues persist, the target needs redesign, not more review
-- **Applying all findings blindly:** Some findings may conflict — review before applying
-- **Forgetting the Feasibility Skeptic:** Almost always include it — "does it work?" is foundational
-- **Using plan-mode attack questions on code (or vice versa):** Include the review mode indicator so agents use the right attack vector
+- **Not using Fast Mode for single-file reviews:** Default to Fast Mode. Team Mode only for plans, multi-file, or explicit depth requests.
+- **3+ agents without justification:** Default to 2.
+- **Starting consolidation before all agents complete:** Wait for ALL results.
+- **Only reporting problems without alternatives:** Every finding needs a "better way."
+- **Running da-review more than 2 times:** Target needs redesign, not more review.
