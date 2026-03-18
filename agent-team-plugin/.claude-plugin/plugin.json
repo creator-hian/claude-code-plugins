@@ -1,7 +1,7 @@
 {
   "name": "agent-team-plugin",
-  "description": "Agent team-based parallel dispatch for multi-perspective planning and adversarial review",
-  "version": "1.0.0",
+  "description": "Agent team-based parallel dispatch for multi-perspective planning, adversarial review, and quick technical decisions",
+  "version": "2.0.0",
   "author": {
     "name": "Creator Hian"
   }

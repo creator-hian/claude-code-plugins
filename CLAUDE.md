@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Claude Code Plugin Marketplace** - a collection of custom plugins that extend Claude Code's capabilities through Skills, Agents, Commands, and Hooks. The repository currently contains 7 plugins with 23 skills total.
+This is a **Claude Code Plugin Marketplace** - a collection of custom plugins that extend Claude Code's capabilities through Skills, Agents, Commands, and Hooks. The repository currently contains 7 plugins with 24 skills total.
 
 ## Repository Structure
 
@@ -82,7 +82,7 @@ See `docs/architecture/SKILL_SEPARATION_STRATEGY.md` for detailed decision tree.
 | gemini-plugin | 2 | Gemini CLI, Claude-Gemini dual-AI loop |
 | ai-orchestration-plugin | 1 | Triple-AI (Claude+Codex+Gemini) orchestration |
 | git-plugin | 0 | PR enhancement automation |
-| agent-team-plugin | 2 | Agent team planning, adversarial review |
+| agent-team-plugin | 3 | Agent team planning, adversarial review, quick decisions |
 
 ## Development Workflow
 
