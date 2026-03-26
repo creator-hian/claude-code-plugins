@@ -1,0 +1,8 @@
+{
+  "name": "skill-autoresearch-plugin",
+  "description": "Karpathy autoresearch-inspired autonomous SKILL.md improvement via iterative eval hill-climbing with assertion-level regression detection",
+  "version": "1.0.0",
+  "author": {
+    "name": "Creator Hian"
+  }
+}

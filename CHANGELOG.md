@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-26
+
+### Added
+- **skill-autoresearch-plugin v1.0.0**: Autonomous SKILL.md improvement via Karpathy autoresearch technique
+  - `autoresearch` skill - iterative mutate → evaluate → keep/discard hill-climbing loop
+  - Assertion-level regression detection (discard even if overall pass rate improves)
+  - program.md meta-layer for user-defined mutation strategies
+  - Default mutation strategy (missing → ambiguous → structural → excess)
+  - Workspace isolation for safe variant management
+  - Circuit breaker (auto-stop after N consecutive stalls)
+  - Context window protection (grading summary only, no raw eval output)
+  - L3 reference: program-md-guide.md with examples for da-review and decide
+
+- **da-review-workspace**: Extended evals.json with 15 keyword-based assertions across 3 eval cases for automated grading support
+
+## [0.7.0] - 2026-03-26
+
+### Changed
+- **agent-team-plugin v2.1.0**: Logging protocol, evaluation criteria, and shared infrastructure
+  - Added shared protocols (`skills/_shared/`): logging-protocol.md, pattern-schema.md
+  - Added Logging & Pattern Protocol sections to all 3 skills (da-review, decide, diverse-plan)
+  - Added binary evaluation criteria (`EVAL.md`) for all 3 skills
+  - Runtime data stored globally at `~/.claude/agent-team/{skill-name}/` for cross-project pattern reuse
+
 ## [0.6.0] - 2025-12-19
 
 ### Added
