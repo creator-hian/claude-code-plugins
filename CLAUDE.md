@@ -80,7 +80,7 @@ See `docs/architecture/SKILL_SEPARATION_STRATEGY.md` for detailed decision tree.
 | unity-plugin | 13 | Async, reactive, DI, performance, UI, mobile, networking, testing |
 | ~~codex-plugin~~ | 2 | ~~Codex CLI, Claude-Codex dual-AI loop~~ (DEPRECATED) |
 | ~~gemini-plugin~~ | 2 | ~~Gemini CLI, Claude-Gemini dual-AI loop~~ (DEPRECATED) |
-| ai-orchestration-plugin | 1 | Triple-AI (Claude+Codex+Gemini) orchestration |
+| ~~ai-orchestration-plugin~~ | 1 | ~~Triple-AI (Claude+Codex+Gemini) orchestration~~ (DEPRECATED) |
 | git-plugin | 0 | PR enhancement automation |
 | agent-team-plugin | 3 | Agent team planning, adversarial review, quick decisions |
 | skill-autoresearch-plugin | 1 | Autonomous SKILL.md improvement via iterative eval hill-climbing |

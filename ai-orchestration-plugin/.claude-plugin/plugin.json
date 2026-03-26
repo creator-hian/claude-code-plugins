@@ -1,7 +1,8 @@
 {
   "name": "ai-orchestration-plugin",
-  "description": "Multi-AI orchestration patterns for Claude Code - combining Claude, Codex, and Gemini for comprehensive validation and co-implementation",
+  "description": "[DEPRECATED] Multi-AI orchestration patterns for Claude Code - combining Claude, Codex, and Gemini for comprehensive validation and co-implementation",
   "version": "1.2.0",
+  "deprecated": true,
   "author": {
     "name": "Creator Hian"
   }
