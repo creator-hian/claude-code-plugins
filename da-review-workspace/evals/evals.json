@@ -1,0 +1,122 @@
+{
+  "skill_name": "da-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "eval-buggy-code",
+      "prompt": "이 데이터 처리 코드를 리뷰해줘. 프로덕션에서 사용할 건데 문제가 없는지 확인해줘.",
+      "expected_output": "파일 누락 시 에러 처리 없음, 빈 리스트 percentile 계산 오류, 캐시 TTL 비교 버그, comparison에서 빈 metrics 접근 위험 등을 발견해야 함",
+      "files": ["test-targets/data_processor.py"],
+      "assertions": [
+        {
+          "id": "file_not_found_handling",
+          "description": "파일 누락 시 에러 처리 없음을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["FileNotFoundError", "파일 누락", "파일이 존재하지", "에러 처리 없음", "예외 처리"]
+        },
+        {
+          "id": "empty_list_percentile",
+          "description": "빈 리스트에서 percentile 계산 오류를 발견해야 함",
+          "check": "keyword",
+          "keywords": ["빈 리스트", "empty", "percentile", "IndexError", "ZeroDivisionError"]
+        },
+        {
+          "id": "cache_ttl_bug",
+          "description": "timedelta.seconds vs total_seconds() 캐시 TTL 비교 버그를 발견해야 함",
+          "check": "keyword",
+          "keywords": ["total_seconds", ".seconds", "TTL", "캐시 만료", "timedelta"]
+        },
+        {
+          "id": "empty_metrics_access",
+          "description": "comparison에서 빈 metrics 접근 위험을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["빈 metrics", "empty metrics", "KeyError", "비교 시 빈", "metrics 접근"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "eval-plan-review",
+      "prompt": "이 캐싱 레이어 추가 플랜을 리뷰해줘. 빠뜨린 부분이 있는지 확인해줘.",
+      "expected_output": "레이스 컨디션, 캐시 스탬피드, 직렬화 이슈, 롤백 계획 누락, 부분 실패 시 상태 불일치 등을 발견해야 함",
+      "files": ["test-targets/caching-plan.md"],
+      "assertions": [
+        {
+          "id": "race_condition",
+          "description": "레이스 컨디션 가능성을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["race condition", "레이스 컨디션", "경합", "동시 접근", "동시성"]
+        },
+        {
+          "id": "cache_stampede",
+          "description": "캐시 스탬피드(thundering herd) 문제를 발견해야 함",
+          "check": "keyword",
+          "keywords": ["stampede", "스탬피드", "thundering herd", "동시 만료", "cache penetration"]
+        },
+        {
+          "id": "serialization_issue",
+          "description": "직렬화 관련 이슈를 발견해야 함",
+          "check": "keyword",
+          "keywords": ["직렬화", "serialization", "역직렬화", "deserialization", "marshal"]
+        },
+        {
+          "id": "rollback_plan",
+          "description": "롤백 계획 누락을 지적해야 함",
+          "check": "keyword",
+          "keywords": ["rollback", "롤백", "되돌리", "복구 계획", "장애 시"]
+        },
+        {
+          "id": "partial_failure_inconsistency",
+          "description": "부분 실패 시 상태 불일치 가능성을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["부분 실패", "partial failure", "상태 불일치", "inconsistency", "일관성"]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "eval-security-review",
+      "prompt": "이 API 코드를 리뷰해줘. 보안 문제가 없는지 확인이 필요해.",
+      "expected_output": "SQL 인젝션, MD5 패스워드 해싱, 민감 데이터 로깅, 인증/인가 누락, salary 노출, 무제한 export 등을 발견해야 함",
+      "files": ["test-targets/api_endpoint.py"],
+      "assertions": [
+        {
+          "id": "sql_injection",
+          "description": "SQL 인젝션 취약점을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["SQL injection", "SQL 인젝션", "인젝션", "parameterized", "바인딩"]
+        },
+        {
+          "id": "md5_password",
+          "description": "MD5 패스워드 해싱의 취약함을 지적해야 함",
+          "check": "keyword",
+          "keywords": ["MD5", "md5", "bcrypt", "argon2", "해싱 취약", "약한 해시"]
+        },
+        {
+          "id": "sensitive_data_logging",
+          "description": "민감 데이터 로깅 문제를 발견해야 함",
+          "check": "keyword",
+          "keywords": ["민감 데이터 로깅", "로그에 민감", "sensitive data", "PII", "개인정보 로깅"]
+        },
+        {
+          "id": "auth_missing",
+          "description": "인증/인가 누락을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["인증 누락", "인가 누락", "authentication", "authorization", "권한 확인"]
+        },
+        {
+          "id": "salary_exposure",
+          "description": "salary 필드 노출 위험을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["salary", "급여", "연봉", "민감 필드 노출", "데이터 노출"]
+        },
+        {
+          "id": "unlimited_export",
+          "description": "무제한 export의 DoS 위험을 발견해야 함",
+          "check": "keyword",
+          "keywords": ["무제한", "unlimited", "export", "pagination", "limit", "DoS"]
+        }
+      ]
+    }
+  ]
+}
