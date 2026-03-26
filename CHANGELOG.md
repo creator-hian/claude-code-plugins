@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-03-26
+
+### Deprecated
+- **codex-plugin v1.4.0**: No longer maintained — OpenAI Codex CLI integration deprecated
+- **gemini-plugin v1.1.0**: No longer maintained — Google Gemini CLI integration deprecated
+
 ## [0.8.0] - 2026-03-26
 
 ### Added

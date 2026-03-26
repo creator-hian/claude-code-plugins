@@ -17,12 +17,14 @@
     {
       "name": "codex-plugin",
       "source": "./codex-plugin",
-      "description": "OpenAI Codex CLI integration and dual-AI orchestration patterns for Claude Code"
+      "deprecated": true,
+      "description": "[DEPRECATED] OpenAI Codex CLI integration and dual-AI orchestration patterns for Claude Code"
     },
     {
       "name": "gemini-plugin",
       "source": "./gemini-plugin",
-      "description": "Google Gemini CLI integration and dual-AI orchestration patterns for Claude Code"
+      "deprecated": true,
+      "description": "[DEPRECATED] Google Gemini CLI integration and dual-AI orchestration patterns for Claude Code"
     },
     {
       "name": "ai-orchestration-plugin",

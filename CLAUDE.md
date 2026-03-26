@@ -78,8 +78,8 @@ See `docs/architecture/SKILL_SEPARATION_STRATEGY.md` for detailed decision tree.
 |--------|--------|-------|
 | csharp-plugin | 3 | async/await, code style, XML docs |
 | unity-plugin | 13 | Async, reactive, DI, performance, UI, mobile, networking, testing |
-| codex-plugin | 2 | Codex CLI, Claude-Codex dual-AI loop |
-| gemini-plugin | 2 | Gemini CLI, Claude-Gemini dual-AI loop |
+| ~~codex-plugin~~ | 2 | ~~Codex CLI, Claude-Codex dual-AI loop~~ (DEPRECATED) |
+| ~~gemini-plugin~~ | 2 | ~~Gemini CLI, Claude-Gemini dual-AI loop~~ (DEPRECATED) |
 | ai-orchestration-plugin | 1 | Triple-AI (Claude+Codex+Gemini) orchestration |
 | git-plugin | 0 | PR enhancement automation |
 | agent-team-plugin | 3 | Agent team planning, adversarial review, quick decisions |
