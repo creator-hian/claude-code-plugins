@@ -1,7 +1,8 @@
 {
   "name": "gemini-plugin",
-  "description": "Google Gemini CLI integration and dual-AI orchestration patterns for Claude Code",
+  "description": "[DEPRECATED] Google Gemini CLI integration and dual-AI orchestration patterns for Claude Code",
   "version": "1.1.0",
+  "deprecated": true,
   "author": {
     "name": "Creator Hian"
   }
