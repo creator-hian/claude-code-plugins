@@ -45,6 +45,11 @@
       "description": "Reinforce user prompts by re-injecting them as system context to improve instruction adherence"
     },
     {
+      "name": "skill-autoresearch-plugin",
+      "source": "./skill-autoresearch-plugin",
+      "description": "Autonomous SKILL.md improvement via Karpathy autoresearch-inspired iterative eval hill-climbing with assertion-level regression detection"
+    },
+    {
       "name": "customaize-agent",
       "source": {
         "source": "url",
