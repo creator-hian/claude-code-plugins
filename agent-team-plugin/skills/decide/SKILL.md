@@ -113,6 +113,21 @@ Help developers make well-reasoned technical decisions fast by having two advoca
 - **User provides additional context after verdict**: Update the recommendation if the new context changes the analysis. Don't re-run advocates — adjust the synthesis.
 - **Neither option is good**: Say so. Propose a third option if one exists, or recommend the lesser of two evils with clear rationale.
 
+## Logging & Pattern Protocol
+
+> 참조: `${CLAUDE_PLUGIN_ROOT}/skills/_shared/logging-protocol.md`, `${CLAUDE_PLUGIN_ROOT}/skills/_shared/pattern-schema.md`
+
+### 실행 시작 시
+1. `.claude/agent-team/decide/logs/index.json`을 읽어 이전 실행 기록 확인 (없으면 디렉토리와 함께 `{"entries":[]}` 초기화)
+2. `.claude/agent-team/decide/patterns/index.json`을 읽어 기존 패턴과 현재 입력 대조 (없으면 건너뜀)
+3. 매칭 패턴이 있으면 해당 `.md`를 읽고 참고, `hitCount` +1
+
+### 실행 완료 후
+4. `.claude/agent-team/decide/logs/{timestamp}/result.json` 작성 (공통 필드 + decide 확장 필드: optionA, optionB, recommendation, confidence, shortcut)
+5. `.claude/agent-team/decide/logs/{timestamp}/summary.md` 작성
+6. `.claude/agent-team/decide/logs/index.json`에 entry 추가
+7. 패턴 승격 조건 확인 — 워크플로우 문제(비교불가 옵션 미감지, Advocate 품질 저하 등)가 발견+해결되었으면 `.claude/agent-team/decide/patterns/`로 승격
+
 ## What This Skill Is NOT
 
 - **Not a full implementation plan** — Use diverse-plan for that. decide answers "which approach?" not "how to build it?"

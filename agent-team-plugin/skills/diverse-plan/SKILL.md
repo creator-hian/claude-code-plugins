@@ -149,6 +149,21 @@ Save to the active plan file (if in plan mode) or ask the user for a path.
    - "Execute directly? (superpowers:executing-plans)"
    - "Modify specific sections?"
 
+## Logging & Pattern Protocol
+
+> 참조: `${CLAUDE_PLUGIN_ROOT}/skills/_shared/logging-protocol.md`, `${CLAUDE_PLUGIN_ROOT}/skills/_shared/pattern-schema.md`
+
+### 실행 시작 시
+1. `.claude/agent-team/diverse-plan/logs/index.json`을 읽어 이전 실행 기록 확인 (없으면 디렉토리와 함께 `{"entries":[]}` 초기화)
+2. `.claude/agent-team/diverse-plan/patterns/index.json`을 읽어 기존 패턴과 현재 입력 대조 (없으면 건너뜀)
+3. 매칭 패턴이 있으면 해당 `.md`를 읽고 참고, `hitCount` +1
+
+### 실행 완료 후
+4. `.claude/agent-team/diverse-plan/logs/{timestamp}/result.json` 작성 (공통 필드 + diverse-plan 확장 필드: agentsDispatched, stepsCount, requirementsCovered, requirementsDeferred, tradeoffsCount)
+5. `.claude/agent-team/diverse-plan/logs/{timestamp}/summary.md` 작성
+6. `.claude/agent-team/diverse-plan/logs/index.json`에 entry 추가
+7. 패턴 승격 조건 확인 — 워크플로우 문제(Architect/Challenger 동일 제안, 요구사항 누락 등)가 발견+해결되었으면 `.claude/agent-team/diverse-plan/patterns/`로 승격
+
 ## Agent Failure Handling
 
 - 1 agent fails: proceed with the other's results, note the missing perspective
