@@ -405,6 +405,21 @@ Run when **any CRITICAL finding exists** or the target is high-risk. Dispatch a 
 
 ---
 
+## Logging & Pattern Protocol
+
+> 참조: `${CLAUDE_PLUGIN_ROOT}/skills/_shared/logging-protocol.md`, `${CLAUDE_PLUGIN_ROOT}/skills/_shared/pattern-schema.md`
+
+### 실행 시작 시
+1. `.claude/agent-team/da-review/logs/index.json`을 읽어 이전 실행 기록 확인 (없으면 디렉토리와 함께 `{"entries":[]}` 초기화)
+2. `.claude/agent-team/da-review/patterns/index.json`을 읽어 기존 패턴과 현재 입력 대조 (없으면 건너뜀)
+3. 매칭 패턴이 있으면 해당 `.md`를 읽고 참고, `hitCount` +1
+
+### 실행 완료 후
+4. `.claude/agent-team/da-review/logs/{timestamp}/result.json` 작성 (공통 필드 + da-review 확장 필드: mode, reviewTarget, agentsDispatched, findingsCount, overallRating)
+5. `.claude/agent-team/da-review/logs/{timestamp}/summary.md` 작성
+6. `.claude/agent-team/da-review/logs/index.json`에 entry 추가
+7. 패턴 승격 조건 확인 — 워크플로우 문제(mode 오분류, 에이전트 조합 부적합 등)가 발견+해결되었으면 `.claude/agent-team/da-review/patterns/`로 승격
+
 ## Common Mistakes
 
 - **Not using Fast Mode for single-file reviews:** Default to Fast Mode. Team Mode only for plans, multi-file, or explicit depth requests.
