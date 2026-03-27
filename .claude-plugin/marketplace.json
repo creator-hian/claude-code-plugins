@@ -50,7 +50,7 @@
     {
       "name": "skill-autoresearch-plugin",
       "source": "./skill-autoresearch-plugin",
-      "description": "Autonomous SKILL.md improvement via Karpathy autoresearch-inspired iterative eval hill-climbing with assertion-level regression detection"
+      "description": "Autonomous SKILL.md improvement via Karpathy autoresearch-inspired iterative eval hill-climbing with force iteration, NEUTRAL mutation judgment, mutation exclusions, L1/L2/L3 eval levels, and external verification integration"
     },
     {
       "name": "customaize-agent",

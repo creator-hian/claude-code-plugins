@@ -51,6 +51,7 @@ Workspace 디렉토리가 이미 존재하면 이전 실행의 `autoresearch-log
     {
       "id": 1,
       "name": "eval-case-name",
+      "level": "L1-routing",
       "prompt": "eval 실행 프롬프트",
       "files": ["test-targets/file.py"],
       "expected_output": "자연어 기대 결과 서술",
@@ -69,11 +70,40 @@ Workspace 디렉토리가 이미 존재하면 이전 실행의 `autoresearch-log
 
 `assertions` 배열이 없으면 `expected_output`을 LLM-judge로 평가한다 (정확도 낮음, 경고 표시).
 
+`level` 필드는 선택적이며, 미지정 시 기본값은 `L1-routing`이다:
+
+| 레벨 | 설명 | 활용 |
+|------|------|------|
+| `L1-routing` | 올바른 절차로 라우팅되는가 | 기본 |
+| `L2-execution` | 절차의 모든 단계를 실행하는가 | Phase 2에서 L1 전량 PASS 시 집중 |
+| `L3-quality` | 실행 결과의 데이터 품질이 정확한가 | Phase 2에서 L2 전량 PASS 시 집중 |
+
+Phase 2-1 ANALYZE에서 레벨별 pass_rate를 분리 집계하고, L1이 모두 PASS이면 L2에, L2가 모두 PASS이면 L3에 집중하여 mutation 가설을 수립한다.
+
 ### 0-4. program.md 확인
 
 `{workspace}/program.md`를 찾는다. 있으면 로드하여 mutation 전략으로 사용한다. 없으면 아래 "Default Mutation Strategy"를 사용한다.
 
-### 0-5. 예산 설정
+program.md에 `force_at_least_one_iteration: true`가 설정되어 있으면,
+baseline이 target_pass_rate에 도달해도 정의된 전략 중 미시도 항목에 대해
+최소 1회 mutation을 시도한다. 이는 eval 만점이어도 지침의 명확성을 개선할 수 있는 기회를 보장한다.
+
+program.md에 `mutation_exclusions`가 정의되어 있으면 로드한다:
+```markdown
+exclusions:
+  - pattern: "string → number 타입 변환 workaround"
+    reason: "API 스키마 수정이 선행되어야 함"
+```
+exclusion 패턴과 일치하는 mutation은 Phase 2-3 MUTATE 후 eval 실행 없이 즉시 폐기하고, 다른 가설로 2-2부터 재시도한다. 이렇게 하면 SKILL.md 수정으로 해결할 수 없는 외부 문제(API 스키마, 서버 버그 등)에 mutation 예산을 낭비하지 않는다.
+
+### 0-5. 외부 검증 결과 참조 (선택)
+
+`{workspace}/verification-results.json`이 있으면 로드한다.
+- `capability_issues` 배열에서 mutation 대상을 추출하여 Phase 2의 가설 수립에 활용한다
+- `api_issues` 배열은 mutation 대상에서 제외한다 (mutation_exclusions로 자동 등록). API 스키마 불일치나 서버 오류는 SKILL.md 수정으로 해결할 수 없기 때문이다.
+- 없으면 건너뜀 (기존 동작 유지)
+
+### 0-6. 예산 설정
 
 사용자가 지정하지 않은 값은 기본값을 사용:
 
@@ -199,7 +229,8 @@ program.md의 전략을 따른다 (없으면 Default Mutation Strategy 사용).
 1. 현재 best SKILL.md를 읽는다
 2. 가설에 따라 **하나의 측면만** 수정한다
    - 여러 변경을 동시에 하지 않는다 (어떤 변경이 효과적이었는지 추적 불가)
-3. 수정된 SKILL.md를 `{workspace}/iteration-N/SKILL.md`에 저장
+3. mutation_exclusions가 정의되어 있으면, 생성된 mutation이 exclusion 패턴과 일치하는지 확인한다. 일치하면 즉시 폐기하고 2-2로 돌아가 다른 가설을 수립한다 (최대 2회 재시도).
+4. 수정된 SKILL.md를 `{workspace}/iteration-N/SKILL.md`에 저장
 
 ### 2-4. VALIDATE STRUCTURE — 구조 검증
 
@@ -239,7 +270,8 @@ Phase 1과 동일한 방식으로 eval suite를 실행한다. 단, 변형된 SKI
 |------|------|------|
 | new > best AND regressions 없음 | **KEEP** | best = new, SKILL.md 교체, consecutive_stalls = 0 |
 | new > best AND regressions 있음 | **DISCARD** | regression은 허용하지 않음. 변형 폐기, regression 내용을 autoresearch-log.json에 기록, consecutive_stalls += 1 |
-| new == best | **DISCARD** | 변형 폐기, consecutive_stalls += 1 |
+| new == best AND program.md 전략 기반 AND regression 없음 | **NEUTRAL** | diff를 사용자에게 제시. 사용자 승인 시 KEEP (consecutive_stalls 미증가), 거부 시 DISCARD |
+| new == best (기타) | **DISCARD** | 변형 폐기, consecutive_stalls += 1 |
 | new < best | **DISCARD** | 변형 폐기, consecutive_stalls += 1 |
 
 **`autoresearch-log.json`에 iteration 기록:**
@@ -264,7 +296,8 @@ Phase 1과 동일한 방식으로 eval suite를 실행한다. 단, 변형된 SKI
 | 조건 | 동작 |
 |------|------|
 | `consecutive_stalls >= stall_limit` | 자동 중단 — "연속 {stall_limit}회 개선 없음. 다른 전략이 필요합니다." |
-| `best_pass_rate >= target_pass_rate` | 성공 종료 — "목표 pass_rate {target_pass_rate} 달성!" |
+| `best_pass_rate >= target_pass_rate AND force 미설정` | 성공 종료 — "목표 pass_rate {target_pass_rate} 달성!" |
+| `best_pass_rate >= target_pass_rate AND force 설정 AND 모든 전략 시도 완료` | 성공 종료 — 모든 program.md 전략을 시도한 후 종료 |
 | `iteration >= max_iterations` | 예산 소진 — "최대 iteration 수 도달." |
 
 어느 조건에도 해당하지 않으면 다음 iteration으로 진행 (2-1로 돌아감).
