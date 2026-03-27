@@ -29,6 +29,15 @@ Assemble a Devil's Advocate **team** with a shared adversarial mission: **prove 
 
    When in doubt, default to **Fast Mode**. The user can always request Team Mode explicitly.
 
+3. **Match output language to user input.** If the user writes in Korean, produce the entire review in Korean. If in English, produce in English. When writing in Korean, use these standard technical terms consistently:
+   - Race condition → 경합 조건
+   - Consistency/Inconsistency → 일관성/불일치
+   - Authentication/Authorization → 인증/인가
+   - Serialization → 직렬화
+   - Cache stampede → 캐시 스탬피드
+   - Rollback → 롤백
+   - Partial failure → 부분 실패
+
 ---
 
 ## Fast Mode
