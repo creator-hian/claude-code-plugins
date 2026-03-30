@@ -9,5 +9,6 @@
   "enabledMcpjsonServers": [
     "serena",
     "git"
-  ]
+  ],
+  "enableAllProjectMcpServers": true
 }
