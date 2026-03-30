@@ -70,31 +70,20 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
   - `unity-performance` - 프로파일링, 드로우콜, 배칭, LOD
   - `unity-ui` - UI Toolkit, UGUI, Canvas 최적화
 
-### 3. **codex-plugin**
-- **설명**: OpenAI Codex CLI 통합 및 Claude-Codex dual-AI 오케스트레이션 패턴
+### 3. ~~codex-plugin~~ (DEPRECATED)
+- **설명**: ~~OpenAI Codex CLI 통합 및 Claude-Codex dual-AI 오케스트레이션 패턴~~
 - **버전**: 1.4.0
-- **위치**: `./codex-plugin`
-- **Agents**: 없음 (Skills 기반)
-- **Skills**: 2개
-  - `codex-cli` - Codex CLI 명령어 (`codex exec`, 모델 선택, sandbox 모드)
-  - `codex-claude-loop` - 6-Phase dual-AI 협업 워크플로우 오케스트레이션
+- **상태**: Codex CLI 서비스 종료로 deprecated
 
-### 4. **gemini-plugin**
-- **설명**: Google Gemini CLI 통합 및 Claude-Gemini dual-AI 오케스트레이션 패턴
+### 4. ~~gemini-plugin~~ (DEPRECATED)
+- **설명**: ~~Google Gemini CLI 통합 및 Claude-Gemini dual-AI 오케스트레이션 패턴~~
 - **버전**: 1.1.0
-- **위치**: `./gemini-plugin`
-- **Agents**: 없음 (Skills 기반)
-- **Skills**: 2개
-  - `gemini-cli` - Gemini CLI 명령어 (모델 선택, 출력 포맷, 세션 관리)
-  - `gemini-claude-loop` - Claude-Gemini dual-AI 협업 워크플로우
+- **상태**: deprecated
 
-### 5. **ai-orchestration-plugin**
-- **설명**: Multi-AI 오케스트레이션 (Claude + Codex + Gemini) 종합 검증 패턴
+### 5. ~~ai-orchestration-plugin~~ (DEPRECATED)
+- **설명**: ~~Multi-AI 오케스트레이션 (Claude + Codex + Gemini) 종합 검증 패턴~~
 - **버전**: 1.2.0
-- **위치**: `./ai-orchestration-plugin`
-- **Agents**: 없음 (Skills 기반)
-- **Skills**: 1개
-  - `ai-orchestration-feedback-loop` - Triple-AI/Dual-AI 모드, 역할 분담 (Claude=계획/구현, Codex=검증/보안, Gemini=창의적 리뷰/UX)
+- **상태**: codex-plugin, gemini-plugin 의존으로 deprecated
 
 ### 6. **git-plugin**
 - **설명**: Git 워크플로우 자동화 - PR 강화 (/pr-enhance)
@@ -103,13 +92,22 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 - **Commands**: 1개 (`/pr-enhance`)
 
 ### 7. **agent-team-plugin**
-- **설명**: 에이전트 팀 기반 병렬 디스패치 (다관점 계획 수립 + 적대적 리뷰)
-- **버전**: 1.0.0
+- **설명**: 에이전트 팀 기반 병렬 디스패치 (다관점 계획 수립 + 적대적 리뷰 + 기술 의사결정)
+- **버전**: 2.1.0
 - **위치**: `./agent-team-plugin`
 - **Agents**: 없음 (Skills 기반)
-- **Skills**: 2개
+- **Skills**: 3개
   - `diverse-plan` - 다관점 Perspectives Team 기반 계획 수립
   - `da-review` - Devil's Advocate Team 기반 적대적 리뷰
+  - `decide` - 기술 의사결정 지원 (A vs B 비교, constraint 검증, confidence 레벨)
+
+### 8. **skill-autoresearch-plugin**
+- **설명**: Karpathy autoresearch 기법 기반 자율 SKILL.md 개선
+- **버전**: 1.1.0
+- **위치**: `./skill-autoresearch-plugin`
+- **Agents**: 없음 (Skills 기반)
+- **Skills**: 1개
+  - `autoresearch` - 반복 실험 루프(mutate -> evaluate -> keep/discard)로 SKILL.md 자동 개선. force iteration, NEUTRAL mutation 판정, mutation exclusions, L1/L2/L3 eval 레벨, 외부 검증 결과 연동 지원
 
 ---
 
@@ -119,12 +117,13 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 |--------|---------|--------|--------|------------|
 | **csharp-plugin** | 1.4.0 | 1 | 3 | C# async, 코드 스타일, XML docs |
 | **unity-plugin** | 1.4.0 | 2 | 13 | Unity 게임 개발 전반 |
-| **codex-plugin** | 1.4.0 | 0 | 2 | Codex CLI, Claude-Codex 협업 |
-| **gemini-plugin** | 1.1.0 | 0 | 2 | Gemini CLI, Claude-Gemini 협업 |
-| **ai-orchestration-plugin** | 1.2.0 | 0 | 1 | Multi-AI (Triple/Dual) 오케스트레이션 |
+| ~~codex-plugin~~ | 1.4.0 | 0 | 2 | ~~Codex CLI~~ (DEPRECATED) |
+| ~~gemini-plugin~~ | 1.1.0 | 0 | 2 | ~~Gemini CLI~~ (DEPRECATED) |
+| ~~ai-orchestration-plugin~~ | 1.2.0 | 0 | 1 | ~~Multi-AI~~ (DEPRECATED) |
 | **git-plugin** | 1.2.1 | 0 | 0 | PR 강화 자동화 |
-| **agent-team-plugin** | 1.0.0 | 0 | 2 | 에이전트 팀 기반 계획/리뷰 |
-| **총계** | - | **3** | **23** | - |
+| **agent-team-plugin** | 2.1.0 | 0 | 3 | 에이전트 팀 기반 계획/리뷰/의사결정 |
+| **skill-autoresearch-plugin** | 1.1.0 | 0 | 1 | 자율 SKILL.md 개선 (autoresearch) |
+| **총계 (active)** | - | **3** | **20** | - |
 
 ### Skills 상세 목록
 
@@ -146,13 +145,15 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 | unity | `unity-networking` | Multiplayer | 네트워크/멀티플레이어 |
 | unity | `unity-performance` | Optimization | 성능 최적화 |
 | unity | `unity-ui` | UI | UI Toolkit, UGUI |
-| codex | `codex-cli` | Integration | Codex CLI 기본 명령어 |
-| codex | `codex-claude-loop` | Orchestration | Claude-Codex Dual-AI 워크플로우 |
-| gemini | `gemini-cli` | Integration | Gemini CLI 기본 명령어 |
-| gemini | `gemini-claude-loop` | Orchestration | Claude-Gemini Dual-AI 워크플로우 |
-| ai-orch | `ai-orchestration-feedback-loop` | Orchestration | Triple/Dual AI 종합 검증 루프 |
+| ~~codex~~ | ~~`codex-cli`~~ | ~~Integration~~ | ~~Codex CLI~~ (DEPRECATED) |
+| ~~codex~~ | ~~`codex-claude-loop`~~ | ~~Orchestration~~ | ~~Claude-Codex Dual-AI~~ (DEPRECATED) |
+| ~~gemini~~ | ~~`gemini-cli`~~ | ~~Integration~~ | ~~Gemini CLI~~ (DEPRECATED) |
+| ~~gemini~~ | ~~`gemini-claude-loop`~~ | ~~Orchestration~~ | ~~Claude-Gemini Dual-AI~~ (DEPRECATED) |
+| ~~ai-orch~~ | ~~`ai-orchestration-feedback-loop`~~ | ~~Orchestration~~ | ~~Triple/Dual AI~~ (DEPRECATED) |
 | agent-team | `diverse-plan` | Orchestration | 다관점 Perspectives Team 계획 수립 |
 | agent-team | `da-review` | Orchestration | Devil's Advocate Team 적대적 리뷰 |
+| agent-team | `decide` | Orchestration | 기술 의사결정 (A vs B 비교, constraint 검증) |
+| autoresearch | `autoresearch` | Meta/Tooling | 자율 SKILL.md 반복 개선 (eval hill-climbing) |
 
 ---
 
@@ -260,14 +261,27 @@ claude-code-plugins/
 │   │       └── SKILL.md
 │   └── README.md
 │
-├── agent-team-plugin/           # 에이전트 팀 기반 계획/리뷰 플러그인
+├── agent-team-plugin/           # 에이전트 팀 기반 계획/리뷰/의사결정 플러그인
 │   ├── .claude-plugin/
 │   │   └── plugin.json
 │   ├── skills/
 │   │   ├── diverse-plan/        # 다관점 계획 수립 스킬
 │   │   │   └── SKILL.md
-│   │   └── da-review/           # 적대적 팀 리뷰 스킬
+│   │   ├── da-review/           # 적대적 팀 리뷰 스킬
+│   │   │   └── SKILL.md
+│   │   └── decide/              # 기술 의사결정 스킬
 │   │       └── SKILL.md
+│   └── README.md
+│
+├── skill-autoresearch-plugin/   # 자율 SKILL.md 개선 플러그인
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── skills/
+│   │   └── autoresearch/        # autoresearch 반복 실험 스킬
+│   │       ├── SKILL.md
+│   │       └── references/
+│   │           └── program-md-guide.md
+│   ├── CHANGELOG.md
 │   └── README.md
 │
 └── git-plugin/                  # Git 워크플로우 자동화 플러그인

@@ -24,6 +24,20 @@
 {여러 실패 assertion 중 어떤 것을 먼저 공략할지}
 ```
 
+## 메타 설정
+
+program.md 최상단에 루프 동작을 제어하는 메타 설정을 추가할 수 있다.
+
+```markdown
+## 메타 설정
+
+force_at_least_one_iteration: true
+```
+
+| 설정 | 기본값 | 설명 |
+|------|--------|------|
+| `force_at_least_one_iteration` | false | true이면 baseline이 target_pass_rate에 도달해도 정의된 전략 중 미시도 항목에 대해 최소 1회 mutation을 시도한다. eval 만점이어도 지침의 명확성을 개선할 기회를 보장한다. |
+
 ## 섹션별 가이드
 
 ### 목표 (Goal)
@@ -58,6 +72,22 @@ autoresearch가 변경하지 말아야 할 부분을 명시한다. 이것이 없
 - "Team Framing 문구는 유지하라"
 - "한국어로 작성된 부분을 영어로 바꾸지 마라"
 
+### Mutation 금지 영역 (Exclusions)
+
+SKILL.md 수정으로 해결할 수 없는 외부 문제(API 스키마 불일치, 서버 버그 등)를 명시하여 mutation 예산 낭비를 방지한다. "금지 사항"이 SKILL.md의 **어느 부분을 건드리지 말지** 지정하는 것이라면, "Mutation 금지 영역"은 **어떤 종류의 변경 자체를 시도하지 말지** 지정하는 것이다.
+
+```markdown
+## Mutation 금지 영역
+
+exclusions:
+  - pattern: "string → number 타입 변환 workaround"
+    reason: "API 스키마 수정이 선행되어야 함"
+  - pattern: "projects/resolve null 대응"
+    reason: "서버 코드 수정이 선행되어야 함"
+```
+
+Phase 2-3 MUTATE에서 생성된 mutation이 exclusion 패턴과 일치하면 eval 실행 없이 즉시 폐기하고 다른 가설로 재시도한다. 외부 검증 결과(`verification-results.json`)의 `api_issues`도 자동으로 exclusions에 등록된다.
+
 ### 우선순위 (Priority)
 
 여러 실패 assertion이 있을 때 어떤 것을 먼저 공략할지 지시한다.
@@ -72,6 +102,10 @@ autoresearch가 변경하지 말아야 할 부분을 명시한다. 이것이 없
 ```markdown
 # Program: da-review 스킬 개선
 
+## 메타 설정
+
+force_at_least_one_iteration: true
+
 ## 목표
 plan review eval에서 rollback_plan, race_condition, cache_penetration assertions 통과율 100% 달성
 
@@ -84,6 +118,12 @@ plan review eval에서 rollback_plan, race_condition, cache_penetration assertio
 - Team Framing 문구 변경 금지
 - 에이전트 역할 수를 늘리지 말 것 (현재 역할 개선에 집중)
 - Fast Mode의 기존 통과 assertions에 regression을 만들지 말 것
+
+## Mutation 금지 영역
+
+exclusions:
+  - pattern: "외부 API 호출 순서 변경"
+    reason: "API 종속성 관계가 검증되지 않은 상태"
 
 ## 우선순위
 1. rollback_plan (0% 통과율, 가장 큰 개선 여지)

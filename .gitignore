@@ -39,3 +39,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# direnv
+.envrc
+
+# Workspace artifacts (autoresearch, eval, skill testing)
+*-workspace/
+*-autoresearch/
+docs/plans/
