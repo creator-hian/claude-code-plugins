@@ -45,4 +45,5 @@ Thumbs.db
 
 # Workspace artifacts (autoresearch, eval, skill testing)
 *-workspace/
+*-autoresearch/
 docs/plans/
