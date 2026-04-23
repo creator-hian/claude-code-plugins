@@ -1,0 +1,29 @@
+{
+  "description": "secret-guard: block dangerous credential commands (PreToolUse) + detect leaked tokens in tool output (PostToolUse)",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-block.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/post-detect.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

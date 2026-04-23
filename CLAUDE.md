@@ -84,6 +84,7 @@ See `docs/architecture/SKILL_SEPARATION_STRATEGY.md` for detailed decision tree.
 | git-plugin | 0 | PR enhancement automation |
 | agent-team-plugin | 3 | Agent team planning, adversarial review, quick decisions |
 | skill-autoresearch-plugin | 1 | Autonomous SKILL.md improvement via iterative eval hill-climbing |
+| secret-guard-plugin | 1 | Credential leak prevention: PreToolUse block + PostToolUse leak detection + secret-safe-diagnostics skill |
 
 ## Development Workflow
 

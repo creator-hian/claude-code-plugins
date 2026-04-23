@@ -109,6 +109,14 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 - **Skills**: 1개
   - `autoresearch` - 반복 실험 루프(mutate -> evaluate -> keep/discard)로 SKILL.md 자동 개선. force iteration, NEUTRAL mutation 판정, mutation exclusions, L1/L2/L3 eval 레벨, 외부 검증 결과 연동 지원
 
+### 9. **secret-guard-plugin**
+- **설명**: Bash/PowerShell credential 노출 방지 — PreToolUse 차단 + PostToolUse 유출 감지 + 안전 진단 Skill (3-layer defense)
+- **버전**: 1.0.0
+- **위치**: `./secret-guard-plugin`
+- **Hooks**: 2개 (`pre-block.js`, `post-detect.js`)
+- **Skills**: 1개
+  - `secret-safe-diagnostics` - 토큰/API key 진단 시 raw value 대신 presence/length/hash 패턴 사용. GitHub/AWS/GCP/Azure/OpenAI/Anthropic/Slack/Stripe 프로바이더별 안전 대안 제공 (Bash + PowerShell)
+
 ---
 
 ## 📊 플러그인 요약 테이블
@@ -123,7 +131,8 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 | **git-plugin** | 1.2.1 | 0 | 0 | PR 강화 자동화 |
 | **agent-team-plugin** | 2.1.0 | 0 | 3 | 에이전트 팀 기반 계획/리뷰/의사결정 |
 | **skill-autoresearch-plugin** | 1.1.0 | 0 | 1 | 자율 SKILL.md 개선 (autoresearch) |
-| **총계 (active)** | - | **3** | **20** | - |
+| **secret-guard-plugin** | 1.0.0 | 0 | 1 | Credential 노출 방지 (Pre/PostToolUse hooks + skill) |
+| **총계 (active)** | - | **3** | **21** | - |
 
 ### Skills 상세 목록
 
@@ -154,6 +163,7 @@ Claude Code는 강력한 AI 기반 개발 도구이지만, 사용자별/프로�
 | agent-team | `da-review` | Orchestration | Devil's Advocate Team 적대적 리뷰 |
 | agent-team | `decide` | Orchestration | 기술 의사결정 (A vs B 비교, constraint 검증) |
 | autoresearch | `autoresearch` | Meta/Tooling | 자율 SKILL.md 반복 개선 (eval hill-climbing) |
+| secret-guard | `secret-safe-diagnostics` | Security | 토큰/credential 진단 안전 패턴 (Bash + PowerShell) — presence/length/hash로 raw value 노출 방지 |
 
 ---
 

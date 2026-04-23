@@ -1,0 +1,8 @@
+{
+  "name": "secret-guard-plugin",
+  "version": "1.0.0",
+  "description": "Prevent credential/token leaks in Bash/PowerShell workflows — PreToolUse block + PostToolUse leak detection + secret-safe diagnostics skill",
+  "author": {
+    "name": "Creator Hian"
+  }
+}
