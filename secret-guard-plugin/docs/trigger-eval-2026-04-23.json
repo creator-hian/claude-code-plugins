@@ -1,0 +1,83 @@
+[
+  {
+    "query": "I'm running bash on WSL and my GH_TOKEN env var seems to be empty — how do I confirm it's set without printing the whole token to the terminal?",
+    "should_trigger": true
+  },
+  {
+    "query": "We're onboarding a new hire to the project and I need to verify their AWS credentials on their laptop. What commands should I walk them through in terminal without exposing their secret access key?",
+    "should_trigger": true
+  },
+  {
+    "query": "Our CI is failing with 401 on the GitHub API but works locally. How do I compare the local and CI GH_TOKEN values to see if they're actually the same secret or if rotation got out of sync?",
+    "should_trigger": true
+  },
+  {
+    "query": "gcloud auth application-default login just finished but my Python service still gets 'unauthenticated' errors. I want to debug what access token the SDK is picking up — what's the safe way to do this from pwsh?",
+    "should_trigger": true
+  },
+  {
+    "query": "I copy-pasted my STRIPE_SECRET_KEY from 1Password into my .env file and the Stripe API keeps rejecting it. How can I check if there's a trailing newline or the length is off, without echoing the key itself?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write me a PowerShell one-liner a junior dev can run to confirm OPENAI_API_KEY, ANTHROPIC_API_KEY, and GH_TOKEN are all set in their shell environment. They paste the output into Slack so obviously don't print the values.",
+    "should_trigger": true
+  },
+  {
+    "query": "We just rotated OPENAI_API_KEY in prod. From my SSH session I want to prove that the prod container actually picked up the new key and not the old one that's still in my local env. Think comparing fingerprints.",
+    "should_trigger": true
+  },
+  {
+    "query": "curl -v -H 'Authorization: Bearer $TOKEN' https://api.stripe.com/v1/charges is dumping my Stripe key into the trace output on every run. How do I debug this request differently without leaking the bearer header?",
+    "should_trigger": true
+  },
+  {
+    "query": "I have two different .envrc files across two machines and I want to diff which keys are defined in each one without ever showing the values. bash please.",
+    "should_trigger": true
+  },
+  {
+    "query": "Azure az login feels stale — how do I verify the currently-active account and subscription without ending up with a raw access token in my shell history or PSReadLine history file?",
+    "should_trigger": true
+  },
+
+  {
+    "query": "Explain how transformer tokenization handles subword units. Specifically, how does BPE differ from WordPiece in terms of how token boundaries get determined during training?",
+    "should_trigger": false
+  },
+  {
+    "query": "In our MMORPG we have a 'soul token' drop mechanic — players earn tokens from raid bosses and spend them at an NPC merchant. Help me design the drop-rate formula so 95th-percentile playtime gets ~3 tokens per week.",
+    "should_trigger": false
+  },
+  {
+    "query": "Read the file adr/0071-direnv.md and summarize what decision was made about using GH_TOKEN in that ADR. I'm just reviewing the history, no action needed.",
+    "should_trigger": false
+  },
+  {
+    "query": "What's the OAuth 2.0 authorization code flow? I'm preparing slides for a KubeCon talk — theoretical overview, flow diagrams, no implementation or credentials involved.",
+    "should_trigger": false
+  },
+  {
+    "query": "Our internal JWT library benchmark shows it's 2x slower than jose. Can you profile the token verification path and suggest optimizations? Source is in packages/jwt/src/verify.ts.",
+    "should_trigger": false
+  },
+  {
+    "query": "How does rate limiting work on the GitHub API in general? I'm writing a blog post for our engineering site about primary vs secondary limits. Just need conceptual explanation, no code.",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you write a C# enum called EPaymentProvider listing Stripe, PayPal, Bancontact, TossPayments? This is just the type definition for our PaymentService model layer.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review the unit tests in tests/parse_bearer.test.ts — they cover a parser that validates the RFC-6750 bearer token format string. The tests themselves use fixture strings, no real secrets.",
+    "should_trigger": false
+  },
+  {
+    "query": "Our Slack bot posts daily standup reminders but it's silent on Tuesdays. Check cron/standup.yml — I suspect the cron expression has a wrong weekday field. Nothing to do with the bot token.",
+    "should_trigger": false
+  },
+  {
+    "query": "I'm reading 'Designing Data-Intensive Applications' chapter 5 on replication. Can you explain token-based request routing as a consistency concept? Purely conceptual, I'm not implementing anything this week.",
+    "should_trigger": false
+  }
+]
