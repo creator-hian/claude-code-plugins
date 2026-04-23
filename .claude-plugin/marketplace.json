@@ -48,6 +48,11 @@
       "description": "Reinforce user prompts by re-injecting them as system context to improve instruction adherence"
     },
     {
+      "name": "secret-guard-plugin",
+      "source": "./secret-guard-plugin",
+      "description": "Credential leak prevention for Bash/PowerShell workflows — PreToolUse block (6 rule types: echo-token-env, gh-auth-token-bare, aws-credentials-dump, env-dump-wide, cat-dotenv, curl-verbose-auth), PostToolUse leak detection across 11 token patterns (GitHub, AWS, GCP, Slack, JWT, Stripe, OpenAI, Anthropic, Bearer, PEM), and the secret-safe-diagnostics skill with provider-specific safe alternatives"
+    },
+    {
       "name": "skill-autoresearch-plugin",
       "source": "./skill-autoresearch-plugin",
       "description": "Autonomous SKILL.md improvement via Karpathy autoresearch-inspired iterative eval hill-climbing with force iteration, NEUTRAL mutation judgment, mutation exclusions, L1/L2/L3 eval levels, and external verification integration"

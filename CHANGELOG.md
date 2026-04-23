@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-04-23
+
+### Added
+- **secret-guard-plugin v1.0.0**: Credential leak prevention for Bash/PowerShell workflows
+  - Pre-block hook (PreToolUse) with 6 deny rules — `echo-token-env`, `gh-auth-token-bare`, `aws-credentials-dump`, `env-dump-wide`, `cat-dotenv`, `curl-verbose-auth`; each deny carries a `SUGGESTION:` line so the model can rewrite to a safe idiom rather than retry the same pattern
+  - Post-detect hook (PostToolUse) scanning 11 token patterns — GitHub (classic/OAuth/fine-grained PAT), AWS AKIA, Google API key, Slack, JWT, Stripe live key, OpenAI-style keys, Anthropic keys, HTTP `Authorization: Bearer` headers, PEM-encoded private keys
+  - `secret-safe-diagnostics` skill with golden presence/length/hash idioms (bash + PowerShell) and per-provider safe-vs-leaks matrix across GitHub, AWS, GCP, Azure, OpenAI, Anthropic, Slack, Stripe, and database connection strings; L3 references cover anti-patterns, safe patterns by developer intent, and credential-provider map
+  - Documentation of a `claude -p`-based trigger-accuracy experiment (`secret-guard-plugin/docs/trigger-opt-experiment-2026-04-23.md`, reusable eval set at `secret-guard-plugin/docs/trigger-eval-2026-04-23.json`) including the harness limitation that prevented mutation in this run and the `PYTHONUTF8=1` requirement on Windows + Korean locale; the document doubles as the spec for a future standalone `trigger_opt.py` replacement for skill-creator's SDK-based `improve_description.py`
+
+### Changed
+- **Marketplace registration**: Added `secret-guard-plugin` entry to `.claude-plugin/marketplace.json`
+- **Plugin inventory**: README.md plugin summary table extended (active Skills total 20 → 21); CLAUDE.md Plugin Summary table updated with the new entry
+
 ## [0.8.1] - 2026-03-26
 
 ### Deprecated
